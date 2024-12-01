@@ -1148,13 +1148,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const auth = getAuth();
             
             auth.onAuthStateChanged((user) => {
-                console.log("Auth state changed:", user ? "User logged in" : "No user");
-                if (user) {
-                    loadEvents();
-                } else {
-                    window.location.href = 'login.html';
-                }
-            });
+    if (!user) {
+        // User is signed out, redirect to index
+        localStorage.clear();
+        sessionStorage.clear();
+        const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
+        window.location.replace(`${baseUrl}/index.html`);
+    } else if (!user.email.toLowerCase().includes('admin')) {
+        // User is not an admin, redirect to regular dashboard
+        localStorage.clear();
+        sessionStorage.clear();
+        const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
+        window.location.replace(`${baseUrl}/dashboard.html`);
+    }
+});
         });
     
         async function deleteEvent(eventId) {
@@ -2368,44 +2375,39 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-    logoutBtn.addEventListener('click', async function() {
-    try {
-    // First sign out from Firebase
-    await auth.signOut();
-    // Clear all storage
-    localStorage.clear();
-    sessionStorage.clear();
-    // Force redirect to index page
-    window.location.replace('/index.html');
-    // Prevent back navigation
-    window.history.pushState(null, '', '/index.html');
-    // Additional fallback redirect
-    setTimeout(() => {
-    window.location.href = '/index.html';
-    }, 100);
-    } catch (error) {
-    console.error("Logout error:", error);
-    // Force redirect even if there's an error
-    window.location.replace('/index.html');
+        logoutBtn.addEventListener('click', async function() {
+            try {
+                // First sign out from Firebase
+                await auth.signOut();
+                
+                // Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Get the base URL for GitHub Pages
+                const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
+                
+                // Force redirect to index page with correct path
+                window.location.replace(`${baseUrl}/index.html`);
+                
+                // Prevent back navigation
+                window.history.pushState(null, '', `${baseUrl}/index.html`);
+                
+                // Additional fallback redirect
+                setTimeout(() => {
+                    window.location.href = `${baseUrl}/index.html`;
+                }, 100);
+                
+            } catch (error) {
+                console.error("Logout error:", error);
+                // Force redirect even if there's an error
+                const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
+                window.location.replace(`${baseUrl}/index.html`);
+            }
+        });
     }
-    });
-    }
-    });
-    // Add authentication state observer
-    auth.onAuthStateChanged((user) => {
-    if (!user) {
-    // User is signed out, redirect to index
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.replace('/index.html');
-    } else if (!user.email.toLowerCase().includes('admin')) {
-    // User is not an admin, redirect to regular dashboard
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.replace('/dashboard.html');
-    }
-    });
-    </script>
+});
+</script>
 
 <!-- Add reference to external JavaScript file -->
 <script type="module" src="scripts/admin.js"></script>
