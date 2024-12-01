@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="styles/admin.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+
+    
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h2>Admin Panel</h2>
+            </div>
+            
+            <div class="menu">
+                <div class="menu-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+                
+                <div class="menu-item" onclick="showSection('events')">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Events</span>
+                </div>
+                
+                <div class="menu-item" onclick="showSection('tickets')">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Tickets</span>
+                </div>
+                
+                <div class="menu-item" onclick="showSection('verification')">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Verify Tickets</span>
+                </div>
+                
+                <div class="menu-item" onclick="showSection('passes')">
+                    <i class="fas fa-id-card"></i>
+                    <span>Pass Management</span>
+                </div>
+                
+                <div class="menu-item" onclick="showSection('generateTicket')">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Generate Ticket</span>
+                </div>
+                
+
+            </div>
+            
+            <div class="user-info">
+                <span id="userEmail"></span>
+                <a href="index.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <h2>Dashboard</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Events</h3>
+                        <div class="number" id="totalEvents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Upcoming Events</h3>
+                        <div class="number" id="upcomingEvents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completed Events</h3>
+                        <div class="number" id="completedEvents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Tickets</h3>
+                        <div class="number" id="totalTickets">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tickets Sold</h3>
+                        <div class="number" id="ticketsSold">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Available Tickets</h3>
+                        <div class="number" id="availableTickets">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="number" id="totalRevenue">₹0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tickets Scanned</h3>
+                        <div class="number" id="ticketsScanned">0</div>
+                    </div>
+                </div>
+
+                <div class="recent-sections">
+                    <div class="recent-section">
+                        <h3>Recent Events</h3>
+                        <div id="recentEventsList" class="recent-list"></div>
+                    </div>
+                    
+                    <div class="recent-section">
+                        <h3>Recent Tickets</h3>
+                        <div id="recentTicketsList" class="recent-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Section -->
+            <div id="events" class="content-section">
+                <h2>Manage Events</h2>
+                
+                <!-- Add toggle buttons -->
+                <div class="events-toggle">
+                    <button class="toggle-btn active" onclick="toggleEventsView('view')">
+                        <i class="fas fa-list"></i> View Events
+                    </button>
+                    <button class="toggle-btn" onclick="toggleEventsView('create')">
+                        <i class="fas fa-plus"></i> Create Event
+                    </button>
+                </div>
+
+                <!-- Create Event Form (Initially Hidden) -->
+                <div id="createEventSection" class="event-section" style="display: none;">
+                    <div class="event-form">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="eventName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventDescription" class="required">Event Description</label>
+                            <textarea id="eventDescription" name="eventDescription" class="tinymce-editor"></textarea>
+                            <div class="helper-text">Use the editor to format your event description</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Event Date</label>
+                            <input type="datetime-local" id="eventDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Booking Start Date</label>
+                            <input type="datetime-local" id="bookingStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Booking Deadline</label>
+                            <input type="datetime-local" id="bookingDeadline" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price ()</label>
+                            <input type="number" id="eventPrice" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">Event Type</label>
+                            <select id="eventType" onchange="handleEventTypeChange()" required>
+                                <option value="">Select Event Type</option>
+                                <option value="venue">Venue (Physical Location)</option>
+                                <option value="online">Online Event</option>
+                                <option value="hybrid">Hybrid (Both Online & Venue)</option>
+                            </select>
+                        </div>
+                        <div id="onlineEventDetails" class="form-section" style="display: none;">
+                            <h3>Online Event Details</h3>
+                            <div class="form-group">
+                                <label class="required">Meeting Platform</label>
+                                <select id="meetingPlatform" required>
+                                    <option value="">Select Platform</option>
+                                    <option value="zoom">Zoom</option>
+                                    <option value="gmeet">Google Meet</option>
+                                    <option value="teams">Microsoft Teams</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="required">Meeting Link</label>
+                                <input type="url" id="meetingLink" placeholder="https://..." required>
+                                <div class="helper-text">This will be shared with attendees after booking</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Meeting ID (if applicable)</label>
+                                <input type="text" id="meetingId" placeholder="Meeting ID">
+                            </div>
+                            <div class="form-group">
+                                <label>Meeting Password (if applicable)</label>
+                                <input type="text" id="meetingPassword" placeholder="Meeting Password">
+                            </div>
+                        </div>
+                        <div id="venueEventDetails" class="form-section" style="display: none;">
+                            <h3>Venue Details</h3>
+                            <div class="form-group">
+                                <label class="required">Event Place</label>
+                                <input type="text" id="eventPlace" placeholder="Enter event location" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="required">Venue Details</label>
+                                <textarea id="eventVenue" placeholder="Enter detailed venue information (e.g., hall number, floor, landmarks)" required></textarea>
+                            </div>
+                        </div>
+                        <div id="imageUrlsContainer">
+                            <div class="form-group image-input">
+                                <label>Image URL #1</label>
+                                <input type="text" class="eventImage" placeholder="Enter image URL">
+                                <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
+                            </div>
+                        </div>
+                        <div id="ticketingSection" class="form-section" style="display: none;">
+                            <h3>Ticket Configuration</h3>
+                            
+                            <!-- For non-hybrid events -->
+                            <div class="form-group" id="standardTicketsSection">
+                                <label class="required">Total Available Tickets</label>
+                                <input type="number" id="eventTickets" min="1" required>
+                            </div>
+
+                            <!-- For hybrid events -->
+                            <div id="hybridTicketsSection" style="display: none;">
+                                <div class="form-group" id="venueTicketsSection">
+                                    <label class="required">Venue Tickets</label>
+                                    <input type="number" id="venueTickets" min="0" required>
+                                    <div class="helper-text">Number of tickets available for physical attendance</div>
+                                    <div class="form-group">
+                                        <label class="required">Venue Ticket Price ()</label>
+                                        <input type="number" id="venueTicketPrice" min="0" step="0.01" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="onlineTicketsSection">
+                                    <label class="required">Online Tickets</label>
+                                    <input type="number" id="onlineTickets" min="0" required>
+                                    <div class="helper-text">Number of tickets available for online attendance</div>
+                                    <div class="form-group">
+                                        <label class="required">Online Ticket Price (₹)</label>
+                                        <input type="number" id="onlineTicketPrice" min="0" step="0.01" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Add this after the event description field in your form -->
+                        <div class="form-group">
+                            <label>Rules (if applicable)</label>
+                            <textarea id="eventRules" name="eventRules" class="tinymce-editor"></textarea>
+                            <div class="helper-text">Add any rules or guidelines for the event</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Limitations (if applicable)</label>
+                            <textarea id="eventLimitations" name="eventLimitations" class="tinymce-editor"></textarea>
+                            <div class="helper-text">Add any limitations or restrictions for the event</div>
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" onclick="handleCreateEvent()" class="create-btn">Create Event</button>
+                            <button type="button" onclick="cancelEdit()" class="cancel-btn" style="display: none;">Cancel Edit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Events Section (Initially Visible) -->
+                <div id="viewEventSection" class="event-section">
+                    <!-- Add filter controls -->
+                    <div class="event-filters">
+                        <input type="text" 
+                               id="eventSearchInput" 
+                               placeholder="Search events..."
+                               oninput="filterEvents()">
+                        <select id="eventTypeFilter" onchange="filterEvents()">
+                            <option value="">All Types</option>
+                            <option value="venue">Venue</option>
+                            <option value="online">Online</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                        <select id="eventStatusFilter" onchange="filterEvents()">
+                            <option value="">All Status</option>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="event-list" id="eventList">
+                        <!-- Events will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets Section -->
+            <div id="tickets" class="content-section">
+                <h2>Ticket Management</h2>
+                
+                <!-- Stats card with original class names -->
+                <div class="stats-card">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <h4>Total Tickets</h4>
+                            <p id="adminTotalTickets">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Tickets Sold</h4>
+                            <p id="adminSoldTickets">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Available Tickets</h4>
+                            <p id="adminAvailableTickets">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Tickets Used</h4>
+                            <p id="adminUsedTickets">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Total Revenue</h4>
+                            <p id="adminTotalRevenue">₹0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing ticket filters and list -->
+                <div class="ticket-filters">
+                    <select id="adminEventSelector">
+                        <option value="">All Events</option>
+                    </select>
+                    <input type="text" 
+                           id="adminTicketSearch" 
+                           placeholder="Search tickets...">
+                </div>
+
+                <div id="adminTicketList" class="ticket-list">
+                    <!-- Tickets will be populated here -->
+                </div>
+            </div>
+
+            <!-- Verification Section -->
+<div id="verification" class="content-section">
+    <h2>Ticket Verification</h2>
+    
+    <div class="verification-tabs">
+        <button class="tab-btn active" onclick="switchVerificationMethod('manual')">
+            <i class="fas fa-keyboard"></i> Manual Entry
+        </button>
+        <button class="tab-btn" onclick="switchVerificationMethod('qr')">
+            <i class="fas fa-qrcode"></i> Scan QR Code
+        </button>
+    </div>
+
+    <div id="qrVerification" class="verification-method">
+        <div id="qrReader"></div>
+        <button class="scan-btn" onclick="startQRScanner()">
+            <i class="fas fa-camera"></i> Start Scanner
+        </button>
+        <button onclick="stopQRScanner()" style="display: none;">Stop Scanner</button>
+    </div>
+
+    <div id="manualVerification" class="verification-method" style="display: none;">
+        <div class="form-group">
+            <label>Enter Ticket ID</label>
+            <input type="text" id="ticketIdInput" placeholder="Enter ticket ID">
+            <button onclick="verifyTicketManually()">Verify Ticket</button>
+        </div>
+    </div>
+
+    <div id="verificationResult" class="verification-result" style="display: none;">
+        <h3>Verification Result</h3>
+        <span class="result-status"></span>
+        <div class="ticket-details"></div>
+        <button onclick="markTicketAsUsed()" class="mark-used-btn" style="display: none;">
+            Mark as Used
+        </button>
+    </div>
+</div>
+<!-- Add this new section after your other content sections -->
+<div id="passes" class="content-section">
+    <div class="passes-stats">
+        <div class="stat-box">
+            <h3>Total Passes</h3>
+            <p id="totalPasses">0</p>
+        </div>
+        <div class="stat-box">
+            <h3>Used Passes</h3>
+            <p id="usedPasses">0</p>
+        </div>
+        <div class="stat-box">
+            <h3>Unused Passes</h3>
+            <p id="unusedPasses">0</p>
+        </div>
+    </div>
+
+    <div class="passes-toggle">
+        <button class="toggle-btn active" onclick="togglePassesView('view')">View Passes</button>
+        <button class="toggle-btn" onclick="togglePassesView('generate')">Generate Passes</button>
+    </div>
+
+    <div id="generatePassesSection" class="passes-section" style="display: none;">
+        <select id="eventSelectorForPasses" required>
+            <option value="">Select Event</option>
+        </select>
+        <select id="roleSelector" onchange="handleRoleChange()" required>
+            <option value="">Select Role</option>
+            <option value="staff">Staff</option>
+            <option value="vip">VIP</option>
+            <option value="media">Media</option>
+            <option value="other">Other</option>
+        </select>
+        <div id="otherRoleInput" style="display: none;">
+            <label for="customRole">Custom Role:</label>
+            <input type="text" id="customRole" placeholder="Enter custom role">
+        </div>
+        <input type="number" id="numberOfPasses" min="1" placeholder="Number of passes">
+        <button onclick="generatePasses()">Generate Passes</button>
+        <div id="generatedPassesList"></div>
+    </div>
+
+    <div id="viewPassesSection" class="passes-section" style="display: block;">
+
+        <div id="viewPassesList"></div>
+    </div>
+</div>
+<!-- Generate Ticket Section -->
+<div id="generateTicket" class="content-section">
+    <h2>Generate Ticket</h2>
+    
+    <div class="ticket-generation-form">
+        <div class="form-group">
+            <label>Select Event</label>
+            <select id="ticketEventSelector" required onchange="updateTicketTypeOptions()">
+                <option value="">Select an Event</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Ticket Type</label>
+            <select id="ticketTypeSelector" required>
+                <option value="">Select Ticket Type</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" id="ticketQuantity" min="1" value="1" required>
+        </div>
+        
+        <div class="form-group">
+            <label>User Email</label>
+            <input type="email" id="ticketUserEmail" placeholder="Enter user email" required>
+        </div>
+        <div class="form-group">
+            <label>Payment Mode</label>
+            <select id="paymentMode" required>
+                <option value="">Select Payment Mode</option>
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+            </select>
+        </div>
+        
+        <div class="price-summary">
+            <p>Price per ticket: <span id="pricePerTicket">₹0</span></p>
+            <p>Total Amount: <span id="totalTicketPrice">₹0</span></p>
+        </div>
+        
+        <button onclick="generateTicketForUser()" class="generate-btn">Generate Ticket</button>
+    </div>
+</div>
+
+
+
+
+    <script>
+    // Navigation
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+    });
+
+    // Show selected section
+    const selectedSection = document.getElementById(sectionId);
+    if (selectedSection) {
+        selectedSection.style.display = 'block';
+    }
+
+    // Update active menu item
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    const menuItem = document.querySelector(`.menu-item[onclick*="${sectionId}"]`);
+    if (menuItem) {
+        menuItem.classList.add('active');
+    }
+
+    // Handle section-specific initialization
+    switch (sectionId) {
+        case 'dashboard':
+            loadDashboard();
+            break;
+        case 'events':
+            loadEvents();
+            break;
+        case 'tickets':
+            loadTickets();
+            break;
+        case 'verification':
+            switchVerificationMethod('manual');
+            break;
+    }
+
+    // Clean up verification when switching away
+    if (sectionId !== 'verification') {
+        cleanupVerification();
+    }
+}
+
+// Ensure the dashboard is active on page load
+document.addEventListener('DOMContentLoaded', () => {
+    showSection('dashboard');
+});
+
+    
+
+    
+        // Format currency in INR
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+    
+        // Events Functions
+        let imageFieldCount = 1;
+    
+        function addImageField() {
+            imageFieldCount++;
+            const container = document.getElementById('imageUrlsContainer');
+            const div = document.createElement('div');
+            div.className = 'form-group image-input';
+            div.innerHTML = `
+                <label>Image URL #${imageFieldCount}</label>
+                <input type="text" class="eventImage" placeholder="Enter image URL">
+                <button type="button" onclick="removeImageField(this)" class="remove-image-btn">Remove</button>
+            `;
+            container.appendChild(div);
+        }
+    
+        function removeImageField(button) {
+            button.parentElement.remove();
+            imageFieldCount--;
+        }
+    
+        // Add this variable to track editing state
+        let isEditing = false;
+        let currentEditingEventId = null;
+    
+        // Update the edit button click handler
+        function openEditModal(eventId, eventData) {
+            try {
+                console.log("Opening edit modal for event:", eventId);
+                console.log("Event data received:", eventData);
+    
+                isEditing = true;
+                currentEditingEventId = eventId;
+                
+                const cancelBtn = document.querySelector('.cancel-btn');
+                if (cancelBtn) {
+                    cancelBtn.style.display = 'block';
+                }
+                
+                const createBtn = document.querySelector('.create-btn');
+                if (createBtn) {
+                    createBtn.textContent = 'Update Event';
+                }
+                
+                const nameInput = document.getElementById('eventName');
+                const descInput = document.getElementById('eventDescription');
+                const dateInput = document.getElementById('eventDate');
+                const startInput = document.getElementById('bookingStartDate');
+                const deadlineInput = document.getElementById('bookingDeadline');
+                const priceInput = document.getElementById('eventPrice');
+                const ticketsInput = document.getElementById('eventTickets');
+                const eventTypeSelect = document.getElementById('eventType');
+    
+                nameInput.value = eventData.name || '';
+                dateInput.value = new Date(eventData.date).toISOString().slice(0, 16);
+                startInput.value = new Date(eventData.bookingStartDate).toISOString().slice(0, 16);
+                deadlineInput.value = new Date(eventData.bookingDeadline).toISOString().slice(0, 16);
+                priceInput.value = eventData.price || '';
+                ticketsInput.value = eventData.totalTickets || '';
+                eventTypeSelect.value = eventData.eventType || '';
+    
+                handleEventTypeChange();
+                
+                if (eventData.eventType === 'hybrid') {
+                    document.getElementById('venueTickets').value = eventData.tickets?.venue?.total || '';
+                    document.getElementById('onlineTickets').value = eventData.tickets?.online?.total || '';
+                    document.getElementById('venueTicketPrice').value = eventData.tickets?.venue?.price || '';
+                    document.getElementById('onlineTicketPrice').value = eventData.tickets?.online?.price || '';
+                }
+    
+                if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
+                    document.getElementById('meetingPlatform').value = eventData.onlineDetails?.platform || '';
+                    document.getElementById('meetingLink').value = eventData.onlineDetails?.meetingLink || '';
+                    document.getElementById('meetingId').value = eventData.onlineDetails?.meetingId || '';
+                    document.getElementById('meetingPassword').value = eventData.onlineDetails?.meetingPassword || '';
+                }
+    
+                if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
+                    document.getElementById('eventPlace').value = eventData.venueDetails?.place || '';
+                    document.getElementById('eventVenue').value = eventData.venueDetails?.venue || '';
+                }
+    
+                const imageContainer = document.getElementById('imageUrlsContainer');
+                imageContainer.innerHTML = '';
+                
+                if (eventData.images && Array.isArray(eventData.images)) {
+                    eventData.images.forEach((imageUrl, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'form-group image-input';
+                        div.innerHTML = `
+                            <label>Image URL #${index + 1}</label>
+                            <input type="text" class="eventImage" value="${imageUrl}" placeholder="Enter image URL">
+                            ${index === 0 ? 
+                                `<button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>` : 
+                                `<button type="button" onclick="removeImageField(this)" class="remove-image-btn">Remove</button>`
+                            }
+                        `;
+                        imageContainer.appendChild(div);
+                    });
+                    imageFieldCount = eventData.images.length;
+                } else {
+                    const div = document.createElement('div');
+                    div.className = 'form-group image-input';
+                    div.innerHTML = `
+                        <label>Image URL #1</label>
+                        <input type="text" class="eventImage" placeholder="Enter image URL">
+                        <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
+                    `;
+                    imageContainer.appendChild(div);
+                    imageFieldCount = 1;
+                }
+    
+                const descriptionEditor = tinymce.get('eventDescription');
+                const rulesEditor = tinymce.get('eventRules');
+                const limitationsEditor = tinymce.get('eventLimitations');
+    
+                if (descriptionEditor) {
+                    descriptionEditor.setContent(eventData.description || '');
+                }
+                if (rulesEditor) {
+                    rulesEditor.setContent(eventData.rules || '');
+                }
+                if (limitationsEditor) {
+                    limitationsEditor.setContent(eventData.limitations || '');
+                }
+    
+                document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
+    
+            } catch (error) {
+                console.error("Detailed error opening edit modal:", error);
+                alert('Error loading event data for editing: ' + error.message);
+            }
+        }
+    
+        // Update the handleCreateEvent function to handle both create and update
+        async function handleCreateEvent() {
+            try {
+                if (!validateEventDates() || !validateTickets()) {
+                    return;
+                }
+    
+                const descriptionEditor = tinymce.get('eventDescription');
+                const rulesEditor = tinymce.get('eventRules');
+                const limitationsEditor = tinymce.get('eventLimitations');
+    
+                if (!descriptionEditor) {
+                    throw new Error('Description editor not initialized');
+                }
+    
+                const description = descriptionEditor.getContent();
+                const rules = rulesEditor ? rulesEditor.getContent() : '';
+                const limitations = limitationsEditor ? limitationsEditor.getContent() : '';
+    
+                const eventType = document.getElementById('eventType').value;
+                
+                const eventData = {
+                    name: document.getElementById('eventName').value.trim(),
+                    description: description,
+                    rules: rules,
+                    limitations: limitations,
+                    date: new Date(document.getElementById('eventDate').value).toISOString(),
+                    bookingStartDate: new Date(document.getElementById('bookingStartDate').value).toISOString(),
+                    bookingDeadline: new Date(document.getElementById('bookingDeadline').value).toISOString(),
+                    eventType: eventType,
+                    images: Array.from(document.querySelectorAll('.eventImage'))
+                        .map(input => input.value.trim())
+                        .filter(url => url !== ''),
+                    updatedAt: serverTimestamp()
+                };
+    
+                // Only generate new eventId if creating a new event
+                if (!isEditing) {
+                    eventData.eventId = generateEventId();
+                }
+    
+                if (eventType === 'hybrid') {
+                    const venueTickets = parseInt(document.getElementById('venueTickets').value);
+                    const onlineTickets = parseInt(document.getElementById('onlineTickets').value);
+                    const venuePrice = parseFloat(document.getElementById('venueTicketPrice').value);
+                    const onlinePrice = parseFloat(document.getElementById('onlineTicketPrice').value);
+    
+                    eventData.tickets = {
+                        venue: {
+                            total: venueTickets,
+                            available: venueTickets,
+                            price: venuePrice
+                        },
+                        online: {
+                            total: onlineTickets,
+                            available: onlineTickets,
+                            price: onlinePrice
+                        }
+                    };
+                    eventData.totalTickets = venueTickets + onlineTickets;
+                    eventData.availableTickets = eventData.totalTickets;
+                } else {
+                    const totalTickets = parseInt(document.getElementById('eventTickets').value);
+                    const price = parseFloat(document.getElementById('eventPrice').value);
+                    eventData.totalTickets = totalTickets;
+                    eventData.availableTickets = totalTickets;
+                    eventData.price = price;
+                }
+    
+                if (eventType === 'online' || eventType === 'hybrid') {
+                    eventData.onlineDetails = {
+                        platform: document.getElementById('meetingPlatform').value,
+                        meetingLink: document.getElementById('meetingLink').value,
+                        meetingId: document.getElementById('meetingId').value,
+                        meetingPassword: document.getElementById('meetingPassword').value
+                    };
+                }
+    
+                if (eventType === 'venue' || eventType === 'hybrid') {
+                    eventData.venueDetails = {
+                        place: document.getElementById('eventPlace').value.trim(),
+                        venue: document.getElementById('eventVenue').value.trim()
+                    };
+                }
+    
+                if (isEditing && currentEditingEventId) {
+                    // Update existing event
+                    const eventRef = doc(db, 'events', currentEditingEventId);
+                    await updateDoc(eventRef, eventData);
+                    alert('Event updated successfully!');
+                } else {
+                    // Create new event
+                    eventData.createdAt = serverTimestamp();
+                    const eventsRef = collection(db, 'events');
+                    await addDoc(eventsRef, eventData);
+                    alert('Event created successfully!');
+                }
+    
+                clearEventForm();
+                isEditing = false;
+                currentEditingEventId = null;
+                
+                // Switch back to view mode and refresh events list
+                toggleEventsView('view');
+                loadEvents();
+    
+            } catch (error) {
+                console.error('Error handling event:', error);
+                alert(error.message || 'Error handling event. Please try again.');
+            } finally {
+                const createBtn = document.querySelector('.create-btn');
+                createBtn.disabled = false;
+                createBtn.textContent = isEditing ? 'Update Event' : 'Create Event';
+            }
+        }
+        
+        // Update clearEventForm to reset editing state
+        function clearEventForm() {
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventDescription').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('bookingStartDate').value = '';
+            document.getElementById('bookingDeadline').value = '';
+            document.getElementById('eventPrice').value = '';
+            document.getElementById('eventTickets').value = '';
+            
+            const imageContainer = document.getElementById('imageUrlsContainer');
+            imageContainer.innerHTML = `
+                <div class="form-group image-input">
+                    <label>Image URL #1</label>
+                    <input type="text" class="eventImage" placeholder="Enter image URL">
+                    <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
+                </div>
+            `;
+            imageFieldCount = 1;
+    
+            const cancelBtn = document.querySelector('.cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.style.display = 'none';
+            }
+            
+            const createBtn = document.querySelector('.create-btn');
+            if (createBtn) {
+                createBtn.textContent = 'Create Event';
+            }
+            
+            const editor = tinymce.get('eventDescription');
+            if (editor) {
+                editor.setContent('');
+            }
+            
+            const eventTypeSelect = document.getElementById('eventType');
+            eventTypeSelect.value = '';
+            handleEventTypeChange();
+            
+            document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
+            
+            const editors = ['eventDescription', 'eventRules', 'eventLimitations'];
+            editors.forEach(editorId => {
+                const editor = tinymce.get(editorId);
+                if (editor) {
+                    editor.setContent('');
+                }
+            });
+        }
+    
+        async function loadEvents() {
+            try {
+                console.log("Starting to load events...");
+                const eventList = document.getElementById('eventList');
+                if (!eventList) {
+                    console.error("Event list element not found");
+                    return;
+                }
+    
+                eventList.innerHTML = '<p>Loading events...</p>';
+                const eventsRef = collection(db, 'events');
+                
+                console.log("Fetching events...");
+                const snapshot = await getDocs(eventsRef);
+                
+                console.log("Events fetched:", snapshot.size);
+                eventList.innerHTML = '';
+    
+                if (snapshot.empty) {
+                    console.log("No events found");
+                    eventList.innerHTML = '<p>No events found. Create your first event!</p>';
+                    return;
+                }
+    
+                snapshot.forEach((doc) => {
+                    console.log("Processing event:", doc.id);
+                    const event = doc.data();
+                    const eventCard = createEventCard(event, doc.id);
+                    eventList.appendChild(eventCard);
+                });
+    
+            } catch (error) {
+                console.error("Detailed error loading events:", error);
+                const eventList = document.getElementById('eventList');
+                if (eventList) {
+                    eventList.innerHTML = `
+                        <div class="error-message">
+                            <p>Error loading events. Please try again.</p>
+                            <button onclick="loadEvents()" class="retry-btn">Retry</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+    
+        // Helper function to create event cards
+        function createEventCard(event, eventId) {
+            try {
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                card.id = `event-${eventId}`;
+    
+                const eventTypeBadge = `
+                    <span class="event-type-badge ${event.eventType}">
+                        ${event.eventType ? event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1) : 'Unknown'}
+                    </span>
+                `;
+    
+                const ticketInfoHTML = event.eventType === 'hybrid' ? `
+                    <div class="ticket-type-info">
+                        <h4>Ticket Information</h4>
+                        <div class="venue-tickets">
+                            <strong>Venue Tickets:</strong>
+                            <p>Available: ${event.tickets?.venue?.available || 0}/${event.tickets?.venue?.total || 0}</p>
+                            <p>Price: ₹${event.tickets?.venue?.price?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <div class="online-tickets">
+                            <strong>Online Tickets:</strong>
+                            <p>Available: ${event.tickets?.online?.available || 0}/${event.tickets?.online?.total || 0}</p>
+                            <p>Price: ₹${event.tickets?.online?.price?.toFixed(2) || '0.00'}</p>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="ticket-type-info">
+                        <h4>Ticket Information</h4>
+                        <p>Available Tickets: ${event.availableTickets || 0}/${event.totalTickets || 0}</p>
+                        <p>Price: ₹${event.price?.toFixed(2) || '0.00'}</p>
+                    </div>
+                `;
+    
+                const onlineDetailsHTML = (event.eventType === 'online' || event.eventType === 'hybrid') && event.onlineDetails ? `
+                    <div class="event-details-section">
+                        <h4>Online Event Details</h4>
+                        <p><strong>Platform:</strong> ${event.onlineDetails.platform || 'Not specified'}</p>
+                        <p class="secured-info">Meeting link and access details will be shared after booking</p>
+                    </div>
+                ` : '';
+    
+                const venueDetailsHTML = (event.eventType === 'venue' || event.eventType === 'hybrid') && event.venueDetails ? `
+                    <div class="event-details-section">
+                        <h4>Venue Details</h4>
+                        <p><strong>Location:</strong> ${event.venueDetails.place || 'Not specified'}</p>
+                        <p><strong>Venue:</strong> ${event.venueDetails.venue || 'Not specified'}</p>
+                    </div>
+                ` : '';
+    
+                const bookingStatus = getBookingStatus(event);
+                const bookingStatusHTML = `
+                    <div class="booking-status ${bookingStatus.status}">
+                        ${bookingStatus.message}
+                    </div>
+                `;
+    
+                const imagesHTML = event.images && Array.isArray(event.images) ? `
+                    <div class="event-images">
+                        ${event.images.map(img => `<img src="${img}" alt="Event image" onerror="this.src='placeholder.jpg'">`).join('')}
+                    </div>
+                ` : '';
+    
+                const descriptionHTML = `
+                    <div class="event-description-section">
+                        <h4>About This Event</h4>
+                        <div class="formatted-description">
+                            ${event.description || 'No description available'}
+                        </div>
+                    </div>
+                `;
+    
+                const rulesHTML = event.rules ? `
+                    <div class="event-details-section">
+                        <h4>Event Rules</h4>
+                        <div class="formatted-content">
+                            ${event.rules}
+                        </div>
+                    </div>
+                ` : '';
+    
+                const limitationsHTML = event.limitations ? `
+                    <div class="event-details-section">
+                        <h4>Event Limitations</h4>
+                        <div class="formatted-content">
+                            ${event.limitations}
+                        </div>
+                    </div>
+                ` : '';
+    
+                card.innerHTML = `
+                    <div class="event-card-content">
+                        <div class="event-header">
+                            <h3>${event.name || 'Unnamed Event'} ${eventTypeBadge}</h3>
+                            <div class="event-id">ID: ${event.eventId || eventId}</div>
+                        </div>
+    
+                        ${imagesHTML}
+                        
+                        <div class="event-info">
+                            <div class="event-meta">
+                                <p><strong>Event Date:</strong> ${new Date(event.date).toLocaleString()}</p>
+                                <p><strong>Booking Period:</strong> 
+                                    ${new Date(event.bookingStartDate).toLocaleString()} - 
+                                    ${new Date(event.bookingDeadline).toLocaleString()}
+                                </p>
+                            </div>
+    
+                            ${descriptionHTML}
+                            ${rulesHTML}
+                            ${limitationsHTML}
+                            ${ticketInfoHTML}
+                            ${onlineDetailsHTML}
+                            ${venueDetailsHTML}
+                        </div>
+    
+                        ${bookingStatusHTML}
+                        
+                        <div class="button-group">
+                            <button onclick="handleEditClick('${eventId}', ${JSON.stringify(event).replace(/"/g, '&quot;')})" class="edit-btn">Edit</button>
+                            <button onclick="deleteEvent('${eventId}')" class="delete-btn">Delete</button>
+                        </div>
+                    </div>
+                `;
+    
+                return card;
+    
+            } catch (error) {
+                console.error("Error creating event card:", error, event);
+                const errorCard = document.createElement('div');
+                errorCard.className = 'event-card error';
+                errorCard.innerHTML = `
+                    <div class="error-message">
+                        <p>Error displaying this event</p>
+                        <p class="error-details">${error.message}</p>
+                    </div>
+                `;
+                return errorCard;
+            }
+        }
+    
+        // Updated getBookingStatus function
+        function getBookingStatus(event) {
+            try {
+                const now = new Date();
+                const bookingStartDate = new Date(event.bookingStartDate);
+                const bookingDeadline = new Date(event.bookingDeadline);
+                
+                if (now < bookingStartDate) {
+                    return {
+                        status: 'not-started',
+                        message: 'Booking Not Started Yet',
+                        canBook: false
+                    };
+                }
+                
+                if (now > bookingDeadline) {
+                    return {
+                        status: 'closed',
+                        message: 'Booking Closed',
+                        canBook: false
+                    };
+                }
+    
+                if (event.eventType === 'hybrid') {
+                    const venueAvailable = event.tickets?.venue?.available > 0;
+                    const onlineAvailable = event.tickets?.online?.available > 0;
+                    
+                    if (!venueAvailable && !onlineAvailable) {
+                        return {
+                            status: 'sold-out',
+                            message: 'All Tickets Sold Out',
+                            canBook: false
+                        };
+                    }
+                    
+                    return {
+                        status: 'active',
+                        message: `Book Now (${venueAvailable ? 'Venue' : ''}${venueAvailable && onlineAvailable ? ' & ' : ''}${onlineAvailable ? 'Online' : ''} Available)`,
+                        canBook: true,
+                        venueAvailable,
+                        onlineAvailable
+                    };
+                } else {
+                    if (event.availableTickets <= 0) {
+                        return {
+                            status: 'sold-out',
+                            message: 'Sold Out',
+                            canBook: false
+                        };
+                    }
+                    
+                    return {
+                        status: 'active',
+                        message: 'Book Now',
+                        canBook: true
+                    };
+                }
+            } catch (error) {
+                console.error("Error getting booking status:", error);
+                return {
+                    status: 'error',
+                    message: 'Status Unavailable',
+                    canBook: false
+                };
+            }
+        }
+    
+        // Add this new function to handle edit button clicks
+        function handleEditClick(eventId, eventData) {
+            try {
+                console.log("Edit clicked for event:", eventId);
+                console.log("Event data:", eventData);
+                
+                // Set the editing flags
+                isEditing = true;
+                currentEditingEventId = eventId; // Make sure this is the document ID from Firestore
+                
+                toggleEventsView('create');
+                openEditModal(eventId, eventData);
+                
+                // Update button text
+                const createBtn = document.querySelector('.create-btn');
+                if (createBtn) {
+                    createBtn.textContent = 'Update Event';
+                }
+                
+                // Show cancel button
+                const cancelBtn = document.querySelector('.cancel-btn');
+                if (cancelBtn) {
+                    cancelBtn.style.display = 'block';
+                }
+                
+                // Update toggle buttons
+                document.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector('.toggle-btn[onclick*="create"]').classList.add('active');
+                
+            } catch (error) {
+                console.error("Error handling edit click:", error);
+                alert("Error opening edit form: " + error.message);
+            }
+        }
+    
+        // Make the function available globally
+        window.handleEditClick = handleEditClick;
+    
+        // Add this helper function for event status
+        function getEventStatus(event) {
+            const now = new Date();
+            const startDate = new Date(event.bookingStartDate);
+            const deadlineDate = new Date(event.bookingDeadline);
+            const eventDate = new Date(event.date);
+            
+            if (now < startDate) {
+                return '<span class="status-upcoming">Booking Not Started</span>';
+            } else if (now > deadlineDate || now > eventDate) {
+                return '<span class="status-closed">Booking Closed</span>';
+            } else if (event.availableTickets <= 0) {
+                return '<span class="status-sold-out">Sold Out</span>';
+            } else {
+                return '<span class="status-active">Booking Open</span>';
+            }
+        }
+    
+        // Make sure to initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Content Loaded");
+            const auth = getAuth();
+            
+            auth.onAuthStateChanged((user) => {
+                console.log("Auth state changed:", user ? "User logged in" : "No user");
+                if (user) {
+                    loadEvents();
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+    
+        async function deleteEvent(eventId) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                try {
+                    await deleteDoc(doc(db, 'events', eventId));
+                    alert('Event deleted successfully!');
+                    loadEvents();
+                } catch (error) {
+                    console.error("Error deleting event:", error);
+                    alert('Error deleting event');
+                }
+            }
+        }
+    
+        // Tickets function
+        async function loadTickets() {
+            try {
+                const ticketList = document.getElementById('adminTicketList');
+                const eventSelector = document.getElementById('adminEventSelector');
+                
+                // First get all active events
+                const eventsSnapshot = await getDocs(collection(db, 'events'));
+                const activeEvents = {};
+                
+                // Create a map of active events
+                eventsSnapshot.forEach(doc => {
+                    const event = doc.data();
+                    activeEvents[doc.id] = event;
+                });
+                
+                // Populate event selector with only active events
+                eventSelector.innerHTML = '<option value="">All Events</option>';
+                Object.entries(activeEvents).forEach(([eventId, event]) => {
+                    eventSelector.innerHTML += `
+                        <option value="${eventId}">${event.name} (${event.eventId || eventId})</option>
+                    `;
+                });
+
+                // Get tickets only for active events
+                const ticketsRef = collection(db, 'tickets');
+                const ticketsSnapshot = await getDocs(ticketsRef);
+                
+                let totalTickets = 0;
+                let totalSold = 0;
+                let totalRevenue = 0;
+                let totalUsed = 0; // Make sure this is initialized
+                
+                // Filter tickets to only include those from active events
+                const validTickets = ticketsSnapshot.docs.filter(doc => {
+                    const ticket = doc.data();
+                    return activeEvents[ticket.eventId]; // Only include if event exists
+                });
+
+                validTickets.forEach(doc => {
+                    const ticket = doc.data();
+                    const event = activeEvents[ticket.eventId];
+                    
+                    if (event) {
+                        const ticketCount = ticket.ticketCount || 1;
+                        totalTickets += event.totalTickets || 0;
+                        
+                        if (ticket.paymentStatus === 'completed') {
+                            totalSold += ticketCount;
+                            totalRevenue += Number(ticket.totalPrice) || 0;
+                        }
+                        
+                        // Check specifically for the used property
+                        if (ticket.used === true) { // Changed this line to explicitly check for true
+                            totalUsed += ticketCount;
+                        }
+                    }
+                });
+
+                // Make sure to pass totalUsed to updateTicketStats
+                updateTicketStats(totalTickets, totalSold, totalRevenue, totalUsed);
+
+                // Add event listeners for filtering
+                document.getElementById('adminTicketSearch').addEventListener('input', async (e) => {
+                    await filterTickets(e.target.value, activeEvents);
+                });
+
+                eventSelector.addEventListener('change', async (e) => {
+                    await filterTickets('', activeEvents, e.target.value);
+                });
+
+            } catch (error) {
+                console.error("Error loading tickets:", error);
+                alert("Error loading tickets: " + error.message);
+            }
+        }
+    
+        // Add function to update stats display
+        function updateTicketStats(total, sold, revenue, used) {
+            document.getElementById('adminTotalTickets').textContent = total;
+            document.getElementById('adminSoldTickets').textContent = sold;
+            document.getElementById('adminAvailableTickets').textContent = total - sold;
+            document.getElementById('adminTotalRevenue').textContent = `₹${revenue.toFixed(2)}`;
+            document.getElementById('adminUsedTickets').textContent = used; // Add this line
+        }
+    
+        // Add function to filter tickets
+        async function filterTickets(searchTerm = '', activeEvents = {}, eventId = '') {
+            try {
+                const ticketList = document.getElementById('adminTicketList');
+                const ticketsRef = collection(db, 'tickets');
+                
+                let ticketsQuery;
+                if (eventId) {
+                    ticketsQuery = query(ticketsRef, where('eventId', '==', eventId));
+                } else {
+                    ticketsQuery = query(ticketsRef);
+                }
+                
+                const ticketsSnapshot = await getDocs(ticketsQuery);
+                let filteredTickets = [];
+                let totalSold = 0;
+                let totalRevenue = 0;
+                let totalUsed = 0; // Make sure this is initialized
+                
+                ticketsSnapshot.forEach(doc => {
+                    const ticket = doc.data();
+                    const event = activeEvents[ticket.eventId];
+                    
+                    // Only process tickets if the event exists
+                    if (event) {
+                        const searchString = `
+                            ${event.name || ''} 
+                            ${ticket.eventId || ''} 
+                            ${ticket.userEmail || ''} 
+                            ${ticket.ticketIdentifier || ''}
+                        `.toLowerCase();
+                        
+                        if (!searchTerm || searchString.includes(searchTerm.toLowerCase())) {
+                            filteredTickets.push({
+                                id: doc.id,
+                                ...ticket,
+                                eventName: event.name || 'Unknown Event'
+                            });
+                            
+                            const ticketCount = ticket.ticketCount || 1;
+                            
+                            if (ticket.paymentStatus === 'completed') {
+                                totalSold += ticketCount;
+                                totalRevenue += Number(ticket.totalPrice) || 0;
+                            }
+                            
+                            // Check specifically for the used property
+                            if (ticket.used === true) { // Changed this line to explicitly check for true
+                                totalUsed += ticketCount;
+                            }
+                        }
+                    }
+                });
+
+                // Calculate total tickets based on selected event or all active events
+                const totalTickets = eventId ? 
+                    (activeEvents[eventId]?.totalTickets || 0) : 
+                    Object.values(activeEvents).reduce((sum, event) => sum + (event.totalTickets || 0), 0);
+                
+                // Make sure to pass totalUsed to updateTicketStats
+                updateTicketStats(totalTickets, totalSold, totalRevenue, totalUsed);
+                displayTickets(filteredTickets);
+
+            } catch (error) {
+                console.error("Error filtering tickets:", error);
+                alert("Error filtering tickets: " + error.message);
+            }
+        }
+    
+        // Add function to display tickets
+        function displayTickets(tickets) {
+            const ticketList = document.getElementById('adminTicketList');
+            
+            if (tickets.length === 0) {
+                ticketList.innerHTML = '<p class="no-tickets">No tickets found</p>';
+                return;
+            }
+    
+            let html = '';
+            tickets.forEach(ticket => {
+                const status = getTicketStatus(ticket);
+                html += `
+                    <div class="admin-ticket-card">
+                        <div class="admin-ticket-info">
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">Ticket ID</span>
+                                <span class="admin-ticket-value">${ticket.ticketIdentifier || ticketIdentifier}</span>
+                            </div>
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">Event</span>
+                                <span class="admin-ticket-value">${ticket.eventName}</span>
+                            </div>
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">User</span>
+                                <span class="admin-ticket-value">${ticket.userEmail || 'N/A'}</span>
+                            </div>
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">Purchase Date</span>
+                                <span class="admin-ticket-value">${new Date(ticket.purchaseDate).toLocaleString()}</span>
+                            </div>
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">Quantity</span>
+                                <span class="admin-ticket-value">
+                                    <span class="admin-ticket-quantity">
+                                        <i class="fas fa-ticket-alt"></i> ${ticket.ticketCount || 1}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">Price</span>
+                                <span class="admin-ticket-value">
+                                    ₹${ticket.totalPrice || 0}
+                                    <span class="admin-ticket-unit-price">(₹${(ticket.totalPrice || 0) / (ticket.ticketCount || 1).toFixed(2)} × ${ticket.ticketCount || 1})</span>
+                                </span>
+                            </div>
+                            <div class="admin-ticket-detail">
+                                <span class="admin-ticket-label">Status</span>
+                                <span class="admin-status-badge admin-status-${status.toLowerCase()}">${status}</span>
+                            </div>
+                        </div>
+                        <div class="admin-ticket-actions">
+                            <button onclick="showTicketDetails('${ticket.id}')" class="admin-view-btn">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+    
+            ticketList.innerHTML = html;
+        }
+    
+        // Add function to get ticket status
+        function getTicketStatus(ticket) {
+            const now = new Date();
+            const eventDate = new Date(ticket.eventDate);
+            
+            if (ticket.used) {
+                return 'Used';
+            } else if (eventDate < now) {
+                return 'Expired';
+            } else if (eventDate.toDateString() === now.toDateString()) {
+                return 'Active';
+            } else {
+                return 'Upcoming';
+            }
+        }
+    
+        // Update the showTicketDetails function
+        async function showTicketDetails(ticketId) {
+            try {
+                const ticketDoc = await getDoc(doc(db, 'tickets', ticketId));
+                if (!ticketDoc.exists()) {
+                    throw new Error('Ticket not found');
+                }
+    
+                const ticket = ticketDoc.data();
+                
+                const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
+                const event = eventDoc.exists() ? eventDoc.data() : null;
+                
+                const quantity = ticket.ticketCount || 1;
+                const unitPrice = (ticket.totalPrice || 0) / quantity;
+    
+                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticket.ticketIdentifier || ticketIdentifier}`;
+    
+                const modalHtml = `
+                    <div class="admin-ticket-modal">
+                        <div class="admin-ticket-modal-content">
+                            <div class="admin-ticket-modal-header">
+                                <h2>Ticket Details</h2>
+                                <span class="admin-close-modal">&times;</span>
+                            </div>
+                            
+                            <div class="admin-ticket-details-card">
+                                <div class="admin-ticket-header">
+                                    <div class="admin-ticket-title">
+                                        <h3>${event?.name || 'Event'}</h3>
+                                        <span class="admin-ticket-type">${ticket.ticketType || 'Standard'}</span>
+                                    </div>
+                                    <div class="admin-ticket-persons">
+                                        <i class="fas fa-users"></i> ${quantity} Person${quantity > 1 ? 's' : ''}
+                                    </div>
+                                </div>
+    
+                                <div class="admin-ticket-grid">
+                                    <div class="admin-detail-group">
+                                        <label>Ticket ID</label>
+                                        <span>${ticket.ticketIdentifier || ticketIdentifier}</span>
+                                    </div>
+                                    <div class="admin-detail-group">
+                                        <label>Purchaser Email</label>
+                                        <span>${ticket.userEmail || 'N/A'}</span>
+                                    </div>
+                                    <div class="admin-detail-group">
+                                        <label>Purchase Date</label>
+                                        <span>${new Date(ticket.purchaseDate).toLocaleString()}</span>
+                                    </div>
+                                    <div class="admin-detail-group">
+                                        <label>Event Date</label>
+                                        <span>${event ? new Date(event.date).toLocaleString() : 'N/A'}</span>
+                                    </div>
+                                    <div class="admin-detail-group">
+                                        <label>Total Price</label>
+                                        <span class="admin-price">
+                                            ₹${ticket.totalPrice || 0}
+                                            <small>(₹${unitPrice.toFixed(2)} × ${quantity})</small>
+                                        </span>
+                                    </div>
+                                    <div class="admin-detail-group">
+                                        <label>Status</label>
+                                        <span class="admin-status-badge admin-status-${getTicketStatus(ticket).toLowerCase()}">
+                                            ${getTicketStatus(ticket)}
+                                        </span>
+                                    </div>
+                                </div>
+    
+                                <div class="admin-ticket-qr-section">
+                                    <div class="admin-qr-code">
+                                        <img src="${qrCodeUrl}" alt="Ticket QR Code" class="admin-ticket-qr">
+                                        <div class="admin-qr-id">ID: ${ticket.ticketIdentifier || ticketIdentifier}</div>
+                                    </div>
+                                </div>
+    
+                                ${event?.eventType === 'venue' || event?.eventType === 'hybrid' ? `
+                                    <div class="admin-venue-details">
+                                        <h4>Venue Information</h4>
+                                        <div class="admin-detail-group">
+                                            <label>Venue</label>
+                                            <span>${event?.venueDetails?.venue || 'N/A'}</span>
+                                        </div>
+                                        <div class="admin-detail-group">
+                                            <label>Location</label>
+                                            <span>${event?.venueDetails?.place || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+    
+                                ${event?.eventType === 'online' || event?.eventType === 'hybrid' ? `
+                                    <div class="admin-online-details">
+                                        <h4>Online Access</h4>
+                                        <div class="admin-detail-group">
+                                            <label>Platform</label>
+                                            <span>${event?.onlineDetails?.platform || 'N/A'}</span>
+                                        </div>
+                                        <div class="admin-detail-group secured-info">
+                                            <label>Access Details</label>
+                                            <span>Will be shared before the event</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+    
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = modalHtml;
+                document.body.appendChild(modalContainer);
+    
+                const closeBtn = modalContainer.querySelector('.admin-close-modal');
+                closeBtn.onclick = () => modalContainer.remove();
+    
+                modalContainer.querySelector('.admin-ticket-modal').onclick = (e) => {
+                    if (e.target === modalContainer.querySelector('.admin-ticket-modal')) {
+                        modalContainer.remove();
+                    }
+                };
+    
+            } catch (error) {
+                console.error("Error showing ticket details:", error);
+                alert("Error loading ticket details: " + error.message);
+            }
+        }
+    
+        // Function to download ticket as PNG
+        async function downloadTicket() {
+            try {
+                const ticketCard = document.getElementById('ticketCard');
+                const canvas = await html2canvas(ticketCard, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+                
+                const link = document.createElement('a');
+                link.download = 'event-ticket.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (error) {
+                console.error("Error downloading ticket:", error);
+                alert("Error downloading ticket. Please try again.");
+            }
+        }
+    
+        // Make functions globally available
+        window.showTicketDetails = showTicketDetails;
+        window.downloadTicket = downloadTicket;
+    
+        // Make getDoc available globally
+        window.getDoc = getDoc;
+    
+        // Make functions globally available
+        window.showSection = showSection;
+        window.handleCreateEvent = handleCreateEvent;
+        window.deleteEvent = deleteEvent;
+        window.logout = handleLogout;
+        window.addImageField = addImageField;
+        window.removeImageField = removeImageField;
+        window.loadDashboard = loadDashboard;
+        window.loadEvents = loadEvents;
+        window.loadTickets = loadTickets;
+    
+        // Make sure to call these functions when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadEvents();
+            loadTickets();
+        });
+    
+        // Add real-time updates for events
+        function initializeRealTimeListeners() {
+            const eventsRef = collection(db, 'events');
+            const eventsQuery = query(eventsRef, orderBy('createdAt', 'desc'));
+    
+            const unsubscribe = onSnapshot(eventsQuery, (snapshot) => {
+                const eventList = document.getElementById('eventList');
+                eventList.innerHTML = '';
+    
+                if (snapshot.empty) {
+                    eventList.innerHTML = '<p>No events found</p>';
+                    return;
+                }
+    
+                snapshot.forEach((doc) => {
+                    const event = doc.data();
+                    const eventCard = createEventCard(event, doc.id);
+                    eventList.appendChild(eventCard);
+                });
+            }, (error) => {
+                console.error("Error in real-time updates:", error);
+            });
+    
+            window.addEventListener('beforeunload', unsubscribe);
+        }
+    
+        // Make functions globally available
+        window.openEditModal = openEditModal;
+        window.handleCreateEvent = handleCreateEvent;
+        window.clearEventForm = clearEventForm;
+        window.initializeRealTimeListeners = initializeRealTimeListeners;
+    
+        // Initialize real-time updates when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeRealTimeListeners();
+        });
+    
+        // Add this after your Firebase initialization
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log("Logged in user:", user.email);
+                console.log("User ID:", user.uid);
+            } else {
+                console.log("No user logged in");
+            }
+        });
+    
+        // Add this logging code
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log("Current user:", {
+                    email: user.email,
+                    uid: user.uid,
+                    emailVerified: user.emailVerified
+                });
+            } else {
+                console.log("No user logged in");
+            }
+        });
+    
+        // Add this CSS for better statistics display
+    
+        document.head.appendChild(style);
+    
+        // Make sure to call loadDashboard when needed
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+    
+        // Add real-time updates for dashboard
+        function initializeDashboardListeners() {
+            const ticketsRef = collection(db, 'tickets');
+            const eventsRef = collection(db, 'events');
+    
+            onSnapshot(ticketsRef, () => {
+                loadDashboard();
+            });
+    
+            onSnapshot(eventsRef, () => {
+                loadDashboard();
+            });
+        }
+    
+        // Make functions globally available
+        window.loadDashboard = loadDashboard;
+        window.initializeDashboardListeners = initializeDashboardListeners;
+    
+        // Initialize dashboard listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDashboardListeners();
+        });
+    
+        // Add these functions to your existing JavaScript
+        let allEvents = [];
+        let currentFilter = 'all';
+    
+        // Function to generate unique event ID
+        function generateEventId() {
+            const timestamp = new Date().getTime().toString(36);
+            const randomStr = Math.random().toString(36).substring(2, 7);
+            return `EVT-${timestamp}-${randomStr}`.toUpperCase();
+        }
+    
+        // Load all events initially
+        async function loadFilteredEvents() {
+            try {
+                const eventsSnapshot = await getDocs(collection(db, 'events'));
+                allEvents = [];
+                
+                eventsSnapshot.forEach(doc => {
+                    allEvents.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                applyFilters('all');
+            } catch (error) {
+                console.error("Error loading events:", error);
+                document.getElementById('filteredEventsList').innerHTML = `
+                    <div class="error-message">
+                        Error loading events. Please try again.
+                        <button onclick="loadFilteredEvents()" class="retry-btn">Retry</button>
+                    </div>
+                `;
+            }
+        }
+    
+        // Apply filters to events
+        function applyFilters(filterType = currentFilter) {
+            currentFilter = filterType;
+    
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(filterType.toLowerCase())) {
+                    btn.classList.add('active');
+                }
+            });
+    
+            const searchTerm = document.getElementById('eventSearchInput').value.toLowerCase();
+            const dateFilter = document.getElementById('eventDateFilter').value;
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+            let filteredEvents = allEvents.filter(event => {
+                const eventDate = new Date(event.date);
+                const eventName = (event.name || '').toLowerCase();
+                const eventId = (event.eventId || '').toLowerCase();
+                
+                if (searchTerm && !eventName.includes(searchTerm) && !eventId.includes(searchTerm)) {
+                    return false;
+                }
+    
+                if (dateFilter) {
+                    const filterDate = new Date(dateFilter);
+                    const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    if (eventDateOnly.getTime() !== filterDate.getTime()) {
+                        return false;
+                    }
+                }
+    
+                switch (filterType) {
+                    case 'upcoming':
+                        return eventDate > now;
+                    case 'today':
+                        return eventDate.getDate() === today.getDate() &&
+                               eventDate.getMonth() === today.getMonth() &&
+                               eventDate.getFullYear() === today.getFullYear();
+                    case 'past':
+                        return eventDate < now;
+                    default:
+                        return true;
+                }
+            });
+    
+            filteredEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+            displayFilteredEvents(filteredEvents);
+        }
+    
+        // Display filtered events
+        function displayFilteredEvents(events) {
+            const container = document.getElementById('filteredEventsList');
+            
+            if (events.length === 0) {
+                container.innerHTML = `
+                    <div class="no-events-message">
+                        <p>No events found matching your criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+    
+            let html = `
+                <div class="events-grid">
+                    ${events.map(event => `
+                        <div class="event-card">
+                            <div class="event-header">
+                                <div>
+                                    <h3>${event.name || 'Unnamed Event'}</h3>
+                                    <div class="event-id">ID: ${event.eventId || 'No ID'}</div>
+                                </div>
+                                ${getEventStatusBadge(event)}
+                            </div>
+                            <div class="event-details">
+                                <p><strong>Date:</strong> ${new Date(event.date).toLocaleString()}</p>
+                                <p><strong>Location:</strong> ${event.place || 'Not specified'}</p>
+                                <p><strong>Venue:</strong> ${event.venue || 'Not specified'}</p>
+                                <p><strong>Price:</strong> ₹${(event.price || 0).toFixed(2)}</p>
+                                <p><strong>Available Tickets:</strong> ${event.availableTickets || 0}/${event.totalTickets || 0}</p>
+                            </div>
+                            <div class="event-actions">
+                                <button onclick="handleEditClick('${event.id}', ${JSON.stringify(event).replace(/"/g, '&quot;')})" class="edit-btn">Edit</button>
+                                <button onclick="deleteEvent('${event.id}')" class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+    
+        // Get event status badge
+        function getEventStatusBadge(event) {
+            const eventDate = new Date(event.date);
+            const now = new Date();
+    
+            if (eventDate < now) {
+                return '<span class="status-badge past">Past</span>';
+            } else if (event.availableTickets <= 0) {
+                return '<span class="status-badge sold-out">Sold Out</span>';
+            } else {
+                return '<span class="status-badge upcoming">Upcoming</span>';
+            }
+        }
+    
+        // Make functions globally available
+        window.generateEventId = generateEventId;
+        window.loadFilteredEvents = loadFilteredEvents;
+        window.applyFilters = applyFilters;
+        window.showSection = showSection;
+    
+        function handleEventTypeChange() {
+            const eventType = document.getElementById('eventType').value;
+            const onlineDetails = document.getElementById('onlineEventDetails');
+            const venueDetails = document.getElementById('venueEventDetails');
+            const ticketingSection = document.getElementById('ticketingSection');
+            const standardTicketsSection = document.getElementById('standardTicketsSection');
+            const hybridTicketsSection = document.getElementById('hybridTicketsSection');
+            const priceField = document.getElementById('eventPrice').parentElement;
+    
+            onlineDetails.style.display = 'none';
+            venueDetails.style.display = 'none';
+            ticketingSection.style.display = 'none';
+            standardTicketsSection.style.display = 'none';
+            hybridTicketsSection.style.display = 'none';
+            priceField.style.display = 'block';
+    
+            switch (eventType) {
+                case 'online':
+                    onlineDetails.style.display = 'block';
+                    ticketingSection.style.display = 'block';
+                    standardTicketsSection.style.display = 'block';
+                    break;
+                case 'venue':
+                    venueDetails.style.display = 'block';
+                    ticketingSection.style.display = 'block';
+                    standardTicketsSection.style.display = 'block';
+                    break;
+                case 'hybrid':
+                    onlineDetails.style.display = 'block';
+                    venueDetails.style.display = 'block';
+                    ticketingSection.style.display = 'block';
+                    hybridTicketsSection.style.display = 'block';
+                    priceField.style.display = 'none';
+                    break;
+            }
+        }
+    
+        // Add validation for dates
+        function validateEventDates() {
+            const eventDate = new Date(document.getElementById('eventDate').value);
+            const bookingStartDate = new Date(document.getElementById('bookingStartDate').value);
+            const bookingDeadline = new Date(document.getElementById('bookingDeadline').value);
+            const now = new Date();
+    
+            document.getElementById('eventDate').min = now.toISOString().slice(0, 16);
+    
+            if (eventDate < now) {
+                alert('Event date must be in the future');
+                return false;
+            }
+    
+            if (bookingStartDate > eventDate) {
+                alert('Booking start date must be before event date');
+                return false;
+            }
+    
+            if (bookingDeadline > eventDate) {
+                alert('Booking deadline must be before or same as event date');
+                return false;
+            }
+    
+            if (bookingDeadline < bookingStartDate) {
+                alert('Booking deadline must be after booking start date');
+                return false;
+            }
+    
+            return true;
+        }
+    
+        // Add validation for tickets
+        function validateTickets() {
+            const eventType = document.getElementById('eventType').value;
+            let isValid = true;
+    
+            if (eventType === 'hybrid') {
+                const venueTickets = parseInt(document.getElementById('venueTickets').value) || 0;
+                const onlineTickets = parseInt(document.getElementById('onlineTickets').value) || 0;
+                const venuePrice = parseFloat(document.getElementById('venueTicketPrice').value) || 0;
+                const onlinePrice = parseFloat(document.getElementById('onlineTicketPrice').value) || 0;
+                
+                if (venueTickets <= 0 && onlineTickets <= 0) {
+                    alert('Please specify ticket capacity for at least one ticket type');
+                    isValid = false;
+                }
+    
+                if (venueTickets > 0 && venuePrice <= 0) {
+                    alert('Please specify a valid price for venue tickets');
+                    isValid = false;
+                }
+    
+                if (onlineTickets > 0 && onlinePrice <= 0) {
+                    alert('Please specify a valid price for online tickets');
+                    isValid = false;
+                }
+            } else {
+                const totalTickets = parseInt(document.getElementById('eventTickets').value) || 0;
+                const price = parseFloat(document.getElementById('eventPrice').value) || 0;
+                
+                if (totalTickets <= 0) {
+                    alert('Total tickets must be greater than 0');
+                    isValid = false;
+                }
+    
+                if (price <= 0) {
+                    alert('Please specify a valid ticket price');
+                    isValid = false;
+                }
+            }
+    
+            return isValid;
+        }
+    
+        function cancelEdit() {
+            try {
+                clearEventForm();
+                
+                toggleEventsView('view');
+                
+                isEditing = false;
+                currentEditingEventId = null;
+                
+                const editors = ['eventDescription', 'eventRules', 'eventLimitations'];
+                editors.forEach(editorId => {
+                    const editor = tinymce.get(editorId);
+                    if (editor) {
+                        editor.setContent('');
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Error canceling edit:", error);
+                alert("Error canceling edit. Please try again.");
+            }
+        }
+    
+        // Add to your existing global assignments
+        window.cancelEdit = cancelEdit;
+    
+        // Update the switchVerificationMethod function
+        function switchVerificationMethod(method) {
+            if (window.html5QrcodeScanner) {
+                window.html5QrcodeScanner.clear();
+                window.html5QrcodeScanner = null;
+            }
+    
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.tab-btn[onclick="window.switchVerificationMethod('${method}')"]`).classList.add('active');
+    
+            document.querySelectorAll('.verification-method').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.getElementById(`${method}Verification`).style.display = 'block';
+    
+            if (method === 'qr') {
+                window.initQRScanner();
+                document.querySelector('.scan-btn').style.display = 'block';
+                document.querySelector('[onclick="window.stopQRScanner()"]').style.display = 'none';
+            }
+        }
+    
+        window.showVerificationResult = function(result) {
+            const resultDiv = document.getElementById('verificationResult');
+            const statusSpan = resultDiv.querySelector('.result-status');
+            const detailsDiv = resultDiv.querySelector('.ticket-details');
+            const markUsedBtn = resultDiv.querySelector('.mark-used-btn');
+    
+            statusSpan.className = 'result-status ' + result.status;
+            statusSpan.textContent = result.message;
+    
+            if (result.ticket && result.event) {
+                detailsDiv.innerHTML = `
+                    <h4>Ticket Information</h4>
+                    <p><strong>Ticket ID:</strong> ${result.ticket.ticketId}</p>
+                    <p><strong>Event:</strong> ${result.event.name}</p>
+                    <p><strong>Event Date:</strong> ${new Date(result.event.date).toLocaleString()}</p>
+                    <p><strong>Ticket Type:</strong> ${result.ticket.ticketType || 'Standard'}</p>
+                    <p><strong>Purchase Date:</strong> ${new Date(result.ticket.purchaseDate).toLocaleString()}</p>
+                    <p><strong>Purchased By:</strong> ${result.ticket.userEmail}</p>
+                `;
+                markUsedBtn.style.display = result.status === 'valid' ? 'block' : 'none';
+            } else {
+                detailsDiv.innerHTML = '';
+                markUsedBtn.style.display = 'none';
+            }
+    
+            resultDiv.style.display = 'block';
+        };
+    
+        window.switchVerificationMethod = async function(method) {
+            try {
+                if (window.html5QrcodeScanner) {
+                    await window.html5QrcodeScanner.stop();
+                    window.html5QrcodeScanner = null;
+                }
+    
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`.tab-btn[onclick="window.switchVerificationMethod('${method}')"]`).classList.add('active');
+    
+                document.querySelectorAll('.verification-method').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.getElementById(`${method}Verification`).style.display = 'block';
+    
+                if (method === 'qr') {
+                    await window.initQRScanner();
+                    document.querySelector('.scan-btn').style.display = 'block';
+                    document.querySelector('[onclick="window.stopQRScanner()"]').style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Error switching verification method:", error);
+                alert("Error: " + error.message);
+            }
+        };
+    
+        if (typeof Html5QrCode === 'undefined') {
+            console.error('HTML5QrCode library not loaded. Please check the script inclusion.');
+        }
+    
+        function toggleEventsView(view) {
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.toggle-btn[onclick*="${view}"]`).classList.add('active');
+    
+            const createSection = document.getElementById('createEventSection');
+            const viewSection = document.getElementById('viewEventSection');
+    
+            if (view === 'create') {
+                createSection.style.display = 'block';
+                viewSection.style.display = 'none';
+            } else {
+                createSection.style.display = 'none';
+                viewSection.style.display = 'block';
+                loadEvents();
+            }
+        }
+    
+        function filterEvents() {
+            const searchTerm = document.getElementById('eventSearchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('eventTypeFilter').value;
+            const statusFilter = document.getElementById('eventStatusFilter').value;
+            const eventList = document.getElementById('eventList');
+            const eventCards = eventList.querySelectorAll('.event-card');
+            const now = new Date();
+    
+            eventCards.forEach(card => {
+                let showCard = true;
+    
+                const eventName = card.querySelector('h3').textContent.toLowerCase();
+                const eventId = card.querySelector('.event-id').textContent.toLowerCase();
+                const eventType = card.querySelector('.event-type-badge')?.textContent.toLowerCase() || '';
+                const eventDateText = card.querySelector('.event-meta p:first-child')?.textContent;
+                const eventDate = eventDateText ? new Date(eventDateText.split(': ')[1]) : now;
+    
+                if (searchTerm && !eventName.includes(searchTerm) && !eventId.includes(searchTerm)) {
+                    showCard = false;
+                }
+    
+                if (typeFilter && !eventType.includes(typeFilter.toLowerCase())) {
+                    showCard = false;
+                }
+    
+                if (statusFilter) {
+                    const eventTime = eventDate.getTime();
+                    const nowTime = now.getTime();
+                    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+                    switch (statusFilter) {
+                        case 'upcoming':
+                            if (eventTime <= nowTime) showCard = false;
+                            break;
+                        case 'ongoing':
+                            if (eventTime < nowTime || eventTime > (nowTime + oneDayMs)) showCard = false;
+                            break;
+                        case 'completed':
+                            if (eventTime > nowTime) showCard = false;
+                            break;
+                    }
+                }
+    
+                card.style.display = showCard ? '' : 'none';
+            });
+        }
+    
+        // Make functions globally available
+        window.toggleEventsView = toggleEventsView;
+        window.filterEvents = filterEvents;
+    
+        // Add this function for PNG download
+        function downloadTicketPNG(ticketId) {
+            try {
+                const ticketCard = document.getElementById('ticketCard');
+                if (!ticketCard) {
+                    throw new Error('Ticket card element not found');
+                }
+    
+                html2canvas(ticketCard).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `ticket-${ticketId}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+    
+            } catch (error) {
+                console.error("Error downloading ticket:", error);
+                alert("Error downloading ticket: " + error.message);
+            }
+        }
+    
+        // Update the button in showTicketDetails function
+        // Replace the download button HTML with this:
+        `<div class="admin-ticket-actions">
+            <button onclick="downloadTicketPNG('${ticketId}')" class="admin-download-btn">
+                <i class="fas fa-download"></i> Download Ticket (PNG)
+            </button>
+        </div>`
+
+        // Update the verification function
+        async function verifyTicket(ticketId) {
+            try {
+                // Query tickets collection using ticketIdentifier
+                const ticketsRef = collection(db, 'tickets');
+                const q = query(ticketsRef, where('ticketIdentifier', '==', ticketId));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    return {
+                        status: 'invalid',
+                        message: 'Invalid Ticket',
+                        ticket: null,
+                        event: null
+                    };
+                }
+
+                const ticketDoc = querySnapshot.docs[0];
+                const ticket = ticketDoc.data();
+
+                // Get event details
+                const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
+                if (!eventDoc.exists()) {
+                    return {
+                        status: 'invalid',
+                        message: 'Event not found',
+                        ticket,
+                        event: null
+                    };
+                }
+
+                const event = eventDoc.data();
+                const now = new Date();
+                const eventDate = new Date(event.date);
+
+                if (ticket.used) {
+                    return {
+                        status: 'used',
+                        message: 'Ticket already used',
+                        ticket,
+                        event
+                    };
+                }
+
+                if (eventDate < now) {
+                    return {
+                        status: 'expired',
+                        message: 'Event has ended',
+                        ticket,
+                        event
+                    };
+                }
+
+                return {
+                    status: 'valid',
+                    message: 'Valid Ticket',
+                    ticket,
+                    event
+                };
+            } catch (error) {
+                console.error("Error verifying ticket:", error);
+                return {
+                    status: 'error',
+                    message: 'Error verifying ticket',
+                    ticket: null,
+                    event: null
+                };
+            }
+        }
+
+        // Update the mark ticket as used function
+        async function markTicketAsUsed() {
+            try {
+                const ticketId = document.querySelector('.ticket-details p:first-child strong').nextSibling.textContent.trim();
+                
+                // Query to find the ticket document using ticketIdentifier
+                const ticketsRef = collection(db, 'tickets');
+                const q = query(ticketsRef, where('ticketIdentifier', '==', ticketId));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const ticketDoc = querySnapshot.docs[0];
+                    await updateDoc(ticketDoc.ref, {
+                        used: true,
+                        usedDate: new Date().toISOString()
+                    });
+
+                    alert('Ticket marked as used successfully!');
+                    document.getElementById('verificationResult').style.display = 'none';
+                } else {
+                    throw new Error('Ticket not found');
+                }
+            } catch (error) {
+                console.error("Error marking ticket as used:", error);
+                alert('Error marking ticket as used: ' + error.message);
+            }
+        }
+    </script>
+    
+    <!-- Add this modal HTML just before closing body tag -->
+    <div id="editEventModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Event</h2>
+            <div class="form-group">
+                <label>Event Name</label>
+                <input type="text" id="editEventName" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="editEventDescription" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Event Date</label>
+                <input type="datetime-local" id="editEventDate" required>
+            </div>
+            <div class="form-group">
+                <label>Booking Start Date</label>
+                <input type="datetime-local" id="editBookingStartDate" required>
+            </div>
+            <div class="form-group">
+                <label>Booking Deadline</label>
+                <input type="datetime-local" id="editBookingDeadline" required>
+            </div>
+            <div class="form-group">
+                <label>Price (₹)</label>
+                <input type="number" id="editEventPrice" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Total Tickets</label>
+                <input type="number" id="editEventTickets" required min="1">
+            </div>
+            <div id="editImageUrlsContainer">
+                <!-- Image inputs will be added here -->
+            </div>
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <button type="button" onclick="updateEvent()" class="edit-btn">Update Event</button>
+                <button type="button" onclick="cancelEdit()" class="cancel-btn" style="display: none;">Cancel Edit</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            console.log('User is signed in:', user.email);
+            document.getElementById('userEmail').textContent = user.email;
+        } else {
+            console.log('User is signed out');
+            window.location.href = 'login.html';
+        }
+    });
+    </script>
+    
+    <script>
+    async function loadRecentEvents() {
+        try {
+            const eventsRef = collection(db, 'events');
+            const recentEventsQuery = query(eventsRef, orderBy('createdAt', 'desc'), limit(5));
+            const recentEventsSnapshot = await getDocs(recentEventsQuery);
+    
+            const recentEventsList = document.getElementById('recentEventsList');
+            recentEventsList.innerHTML = '';
+    
+            for (const eventDoc of recentEventsSnapshot.docs) {
+                const event = eventDoc.data();
+                const eventDate = new Date(event.date).toLocaleDateString();
+                const eventStatus = getEventStatus(event);
+                
+                const eventItem = document.createElement('div');
+                eventItem.className = 'recent-item';
+                eventItem.innerHTML = `
+                    <div class="recent-item-title">${event.name}</div>
+                    <div class="recent-item-details">
+                        <span>${eventDate}</span>
+                        <span>${event.eventType}</span>
+                        <span>${eventStatus}</span>
+                    </div>
+                `;
+                recentEventsList.appendChild(eventItem);
+            }
+        } catch (error) {
+            console.error("Error loading recent events:", error);
+        }
+    }
+    
+    // Make sure these functions are globally available
+    window.loadRecentEvents = loadRecentEvents;
+    window.getEventStatus = getEventStatus;
+    </script>
+<script src="https://cdn.tiny.cloud/1/kuqaqcrna7vnwk3m4fc5ywh1s57yqy0z5uqrbbq19hw1inzi/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCg7vwuwfN8oWSMagExshHCtMHnxzc7pH0",
+        authDomain: "event-ticket-fc753.firebaseapp.com",
+        projectId: "event-ticket-fc753",
+        storageBucket: "event-ticket-fc753.firebasestorage.app",
+        messagingSenderId: "216313948465",
+        appId: "1:216313948465:web:4c4b8eb9fbb4257fe6e810",
+        measurementId: "G-SGBZK0BYVL"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.auth = getAuth(app);
+
+    // Define the function
+</script>
+
+<script>
+    // Add this after Firebase initialization
+    document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+    logoutBtn.addEventListener('click', async function() {
+    try {
+    // First sign out from Firebase
+    await auth.signOut();
+    // Clear all storage
+    localStorage.clear();
+    sessionStorage.clear();
+    // Force redirect to index page
+    window.location.replace('/index.html');
+    // Prevent back navigation
+    window.history.pushState(null, '', '/index.html');
+    // Additional fallback redirect
+    setTimeout(() => {
+    window.location.href = '/index.html';
+    }, 100);
+    } catch (error) {
+    console.error("Logout error:", error);
+    // Force redirect even if there's an error
+    window.location.replace('/index.html');
+    }
+    });
+    }
+    });
+    // Add authentication state observer
+    auth.onAuthStateChanged((user) => {
+    if (!user) {
+    // User is signed out, redirect to index
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/index.html');
+    } else if (!user.email.toLowerCase().includes('admin')) {
+    // User is not an admin, redirect to regular dashboard
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/dashboard.html');
+    }
+    });
+    </script>
+
+<!-- Add reference to external JavaScript file -->
+<script type="module" src="scripts/admin.js"></script>
+    <!-- Loader iframe -->
+
+</body>
+</html>
+

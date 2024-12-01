@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventTix - India's Premier Event Ticketing Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+            background-color: #EBF5FF;
+        }
+
+        /* Custom Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3B82F6;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563EB;
+        }
+
+        /* Loader Styles */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .loader-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3B82F6;
+            margin-bottom: 1rem;
+        }
+
+        .loader-text {
+            font-size: 1rem;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Navigation Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 0.5rem 2rem;
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3B82F6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #3B82F6;
+        }
+
+        .account-icon {
+            font-size: 1.5rem;
+            color: #3B82F6;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .account-icon:hover {
+            color: #2563EB;
+        }
+
+        .menu-btn {
+            display: none;
+            cursor: pointer;
+        }
+
+        .menu-btn .bar {
+            width: 25px;
+            height: 3px;
+            background-color: #3B82F6;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        /* Hero Section Styles */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(59, 130, 246, 0.7), rgba(59, 130, 246, 0.7)), 
+                        url('https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 20px;
+            margin-top: -80px; /* Adjust for navbar */
+        }
+
+        .hero-content {
+            max-width: 900px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .cta-btn {
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .cta-btn.primary {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .cta-btn.primary:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .cta-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #FFC107;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-text {
+            font-size: 1rem;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Features Section Styles */
+        .features {
+            padding: 5rem 1rem;
+            background: #fff;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: #3B82F6;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            border-radius: 10px;
+            background: #EBF5FF;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .feature-card.visible {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: #3B82F6;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .feature-card p {
+            color: #4a5568;
+        }
+
+        /* Events Categories Styles */
+        .event-categories {
+            padding: 5rem 1rem;
+            background: #EBF5FF;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .category-card {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 300px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .category-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .category-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(transparent, rgba(59, 130, 246, 0.8));
+            color: white;
+        }
+
+        .category-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .events-count {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: rgba(255, 193, 7, 0.9);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Trending Events Styles */
+        .trending-events {
+            padding: 5rem 1rem;
+            background: white;
+        }
+
+        .events-slider {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .event-card {
+            position: relative;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .event-date {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 5px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .event-date .date {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .event-date .month {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .event-details {
+            padding: 1.5rem;
+        }
+
+        .event-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .location {
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .location i {
+            margin-right: 0.5rem;
+            color: #3B82F6;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .book-btn:hover {
+            background: #2563EB;
+        }
+
+        /* Contact Section Styles */
+        .contact {
+            padding: 5rem 1rem;
+            background: #EBF5FF;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .contact-info, .contact-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .contact-info h3, .contact-form h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #3B82F6;
+        }
+
+        .contact-info p {
+            margin-bottom: 1rem;
+        }
+
+        .contact-info i {
+            color: #3B82F6;
+            margin-right: 0.5rem;
+        }
+
+        .contact-form form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .contact-form button {
+            padding: 0.8rem;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .contact-form button:hover {
+            background: #2563EB;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: #1E3A8A;
+            color: #fff;
+            padding: 4rem 1rem 2rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #3B82F6;
+        }
+
+        .footer-section h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .footer-section p {
+            color: #a0aec0;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .app-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .app-btn img {
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .app-btn:hover img {
+            transform: translateY(-2px);
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section ul a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul a:hover {
+            color: #3B82F6;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #4a5568;
+            border-radius: 5px;
+            background: #4a5568;
+            color: #fff;
+        }
+
+        .newsletter-form button {
+            padding: 0.8rem 1.5rem;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .newsletter-form button:hover {
+            background: #2563EB;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            color: #fff;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: #3B82F6;
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid #4a5568;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #3B82F6;
+        }
+
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-methods img {
+            height: 30px;
+            filter: brightness(0) invert(1);
+        }
+
+        .payment-methods i {
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .copyright {
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        .publish-message {
+            margin-top: 1rem;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        /* WhatsApp Float Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+
+        /* Newsletter Submission Message */
+        .newsletter-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3B82F6;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .menu-btn {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                padding: 1rem;
+                flex-direction: column;
+                text-align: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .stat-item {
+                margin-bottom: 1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+            }
+            
+            .cta-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .payment-methods {
+                flex-wrap: wrap;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .app-buttons {
+                flex-direction: column;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-card {
+                transform: none !important;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .category-card {
+                height: 250px;
+            }
+            
+            .events-slider {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader-container">
+        <div class="loader-content">
+            <div class="loader-logo">EventTix</div>
+            <div class="loader"></div>
+            <p class="loader-text">Loading amazing events...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="#" class="logo">EventTix</a>
+            <button class="menu-btn">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </button>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#events">Events</a>
+                <a href="#about">About</a>
+                <a href="#popular">Popular</a>
+                <a href="#contact">Contact</a>
+                <a class="account-icon" id="accountLink">
+                    <i class="fas fa-user-circle"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>India's Premier Event Ticketing Platform</h1>
+            <p>From Bollywood concerts to cricket matches, cultural festivals to comedy shows - book your tickets instantly!</p>
+            <div class="hero-buttons">
+                <a href="#events" class="cta-btn primary">Explore Events</a>
+                <a href="#popular" class="cta-btn secondary">Trending Now</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">1M+</span>
+                    <span class="stat-text">Happy Customers</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">10K+</span>
+                    <span class="stat-text">Events</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100+</span>
+                    <span class="stat-text">Cities</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Why Choose EventTix</h2>
+            <p>Your hassle-free ticket booking companion</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-bolt"></i>
+                <h3>Instant Booking</h3>
+                <p>Book tickets in seconds with our lightning-fast platform</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-indian-rupee-sign"></i>
+                <h3>Secure Payments</h3>
+                <p>Multiple payment options including UPI, net banking, and cards</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-qrcode"></i>
+                <h3>Digital Tickets</h3>
+                <p>Hassle-free entry with QR code-based e-tickets</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-clock"></i>
+                <h3>24/7 Support</h3>
+                <p>Round-the-clock customer support in multiple Indian languages</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events Categories Section -->
+    <section class="event-categories" id="events">
+        <div class="section-header">
+            <h2>Discover Events</h2>
+            <p>Find the perfect events happening across India</p>
+        </div>
+        <div class="categories-grid">
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80" alt="Music Concerts">
+                <div class="category-content">
+                    <h3>Music Concerts</h3>
+                    <p>Bollywood, Classical, Rock & more</p>
+                    <span class="events-count">200+ Events</span>
+                </div>
+            </div>
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1518744826297-d7d70c1def5b?auto=format&fit=crop&w=800&q=80" alt="Comedy Shows">
+                <div class="category-content">
+                    <h3>Comedy Shows</h3>
+                    <p>Stand-up comedy in multiple languages</p>
+                    <span class="events-count">150+ Shows</span>
+                </div>
+            </div>
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=800&q=80" alt="Cricket Matches">
+                <div class="category-content">
+                    <h3>Sports</h3>
+                    <p>Cricket, Football & more</p>
+                    <span class="events-count">50+ Matches</span>
+                </div>
+            </div>
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80" alt="Classical Dance">
+                <div class="category-content">
+                    <h3>Cultural Events</h3>
+                    <p>Dance, Theatre & Traditional Arts</p>
+                    <span class="events-count">100+ Shows</span>
+                </div>
+            </div>
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80" alt="Food Festivals">
+                <div class="category-content">
+                    <h3>Food Festivals</h3>
+                    <p>Culinary delights from across India</p>
+                    <span class="events-count">30+ Festivals</span>
+                </div>
+            </div>
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80" alt="Tech Conferences">
+                <div class="category-content">
+                    <h3>Tech Conferences</h3>
+                    <p>Cutting-edge technology events</p>
+                    <span class="events-count">20+ Conferences</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending Events Section -->
+    <section class="trending-events" id="popular">
+        <div class="section-header">
+            <h2>Trending Now</h2>
+            <p>Don't miss out on these popular events</p>
+        </div>
+        <div class="events-slider">
+            <div class="event-card">
+                <div class="event-date">
+                    <span class="date">25</span>
+                    <span class="month">Dec</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" alt="Arijit Singh Live">
+                <div class="event-details">
+                    <h3>Arijit Singh Live in Concert</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> DY Patil Stadium, Mumbai</p>
+                    <p class="price">Starting from ₹1,499</p>
+                    <button class="book-btn">Book Now</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-date">
+                    <span class="date">31</span>
+                    <span class="month">Dec</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80" alt="New Year Party">
+                <div class="event-details">
+                    <h3>Sunburn NYE 2024</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> Goa Beach, Goa</p>
+                    <p class="price">Starting from ₹2,999</p>
+                    <button class="book-btn">Book Now</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-date">
+                    <span class="date">15</span>
+                    <span class="month">Jan</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80" alt="Comedy Show">
+                <div class="event-details">
+                    <h3>Comedy Nights with Kapil</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> JLN Stadium, Delhi</p>
+                    <p class="price">Starting from ₹999</p>
+                    <button class="book-btn">Book Now</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-date">
+                    <span class="date">22</span>
+                    <span class="month">Feb</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" alt="AR Rahman Live">
+                <div class="event-details">
+                    <h3>AR Rahman Live in Concert</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> Jawaharlal Nehru Stadium, Chennai</p>
+                    <p class="price">Starting from ₹1,999</p>
+                    <button class="book-btn">Book Now</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-date">
+                    <span class="date">10</span>
+                    <span class="month">Mar</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=800&q=80" alt="IPL Match">
+                <div class="event-details">
+                    <h3>IPL 2024: MI vs CSK</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> Wankhede Stadium, Mumbai</p>
+                    <p class="price">Starting from ₹1,200</p>
+                    <button class="book-btn">Book Now</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="section-header">
+            <h2>Get in Touch</h2>
+            <p>We're here to help with any questions or concerns</p>
+        </div>
+        <div class="contact-container">
+            <div class="contact-info">
+                <h3>Contact Information</h3>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Event Street, Mumbai, 400001</p>
+                <p><i class="fas fa-phone"></i> +91 9876543210</p>
+                <p><i class="fas fa-envelope"></i> support@eventtix.com</p>
+                <p><i class="fas fa-clock"></i> Mon-Sat: 9:00 AM - 8:00 PM</p>
+            </div>
+            <div class="contact-form">
+                <h3>Send us a Message</h3>
+                <form id="contact-form">
+                    <input type="text" name="name" placeholder="Your Name" required>
+                    <input type="email" name="email" placeholder="Your Email" required>
+                    <input type="text" name="subject" placeholder="Subject" required>
+                    <textarea name="message" placeholder="Your Message" required></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>EventTix</h3>
+                    <p>India's leading platform for booking event tickets. Download our app for the best experience.</p>
+                    <div class="app-buttons">
+                        <a href="#" class="app-btn">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play">
+                        </a>
+                        <a href="#" class="app-btn">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on App Store">
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Popular Cities</h4>
+                    <ul>
+                        <li><a href="#">Mumbai</a></li>
+                        <li><a href="#">Delhi</a></li>
+                        <li><a href="#">Bangalore</a></li>
+                        <li><a href="#">Hyderabad</a></li>
+                        <li><a href="#">Chennai</a></li>
+                        <li><a href="#">Kolkata</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Event Categories</h4>
+                    <ul>
+                        <li><a href="#">Bollywood Concerts</a></li>
+                        <li><a href="#">Comedy Shows</a></li>
+                        <li><a href="#">Cricket Matches</a></li>
+                        <li><a href="#">Classical Music</a></li>
+                        <li><a href="#">Theatre Shows</a></li>
+                        <li><a href="#">Food Festivals</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Stay Updated</h4>
+                    <p>Subscribe to our newsletter for exclusive offers and updates.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-links">
+                    <a href="#">About Us</a>
+                    <a href="#">Terms & Conditions</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Refund Policy</a>
+                    <a href="#">FAQ</a>
+                </div>
+                <div class="payment-methods">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/UPI-Logo-vector.svg" alt="UPI">
+                    <i class="fab fa-cc-visa"></i>
+                    <i class="fab fa-cc-mastercard"></i>
+                    <i class="fab fa-google-pay"></i>
+                </div>
+                <p class="copyright">© 2024 EventTix. All rights reserved. Made with ❤️ in India</p>
+                <p class="publish-message">Want to publish an event with us? Drop a mail to publish@eventTix.in</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/919XXXXXXXXX" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Newsletter Submission Message -->
+    <div class="newsletter-message" id="newsletter-message">
+        Thank you for subscribing to our newsletter!
+    </div>
+
+    <script>
+
+         // Account link functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const accountLink = document.getElementById('accountLink');
+        
+        // Define the click handler function
+        function handleAccountClick(e) {
+            e.preventDefault();
+            
+            // Check login status at click time
+            const currentLoginStatus = localStorage.getItem('isLoggedIn') === 'true';
+            const currentUserRole = localStorage.getItem('userRole');
+            
+            if (currentLoginStatus) {
+                if (currentUserRole === 'admin') {
+                    window.location.replace('admin.html');
+                } else {
+                    window.location.replace('dashboard.html');
+                }
+            } else {
+                window.location.replace('login.html');
+            }
+        }
+        
+        // Check if user is logged in
+        function checkUserStatus() {
+            // Force fresh check of localStorage
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userRole = localStorage.getItem('userRole');
+            
+            // Remove existing click listener if any
+            accountLink.removeEventListener('click', handleAccountClick);
+            
+            // Add fresh click listener
+            accountLink.addEventListener('click', handleAccountClick);
+        }
+
+        // Check user status when page loads
+        checkUserStatus();
+
+        // Add event listener for storage changes
+        window.addEventListener('storage', checkUserStatus);
+    });
+        // Loader functionality
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.loader-container');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 500);
+            }, 1000);
+        });
+
+        // Navigation functionality
+        const menuBtn = document.querySelector('.menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        const navbar = document.querySelector('.navbar');
+
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Features animation
+        function animateFeatures() {
+            const featureCards = document.querySelectorAll('.feature-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            featureCards.forEach(card => {
+                observer.observe(card);
+            });
+        }
+
+        // Animate elements on scroll
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.category-card, .event-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            elements.forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(element);
+            });
+        }
+
+        // Initialize animations
+        window.addEventListener('load', () => {
+            animateFeatures();
+            animateOnScroll();
+        });
+
+        // Newsletter form submission
+        document.querySelector('.newsletter-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.querySelector('input').value;
+            
+            // Here you would typically send this to your server
+            console.log('Newsletter subscription:', email);
+            
+            const message = document.getElementById('newsletter-message');
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+
+            this.reset();
+        });
+
+        // Smooth scroll for footer links
+        document.querySelectorAll('.footer-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+
+        // Contact form submission
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            // Here you would typically send this to your server
+            console.log('Contact form submission:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+            
+            alert('Thank you for your message. We will get back to you soon!');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
+

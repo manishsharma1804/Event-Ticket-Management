@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventTix - Event Ticketing System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(3, 2, 2, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .auth-toggle a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        #error-message {
+            color: #e53e3e;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+
+        #success-message {
+            color: #38a169;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo img {
+            width: 80px;
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>EventTix</h1>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: #4a5568;">Login</h2>
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <button onclick="login()">Login</button>
+            <div class="auth-toggle">
+                <a href="#" onclick="toggleForms()">Need an account? Register</a>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: #4a5568;">Register</h2>
+            <div class="form-group">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" placeholder="Enter your password" required>
+            </div>
+            <button onclick="register()">Register</button>
+            <div class="auth-toggle">
+                <a href="#" onclick="toggleForms()">Already have an account? Login</a>
+            </div>
+        </div>
+
+        <div id="error-message"></div>
+        <div id="success-message"></div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCg7vwuwfN8oWSMagExshHCtMHnxzc7pH0",
+            authDomain: "event-ticket-fc753.firebaseapp.com",
+            projectId: "event-ticket-fc753",
+            storageBucket: "event-ticket-fc753.firebasestorage.app",
+            messagingSenderId: "216313948465",
+            appId: "1:216313948465:web:4c4b8eb9fbb4257fe6e810",
+            measurementId: "G-SGBZK0BYVL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make auth and db available globally
+        window.auth = auth;
+        window.db = db;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    </script>
+
+    <script>
+        // Toggle between login and register forms
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+            
+            // Clear messages and forms
+            document.getElementById('error-message').textContent = '';
+            document.getElementById('success-message').textContent = '';
+            document.querySelectorAll('input').forEach(input => input.value = '');
+        }
+
+        // Login function
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                document.getElementById('success-message').textContent = 'Login successful!';
+                document.getElementById('error-message').textContent = '';
+                
+                // Clear any existing auth data first
+                localStorage.clear();
+                
+                // Set new auth data
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                // Check if user is admin
+                if (email.toLowerCase().includes('admin')) {
+                    localStorage.setItem('userRole', 'admin');
+                    window.location.replace('admin.html');
+                } else {
+                    localStorage.setItem('userRole', 'user');
+                    window.location.replace('dashboard.html');
+                }
+                
+                // Additional fallback redirect
+                setTimeout(() => {
+                    if (email.toLowerCase().includes('admin')) {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 100);
+                
+            } catch (error) {
+                document.getElementById('error-message').textContent = error.message;
+                document.getElementById('success-message').textContent = '';
+            }
+        }
+
+        // Register function
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                document.getElementById('success-message').textContent = 'Registration successful!';
+                document.getElementById('error-message').textContent = '';
+                
+                // Switch to login form after successful registration
+                setTimeout(() => {
+                    toggleForms();
+                }, 1500);
+            } catch (error) {
+                document.getElementById('error-message').textContent = error.message;
+                document.getElementById('success-message').textContent = '';
+            }
+        }
+
+        // Make functions available globally
+        window.login = login;
+        window.register = register;
+        window.toggleForms = toggleForms;
+    </script>
+</body>
+</html>
