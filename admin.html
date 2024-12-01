@@ -1153,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.clear();
         sessionStorage.clear();
         const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
-        window.location.replace(`${baseUrl}/index.html`);
+        window.location.replace(`${baseUrl}index.html`);
     } else if (!user.email.toLowerCase().includes('admin')) {
         // User is not an admin, redirect to regular dashboard
         localStorage.clear();
@@ -2384,25 +2384,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // Get the base URL for GitHub Pages
-                const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
+                // Get the repository name from the current URL
+                const pathSegments = window.location.pathname.split('/');
+                const repoName = pathSegments[1] === 'EventTix' ? '/EventTix' : '';
                 
-                // Force redirect to index page with correct path
-                window.location.replace(`${baseUrl}/index.html`);
+                // Construct the correct URL
+                const redirectUrl = `${window.location.origin}${repoName}/index.html`;
                 
-                // Prevent back navigation
-                window.history.pushState(null, '', `${baseUrl}/index.html`);
-                
-                // Additional fallback redirect
-                setTimeout(() => {
-                    window.location.href = `${baseUrl}/index.html`;
-                }, 100);
+                // Force redirect to index page
+                window.location.href = redirectUrl;
                 
             } catch (error) {
                 console.error("Logout error:", error);
-                // Force redirect even if there's an error
-                const baseUrl = window.location.pathname.includes('/EventTix') ? '/EventTix' : '';
-                window.location.replace(`${baseUrl}/index.html`);
+                // Even if there's an error, try to redirect
+                const pathSegments = window.location.pathname.split('/');
+                const repoName = pathSegments[1] === 'EventTix' ? '/EventTix' : '';
+                window.location.href = `${window.location.origin}${repoName}/index.html`;
             }
         });
     }
