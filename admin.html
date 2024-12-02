@@ -3167,6 +3167,43 @@
     });
     </script>
 
+    <script>
+    // Global logout function
+    function logout() {
+        try {
+            // First sign out from Firebase
+            auth.signOut().then(() => {
+                // Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Get the base URL for GitHub Pages
+                const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+                
+                // Force redirect to index page with correct path
+                window.location.replace(`${baseUrl}/index.html`);
+                
+                // Prevent back navigation
+                window.history.pushState(null, '', `${baseUrl}/index.html`);
+                
+            }).catch((error) => {
+                console.error("Error signing out:", error);
+                // Force redirect even if there's an error
+                const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+                window.location.replace(`${baseUrl}/index.html`);
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+            // Force redirect even if there's an error
+            const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+            window.location.replace(`${baseUrl}/index.html`);
+        }
+    }
+
+    // Make logout function globally available
+    window.logout = logout;
+</script>
+
 </body>
 </html>
 
