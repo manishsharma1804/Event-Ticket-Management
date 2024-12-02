@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventTix - Event Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Copy all the existing styles from your dashboard.html -->
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            min-height: 100vh;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-right: 1.5rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-profile i {
+            font-size: 1.8rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .nav-btn {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn::after {
+            content: attr(title);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .nav-btn:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Style for logout button */
+        .nav-btn[title="Logout"] {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-btn[title="Logout"]:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .user-profile {
+                display: none;
+            }
+
+            .nav-actions {
+                gap: 0.5rem;
+            }
+
+            .nav-btn {
+                width: 35px;
+                height: 35px;
+            }
+
+            .nav-btn i {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Remove old button styles */
+        .home-btn, .logout-btn {
+            display: none;
+        }
+
+        /* Container */
+        .container {
+            flex: 1;
+            max-width: none;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            position: relative;
+            width: calc(100% - 2rem);
+        }
+
+        .event-content {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .event-images {
+            width: 100%;
+            margin-bottom: 2rem;
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 15px 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: #667eea #f0f2f5; /* Firefox */
+        }
+
+        /* Customize scrollbar for Webkit browsers */
+        .event-images::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .event-images::-webkit-scrollbar-track {
+            background: #f0f2f5;
+            border-radius: 4px;
+        }
+
+        .event-images::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .event-detail-image {
+            width: 100%;
+            min-width: 300px; /* Minimum width for each image */
+            max-width: 600px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            scroll-snap-align: start;
+        }
+
+        .event-info {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Event Details Styles */
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .event-title h1 {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .event-badge.venue { background: #4CAF50; }
+        .event-badge.online { background: #2196F3; }
+        .event-badge.hybrid { background: #9C27B0; }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .status-badge.live { background: #4CAF50; }
+        .status-badge.upcoming { background: #2196F3; }
+        .status-badge.closed { background: #f44336; }
+        .status-badge.sold-out { background: #ff9800; }
+
+        .event-info {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .ticket-type {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ticket-price {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin: 1rem 0;
+            font-weight: bold;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .book-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .book-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .event-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1.5rem;
+                width: calc(100% - 3rem);
+            }
+            
+            .event-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.5rem;
+                width: calc(100% - 1rem);
+                margin: 0.5rem auto;
+            }
+            
+            .event-content {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 0.3rem;
+                width: calc(100% - 0.6rem);
+            }
+            
+            .event-content {
+                padding: 0.8rem;
+            }
+        }
+
+        /* The modal styles can be removed since we're not using them */
+        .event-images {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 15px 0;
+            scroll-snap-type: x mandatory;
+        }
+
+        .event-detail-image {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            scroll-snap-align: start;
+        }
+
+        .description-content,
+        .rules-content,
+        .limitations-content {
+            line-height: 1.6;
+            color: #4a5568;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .meeting-note {
+            color: #718096;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .info-item {
+            margin-bottom: 25px;
+        }
+
+        .info-item h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        .info-item p {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .info-item i {
+            color: #4299e1;
+            width: 20px;
+            text-align: center;
+        }
+
+        .booking-time-info {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .booking-time-info p {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            color: #4a5568;
+        }
+
+        .booking-time-info i {
+            color: #4299e1;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Add these styles to your existing CSS */
+        .booking-buttons, .payment-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .back-btn {
+            background: #718096;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #4a5568;
+        }
+
+        .pay-btn {
+            flex: 1;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .pay-btn:hover {
+            background: #2563EB;
+        }
+
+        .payment-summary {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .total-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-buttons, .payment-buttons {
+                flex-direction: column;
+            }
+
+            .back-btn {
+                order: 2;
+            }
+        }
+
+        .price-info {
+            color: #4a5568;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Add loading state */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: "...";
+            animation: dots 1s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+
+        /* Add these styles to your existing CSS */
+        .payment-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .secure-text {
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .card-icons i {
+            color: #4a5568;
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon input {
+            padding-right: 2.5rem;
+        }
+
+        .input-icon i {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #718096;
+        }
+
+        .payment-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .payment-processing {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3B82F6;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .success-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .email-note {
+            color: #4a5568;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        /* Update floating back button styles */
+        .floating-back-btn {
+            position: absolute;
+            top: 55px;
+            left: 42px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .floating-back-btn::after {
+            content: attr(title);
+            position: absolute;
+            left: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .floating-back-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .floating-back-btn:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .floating-back-btn i {
+            font-size: 18px;
+        }
+
+        /* Add responsive styles for the back button */
+        @media (max-width: 768px) {
+            .floating-back-btn {
+                top: 35px;
+                left: 19px;
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        /* Update ticket section styles */
+        .ticket-section {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Update form styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .social-links a:hover {
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .footer {
+                padding: 2rem 0 0;
+                margin-top: 2rem;
+            }
+        }
+
+        /* Add these styles in your existing stylesheet */
+        .ticket-counter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .ticket-counter input {
+            width: 60px;
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .counter-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .counter-btn:hover {
+            background: #5a67d8;
+        }
+
+        .counter-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        /* Update the ticket selection styles */
+        #ticketSelection {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #ticketSelection h3 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+            font-size: 1.5rem;
+        }
+
+        .ticket-info {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .ticket-info p {
+            margin: 0.5rem 0;
+            color: #4a5568;
+        }
+
+        .ticket-info p strong {
+            color: #2d3748;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .booking-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Update responsive styles */
+        @media (max-width: 768px) {
+            #ticketSelection {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .booking-buttons {
+                flex-direction: column;
+            }
+            
+            .back-btn {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #ticketSelection {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+        }
+
+        /* Add these styles to your stylesheet */
+        .timer-container {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: #f7fafc;
+            border-radius: 5px;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4a5568;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>EventTix</h1>
+        <div class="user-info">
+            <div class="user-profile">
+                <i class="fas fa-user-circle"></i>
+                <div class="user-details">
+                    <span class="user-name">Welcome,</span>
+                    <span id="userEmail" class="user-email"></span>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button onclick="logout()" class="nav-btn" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="eventFullDetails">
+            <div class="event-content">
+                <div class="event-images">
+                    <!-- Images content -->
+                </div>
+
+                <div class="event-header">
+                    <!-- Event header content -->
+                </div>
+
+                <div class="booking-time-info">
+                    <!-- Booking time info content -->
+                </div>
+
+                <div class="event-info">
+                    <!-- Event info content -->
+                </div>
+            </div>
+        </div>
+
+        <div id="ticketSelection" style="display: none;">
+            <h3>Book Tickets</h3>
+            <div class="form-group">
+                <label>Number of Tickets (Max 5)</label>
+                <div class="ticket-counter">
+                    <button type="button" class="counter-btn" onclick="decrementTickets()">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="text" id="ticketCount" value="1" readonly>
+                    <button type="button" class="counter-btn" onclick="incrementTickets()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <p id="totalPrice" class="price-info">Total: ₹${price}</p>
+            </div>
+            <button onclick="proceedToPayment()" class="book-btn">Continue to Payment</button>
+        </div>
+
+        <div id="paymentDetails" style="display: none;">
+            <!-- Payment form content -->
+        </div>
+
+        <div id="successSection" style="display: none;">
+            <!-- Success message content -->
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCg7vwuwfN8oWSMagExshHCtMHnxzc7pH0",
+            authDomain: "event-ticket-fc753.firebaseapp.com",
+            projectId: "event-ticket-fc753",
+            storageBucket: "event-ticket-fc753.firebasestorage.app",
+            messagingSenderId: "216313948465",
+            appId: "1:216313948465:web:4c4b8eb9fbb4257fe6e810",
+            measurementId: "G-SGBZK0BYVL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userEmail').textContent = user.email;
+                loadEventDetails();
+            } else {
+                const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+                window.location.href = `${baseUrl}/login.html`;
+            }
+        });
+
+        // Add this at the top of your script section
+        let currentEvent = null;
+
+        // Update the loadEventDetails function to store the event data
+        async function loadEventDetails() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventId = urlParams.get('id');
+                
+                if (!eventId) {
+                    throw new Error('Event ID not found');
+                }
+
+                const eventDoc = await getDoc(doc(db, 'events', eventId));
+                if (!eventDoc.exists()) {
+                    throw new Error('Event not found');
+                }
+
+                // Store the event data
+                currentEvent = { id: eventId, ...eventDoc.data() };
+                displayEventDetails(currentEvent);
+            } catch (error) {
+                console.error('Error loading event:', error);
+                alert('Error loading event details');
+                const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+                window.location.href = `${baseUrl}/dashboard.html`;
+            }
+        }
+
+        // Function to display event details
+        function displayEventDetails(event) {
+            const eventDate = new Date(event.date);
+            const formattedDate = eventDate.toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            const eventDetails = document.getElementById('eventFullDetails');
+            eventDetails.innerHTML = `
+                <div class="event-content">
+                    <a href="dashboard.html" class="floating-back-btn" title="Back to Events">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    
+                    <div class="event-images">
+                        ${event.images ? event.images.map(img => `
+                            <img src="${img}" alt="${event.name}" class="event-detail-image">
+                        `).join('') : '<img src="https://via.placeholder.com/600x400" alt="No image available">'}
+                    </div>
+
+                    <div class="event-header">
+                        <div class="event-title">
+                            <h1>${event.name}</h1>
+                            <div class="event-badge ${event.eventType}">${event.eventType.toUpperCase()}</div>
+                        </div>
+                        <div class="event-status">
+                            ${getEventStatusBadge(event)}
+                        </div>
+                    </div>
+
+                    <div class="booking-time-info">
+                        <p><i class="fas fa-calendar"></i> Event Date: ${formattedDate}</p>
+                        <p><i class="fas fa-clock"></i> Booking Start: ${new Date(event.bookingStartDate).toLocaleString()}</p>
+                        <p><i class="fas fa-clock"></i> Booking End: ${new Date(event.bookingDeadline).toLocaleString()}</p>
+                    </div>
+
+                    <div class="event-info">
+                        <div class="event-details">
+                            <div class="info-item">
+                                <h3>Description</h3>
+                                <div class="description-content">${event.description}</div>
+                            </div>
+                            
+                            ${event.eventType !== 'online' ? `
+                                <div class="info-item">
+                                    <h3>Venue Details</h3>
+                                    <p><i class="fas fa-map-marker-alt"></i> ${event.venueDetails?.venue || 'To be announced'}</p>
+                                    <p><i class="fas fa-location-dot"></i> ${event.venueDetails?.place || ''}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${event.eventType !== 'venue' ? `
+                                <div class="info-item">
+                                    <h3>Online Event Details</h3>
+                                    <p><i class="fas fa-video"></i> Platform: ${event.onlineDetails?.platform || 'To be announced'}</p>
+                                    <p class="meeting-note">Meeting details will be shared after booking</p>
+                                </div>
+                            ` : ''}
+
+                            ${event.rules ? `
+                                <div class="info-item">
+                                    <h3>Event Rules</h3>
+                                    <div class="rules-content">${event.rules}</div>
+                                </div>
+                            ` : ''}
+
+                            ${event.limitations ? `
+                                <div class="info-item">
+                                    <h3>Limitations</h3>
+                                    <div class="limitations-content">${event.limitations}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="ticket-section">
+                            <h3>Ticket Information</h3>
+                            ${getTicketPricingHTML(event)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to get event status badge
+        function getEventStatusBadge(event) {
+            const now = new Date();
+            const eventDate = new Date(event.date);
+            const bookingStart = new Date(event.bookingStartDate);
+            const bookingEnd = new Date(event.bookingDeadline);
+
+            if (eventDate < now) {
+                return '<div class="status-badge closed">EVENT CLOSED</div>';
+            }
+
+            if (now < bookingStart) {
+                return '<div class="status-badge upcoming">BOOKING STARTS SOON</div>';
+            }
+
+            let availableTickets = 0;
+            if (event.eventType === 'hybrid') {
+                availableTickets = (event.tickets?.venue?.available || 0) + (event.tickets?.online?.available || 0);
+            } else {
+                availableTickets = event.availableTickets || 0;
+            }
+
+            if (availableTickets === 0) {
+                return '<div class="status-badge sold-out">SOLD OUT</div>';
+            }
+
+            if (now >= bookingStart && now <= bookingEnd) {
+                return '<div class="status-badge live">BOOKING LIVE</div>';
+            }
+
+            return '<div class="status-badge closed">BOOKING CLOSED</div>';
+        }
+
+        // Function to generate ticket pricing HTML
+        function getTicketPricingHTML(event) {
+            const now = new Date();
+            const bookingStart = new Date(event.bookingStartDate);
+            const bookingEnd = new Date(event.bookingDeadline);
+            const eventDate = new Date(event.date);
+
+            // Check if event is in past or booking is closed
+            if (eventDate < now || now > bookingEnd) {
+                return `
+                    <div class="ticket-type">
+                        <h4>Booking Closed</h4>
+                        <p>This event is no longer available for booking</p>
+                        <button class="book-btn" disabled>Booking Closed</button>
+                    </div>
+                `;
+            }
+
+            // Check if booking hasn't started yet
+            if (now < bookingStart) {
+                return `
+                    <div class="ticket-type">
+                        <h4>Booking Opens Soon</h4>
+                        <p>Booking starts on: ${bookingStart.toLocaleString()}</p>
+                        <button class="book-btn" disabled>Coming Soon</button>
+                    </div>
+                `;
+            }
+
+            // For hybrid events
+            if (event.eventType === 'hybrid') {
+                return `
+                    <div class="ticket-type">
+                        <h4>Venue Tickets</h4>
+                        <p class="ticket-price">₹${event.tickets?.venue?.price || 0}</p>
+                        <p>Available: ${event.tickets?.venue?.available || 0}</p>
+                        ${event.tickets?.venue?.available > 0 ? `
+                            <button class="book-btn" onclick="bookTicket('venue')">Book Venue Ticket</button>
+                        ` : '<button class="book-btn" disabled>Sold Out</button>'}
+                    </div>
+                    <div class="ticket-type">
+                        <h4>Online Access</h4>
+                        <p class="ticket-price">₹${event.tickets?.online?.price || 0}</p>
+                        <p>Available: ${event.tickets?.online?.available || 0}</p>
+                        ${event.tickets?.online?.available > 0 ? `
+                            <button class="book-btn" onclick="bookTicket('online')">Book Online Access</button>
+                        ` : '<button class="book-btn" disabled>Sold Out</button>'}
+                    </div>
+                `;
+            } else {
+                // For single type events (venue or online)
+                const price = event.price || 0;
+                const available = event.availableTickets || 0;
+                return `
+                    <div class="ticket-type">
+                        <h4>${event.eventType === 'venue' ? 'Venue Ticket' : 'Online Access'}</h4>
+                        <p class="ticket-price">₹${price}</p>
+                        <p>Available: ${available}</p>
+                        ${available > 0 ? `
+                            <button class="book-btn" onclick="bookTicket('${event.eventType}')">Book Now</button>
+                        ` : '<button class="book-btn" disabled>Sold Out</button>'}
+                    </div>
+                `;
+            }
+        }
+
+        // Update the global function assignments
+        window.currentEvent = currentEvent;
+        window.bookTicket = bookTicket;
+        window.updateTotalPrice = updateTotalPrice;
+        window.backToDetails = backToDetails;
+        window.proceedToPayment = proceedToPayment;
+        window.processPayment = processPayment;
+        window.backToTicketSelection = backToTicketSelection;
+        window.viewMyTickets = viewMyTickets;
+
+        // Add the viewMyTickets function if you haven't already
+        function viewMyTickets() {
+            const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+            window.location.href = `${baseUrl}/dashboard.html?section=tickets`;
+        }
+
+        // Add this function to handle booking
+        async function bookTicket(type) {
+            try {
+                const availableTickets = parseInt(sessionStorage.getItem('availableTickets') || '0');
+                const bookingStart = new Date(sessionStorage.getItem('eventBookingStart'));
+                const bookingEnd = new Date(sessionStorage.getItem('eventBookingEnd'));
+                const now = new Date();
+
+                // Get current event details
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventId = urlParams.get('id');
+                const eventDoc = await getDoc(doc(db, 'events', eventId));
+                if (!eventDoc.exists()) {
+                    throw new Error('Event not found');
+                }
+                const eventData = eventDoc.data();
+
+                // Check if booking is allowed
+                if (now < bookingStart) {
+                    alert(`Booking starts on ${bookingStart.toLocaleDateString()} at ${bookingStart.toLocaleTimeString()}`);
+                    return;
+                }
+
+                if (now > bookingEnd) {
+                    alert('Booking period has ended for this event');
+                    return;
+                }
+
+                if (availableTickets <= 0) {
+                    alert('Sorry, this event is sold out!');
+                    return;
+                }
+
+                // Show ticket selection section
+                document.getElementById('eventFullDetails').style.display = 'none';
+                document.getElementById('ticketSelection').style.display = 'block';
+
+                // Get price based on type
+                let price = 0;
+                if (eventData.eventType === 'hybrid') {
+                    price = type === 'venue' ? 
+                        eventData.tickets?.venue?.price : 
+                        eventData.tickets?.online?.price;
+                } else {
+                    price = eventData.price || 0;
+                }
+
+                // Store event data and price in window object
+                window.currentEvent = eventData;
+                window.currentPrice = price;
+                window.ticketType = type;
+
+                // Update ticket selection UI
+                document.getElementById('ticketSelection').innerHTML = `
+                    <h3>Select Tickets</h3>
+                    <div class="ticket-info">
+                        <p><strong>Event:</strong> ${eventData.name}</p>
+                        <p><strong>Type:</strong> ${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                        <p><strong>Available:</strong> ${availableTickets} tickets</p>
+                        <p><strong>Price:</strong> ₹${price} per ticket</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Tickets (Max 5)</label>
+                        <div class="ticket-counter">
+                            <button type="button" class="counter-btn" onclick="decrementTickets()">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="text" id="ticketCount" value="1" readonly>
+                            <button type="button" class="counter-btn" onclick="incrementTickets()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <p id="totalPrice" class="price-info">Total: ₹${price}</p>
+                    </div>
+                    <div class="booking-buttons">
+                        <button onclick="proceedToPayment('${type}')" class="book-btn">Proceed to Payment</button>
+                        <button onclick="backToDetails()" class="back-btn">Back</button>
+                    </div>
+                `;
+
+                // Initialize total price
+                updateTotalPrice(price);
+
+            } catch (error) {
+                console.error('Error in booking:', error);
+                alert('Error processing booking. Please try again.');
+            }
+        }
+
+        // Add these helper functions
+        function incrementTickets() {
+            const input = document.getElementById('ticketCount');
+            const currentValue = parseInt(input.value);
+            if (currentValue < 5) {
+                input.value = currentValue + 1;
+                updateTotalPrice(window.currentPrice);
+            }
+        }
+
+        function decrementTickets() {
+            const input = document.getElementById('ticketCount');
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                updateTotalPrice(window.currentPrice);
+            }
+        }
+
+        function updateTotalPrice(price) {
+            const count = parseInt(document.getElementById('ticketCount').value) || 0;
+            const total = price * count;
+            document.getElementById('totalPrice').textContent = `Total: ₹${total}`;
+        }
+
+        // Make functions globally available
+        window.incrementTickets = incrementTickets;
+        window.decrementTickets = decrementTickets;
+        window.updateTotalPrice = updateTotalPrice;
+
+        // Function to go back to event details
+        function backToDetails() {
+            document.getElementById('eventFullDetails').style.display = 'block';
+            document.getElementById('ticketSelection').style.display = 'none';
+        }
+
+        // Function to proceed to payment
+        async function proceedToPayment(type) {
+            try {
+                // Get and validate ticket count
+                const ticketCount = parseInt(document.getElementById('ticketCount').value);
+                const availableTickets = parseInt(sessionStorage.getItem('availableTickets') || '0');
+
+                // Validate ticket count
+                if (!ticketCount || ticketCount < 1 || ticketCount > 5) {
+                    alert('Please select between 1 to 5 tickets');
+                    return;
+                }
+
+                // Check availability again
+                if (ticketCount > availableTickets) {
+                    alert(`Sorry, only ${availableTickets} tickets available`);
+                    return;
+                }
+
+                const price = window.currentPrice;
+                const totalPrice = price * ticketCount;
+
+                // Show payment section
+                document.getElementById('ticketSelection').style.display = 'none';
+                document.getElementById('paymentDetails').style.display = 'block';
+
+                // Update payment UI
+                document.getElementById('paymentDetails').innerHTML = `
+                    <div class="payment-container">
+                        <div class="payment-header">
+                            <h3>Complete Your Payment</h3>
+                            <p class="secure-text"><i class="fas fa-lock"></i> Secure Payment</p>
+                            <div class="timer-container">
+                                <p>Time remaining: <span id="paymentTimer" class="timer">2:00</span></p>
+                            </div>
+                        </div>
+
+                        <div class="payment-summary">
+                            <h4>Order Summary</h4>
+                            <div class="summary-item">
+                                <span>Event</span>
+                                <span>${window.currentEvent.name}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Ticket Type</span>
+                                <span>${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Quantity</span>
+                                <span>${ticketCount} ticket${ticketCount > 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Price per ticket</span>
+                                <span>₹${price}</span>
+                            </div>
+                            <div class="summary-item total">
+                                <span>Total Amount</span>
+                                <span>₹${totalPrice}</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-form">
+                            <div class="card-icons">
+                                <i class="fab fa-cc-visa"></i>
+                                <i class="fab fa-cc-mastercard"></i>
+                                <i class="fab fa-cc-amex"></i>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Card Number</label>
+                                <div class="input-icon">
+                                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
+                                           pattern="\d*" inputmode="numeric" autocomplete="cc-number">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Expiry Date</label>
+                                    <input type="text" id="expiryDate" placeholder="MM/YY" 
+                                           pattern="\d{2}/\d{2}" inputmode="numeric" autocomplete="cc-exp">
+                                </div>
+                                <div class="form-group">
+                                    <label>CVV</label>
+                                    <div class="input-icon">
+                                        <input type="password" id="cvv" placeholder="123" 
+                                               pattern="\d{3}" inputmode="numeric" autocomplete="cc-csc">
+                                        <i class="fas fa-question-circle" title="3-digit security code"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Name on Card</label>
+                                <input type="text" id="cardName" placeholder="Enter name as on card">
+                            </div>
+
+                            <div class="payment-buttons">
+                                <button onclick="processPayment('${type}', ${ticketCount}, ${totalPrice})" class="pay-btn">
+                                    Pay ₹${totalPrice}
+                                </button>
+                                <button onclick="backToTicketSelection()" class="back-btn">Back</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Setup payment form validation
+                setupPaymentFormValidation();
+
+                // Start the timer
+                startPaymentTimer();
+
+            } catch (error) {
+                console.error('Error proceeding to payment:', error);
+                alert('Error processing payment. Please try again.');
+            }
+        }
+
+        // Function to go back to ticket selection
+        function backToTicketSelection() {
+            document.getElementById('paymentDetails').style.display = 'none';
+            document.getElementById('ticketSelection').style.display = 'block';
+        }
+
+        async function processPayment(type, ticketCount, totalPrice) {
+            try {
+                // Clear the payment timer
+                if (window.paymentTimer) {
+                    clearInterval(window.paymentTimer);
+                }
+
+                // Show loading overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'payment-overlay';
+                overlay.innerHTML = `
+                    <div class="payment-processing">
+                        <div class="loader"></div>
+                        <h3>Processing Payment</h3>
+                        <p>Please do not refresh the page...</p>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                // Get event ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventId = urlParams.get('id');
+
+                // Simulate payment processing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Generate ticket identifier
+                const ticketIdentifier = `TIX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+                // Create ticket document
+                const ticketData = {
+                    eventId: eventId, // Use the actual event ID from URL
+                    eventName: window.currentEvent.name,
+                    userId: auth.currentUser.uid,
+                    userEmail: auth.currentUser.email,
+                    ticketType: type,
+                    ticketCount: ticketCount,
+                    ticketPrice: window.currentPrice,
+                    totalPrice: totalPrice,
+                    purchaseDate: new Date().toISOString(),
+                    eventDate: window.currentEvent.date,
+                    ticketIdentifier: ticketIdentifier,
+                    used: false,
+                    paymentStatus: 'completed',
+                    venue: window.currentEvent.venueDetails?.venue || 'Online Event'
+                };
+
+                // Add ticket to database
+                await addDoc(collection(db, 'tickets'), ticketData);
+
+                // Update event ticket availability
+                const eventRef = doc(db, 'events', eventId);
+                
+                if (window.currentEvent.eventType === 'hybrid') {
+                    // For hybrid events
+                    if (type === 'venue') {
+                        await updateDoc(eventRef, {
+                            'tickets.venue.available': increment(-ticketCount)
+                        });
+                    } else {
+                        await updateDoc(eventRef, {
+                            'tickets.online.available': increment(-ticketCount)
+                        });
+                    }
+                } else {
+                    // For single type events
+                    await updateDoc(eventRef, {
+                        availableTickets: increment(-ticketCount)
+                    });
+                }
+
+                // Show success message
+                document.getElementById('paymentDetails').style.display = 'none';
+                document.getElementById('successSection').style.display = 'block';
+                document.getElementById('successSection').innerHTML = `
+                    <div class="success-message">
+                        <div class="success-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2>Payment Successful!</h2>
+                        <p>Thank you for choosing EventTix!</p>
+                        <div class="ticket-details">
+                            <h3>Booking Details</h3>
+                            <p><strong>Event:</strong> ${window.currentEvent.name}</p>
+                            <p><strong>Ticket Type:</strong> ${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</p>
+                            <p><strong>Quantity:</strong> ${ticketCount}</p>
+                            <p><strong>Total Paid:</strong> ₹${totalPrice}</p>
+                            <p><strong>Ticket ID:</strong> ${ticketIdentifier}</p>
+                        </div>
+                        <p class="email-note">A confirmation email has been sent to your registered email address.</p>
+                        <div class="success-buttons">
+                            <button onclick="viewMyTickets()" class="tickets-btn">
+                                <i class="fas fa-ticket-alt"></i> View My Tickets
+                            </button>
+                            <button onclick="window.location.href='dashboard.html'" class="home-btn">
+                                <i class="fas fa-home"></i> Back to Dashboard
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Remove loading overlay
+                document.body.removeChild(overlay);
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed. Please try again. Error: ' + error.message);
+                if (document.querySelector('.payment-overlay')) {
+                    document.body.removeChild(document.querySelector('.payment-overlay'));
+                }
+            }
+        }
+
+        // Add this function in your script section
+        function startPaymentTimer() {
+            let timeLeft = 120; // 2 minutes in seconds
+            const timerDisplay = document.getElementById('paymentTimer');
+            
+            const timer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                // Format the time display
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('Payment session expired. You will be redirected to the event details.');
+                    window.location.reload(); // This will reload the page and show event details
+                }
+                
+                // Change color to red when less than 30 seconds remaining
+                if (timeLeft <= 30) {
+                    timerDisplay.style.color = '#dc2626';
+                }
+                
+                timeLeft--;
+            }, 1000);
+
+            // Store timer in window object so we can clear it if payment is successful
+            window.paymentTimer = timer;
+        }
+
+        // Add these functions after your existing code
+        function setupPaymentFormValidation() {
+            // Card number formatting and validation
+            const cardInput = document.getElementById('cardNumber');
+            cardInput.addEventListener('input', function(e) {
+                // Remove any non-digit characters
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Limit to 16 digits
+                if (value.length > 16) {
+                    value = value.slice(0, 16);
+                }
+                
+                // Add spaces after every 4 digits
+                let formattedValue = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+            });
+
+            // Expiry date formatting and validation
+            const expiryInput = document.getElementById('expiryDate');
+            expiryInput.addEventListener('input', function(e) {
+                // Remove any non-digit characters
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Add slash after month
+                if (value.length >= 2) {
+                    // Validate month (01-12)
+                    let month = parseInt(value.slice(0, 2));
+                    if (month > 12) {
+                        month = 12;
+                        value = '12' + value.slice(2);
+                    } else if (month < 1) {
+                        month = '01';
+                        value = '01' + value.slice(2);
+                    } else if (month < 10 && value.length >= 2) {
+                        value = '0' + month + value.slice(2);
+                    }
+                    
+                    value = value.slice(0, 2) + '/' + value.slice(2);
+                }
+                
+                // Limit to MM/YY format
+                if (value.length > 5) {
+                    value = value.slice(0, 5);
+                }
+                
+                e.target.value = value;
+            });
+
+            // CVV validation
+            const cvvInput = document.getElementById('cvv');
+            cvvInput.addEventListener('input', function(e) {
+                // Remove any non-digit characters
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Limit to 3 digits
+                if (value.length > 3) {
+                    value = value.slice(0, 3);
+                }
+                
+                e.target.value = value;
+            });
+        }
+    </script>
+
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            <p>&copy; 2024 EventTix. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html> 

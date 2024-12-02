@@ -8,6 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Add this in the head section, before your existing styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         * {
             margin: 0;
@@ -16,28 +20,63 @@
         }
 
         body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f2f5;
         }
 
         .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem 2rem;
+            padding: 0.8rem 1.5rem; /* Reduced padding */
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar h1 {
-            font-size: 1.5rem;
+            font-size: 1.2rem; /* Slightly smaller font */
         }
 
         .user-info {
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-right: 1rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-profile i {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .user-name {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .user-email {
+            font-size: 0.8rem;
+            color: white;
         }
 
         .logout-btn {
@@ -55,10 +94,14 @@
             color: #667eea;
         }
 
+        /* Update container styles */
         .container {
-            max-width: 1200px;
-            margin: 2rem auto;
+            max-width: none;
+            min-height: calc(100vh - 60px - 400px); /* Subtract navbar and footer heights */
+            margin: 1rem auto;
             padding: 0 1rem;
+            position: relative;
+            z-index: 1;
         }
 
         .events-grid {
@@ -68,26 +111,87 @@
             margin-top: 2rem;
         }
 
+        /* Update the event card styles */
         .event-card {
+            position: relative;
+            height: 500px; /* Fixed height for the card */
+            display: flex;
+            flex-direction: column;
             background: white;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-
-        .event-card:hover {
-            transform: translateY(-5px);
+            transition: transform 0.3s ease;
         }
 
         .event-card img {
             width: 100%;
-            height: 200px;
+            height: 200px; /* Fixed height for image */
             object-fit: cover;
         }
 
         .event-content {
-            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 1rem;
+            position: relative;
+            padding-bottom: 70px; /* Space for the button */
+            min-height: 200px; /* Add minimum height */
+        }
+
+        .event-details {
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 1rem; /* Add space between content and button */
+        }
+
+        .event-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .event-details p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Position the button at the bottom */
+        .book-btn {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            width: calc(100% - 2rem);
+            padding: 0.8rem;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 1; /* Add this to ensure button stays on top */
+        }
+
+        .book-btn:hover {
+            background: #2563EB;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .event-card {
+                height: auto;
+                min-height: 450px;
+            }
+
+            .event-content {
+                padding-bottom: 60px;
+            }
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
         }
 
         .event-card h3 {
@@ -144,18 +248,26 @@
         }
 
         .close {
-            position: sticky;
-            top: 1rem;
-            right: 1rem;
-            font-size: 1.5rem;
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            color: #000;
+            background: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            color: #718096;
-            float: right;
-            z-index: 1;
+            font-size: 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .close:hover {
-            color: #4a5568;
+            background: #f3f4f6;
+            transform: scale(1.1);
         }
 
         .form-group {
@@ -338,111 +450,170 @@
         }
 
         .booking-status {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-size: 0.9rem;
         }
-        .booking-status.error {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
+
         .booking-status.warning {
-            background-color: #fef3c7;
-            color: #d97706;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
         }
-        .book-tickets-btn:disabled {
-            background-color: #9ca3af;
+
+        .booking-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .book-btn:disabled {
+            background: #cbd5e0;
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .tickets-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .ticket-card {
             background: white;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
             overflow: hidden;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
 
         .ticket-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .ticket-header {
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 12px 15px;
+            position: relative;
         }
 
-        .ticket-header h3 {
+        .ticket-title {
+            font-size: 16px;
+            font-weight: 600;
             margin: 0;
-            font-size: 1.2rem;
+            padding-right: 35px;
         }
 
-        .ticket-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .ticket-status.active {
-            background: #10B981;
-            color: white;
+        .ticket-date {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 4px;
         }
 
         .ticket-content {
             padding: 15px;
         }
 
-        .ticket-image {
+        .ticket-details {
             width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
         }
 
-        .ticket-details p {
-            margin: 8px 0;
-            color: #4B5563;
+        .ticket-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-label i {
+            color: #6366f1;
+            width: 16px;
+            text-align: center;
+        }
+
+        .info-value {
+            color: #1a202c;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info-value.highlight {
+            color: #6366f1;
+            font-size: 15px;
+            font-weight: 600;
         }
 
         .ticket-actions {
-            padding: 15px;
-            border-top: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
         }
 
-        .view-qr-btn {
-            background: #667eea;
+        .download-btn {
+            width: 40px;
+            height: 40px;
+            background: #6366f1;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
+            border-radius: 50%;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.2s ease;
         }
 
-        .view-qr-btn:hover {
-            background: #5a67d8;
+        .download-btn i {
+            font-size: 1.2rem;
         }
 
+        .download-btn:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Responsive Styles */
         @media (max-width: 768px) {
-            .tickets-grid {
-                grid-template-columns: 1fr;
-                padding: 10px;
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+                max-height: 90vh;
+            }
+
+            #eventFullDetails {
+                padding: 15px;
+            }
+
+            .ticket-download {
+                transform: scale(0.8);
+                transform-origin: top center;
             }
         }
 
@@ -970,113 +1141,178 @@
 
         .ticket-card {
             background: white;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
             overflow: hidden;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
 
         .ticket-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .ticket-header {
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 12px 15px;
+            position: relative;
+        }
+
+        .ticket-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            padding-right: 35px;
+        }
+
+        .ticket-date {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 4px;
         }
 
         .ticket-content {
             padding: 15px;
         }
 
-        .ticket-details p {
-            margin: 8px 0;
-            color: #4B5563;
+        .ticket-details {
+            width: 100%;
         }
 
-        .ticket-actions {
-            padding: 15px;
-            border-top: 1px solid #E5E7EB;
+        .ticket-info {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .ticket-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .ticket-status.active {
-            background: #10B981;
-            color: white;
-        }
-
-        .ticket-status.expired {
-            background: #DC2626;
-            color: white;
-        }
-
-        .ticket-details p {
-            margin: 12px 0;
-            color: #4B5563;
+        .info-item {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .detail-label {
-            font-weight: 600;
-            color: #374151;
-            min-width: 100px;
+        .info-item:last-child {
+            border-bottom: none;
         }
 
-        .ticket-details i {
-            color: #667eea;
-            width: 20px;
-            text-align: center;
-        }
-
-        .download-ticket-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+        .info-label {
+            color: #6b7280;
+            font-size: 13px;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-weight: 500;
-            transition: all 0.3s ease;
         }
 
-        .download-ticket-btn:hover:not(:disabled) {
-            background: #5a67d8;
+        .info-label i {
+            color: #6366f1;
+            width: 16px;
+            text-align: center;
+        }
+
+        .info-value {
+            color: #1a202c;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info-value.highlight {
+            color: #6366f1;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .ticket-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .download-btn {
+            width: 40px;
+            height: 40px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .download-btn i {
+            font-size: 1.2rem;
+        }
+
+        .download-btn:hover {
+            background: #4f46e5;
             transform: translateY(-2px);
         }
 
-        .download-ticket-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .ticket-card {
+                border-radius: 8px;
+            }
 
-        .ticket-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
+            .ticket-header {
+                padding: 12px 15px;
+            }
 
-        .ticket-card:hover {
-            transform: translateY(-5px);
+            .ticket-title {
+                font-size: 16px;
+                padding-right: 35px;
+            }
+
+            .ticket-content {
+                padding: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ticket-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .info-item {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .info-label {
+                font-size: 12px;
+                margin-bottom: 0;
+            }
+
+            .info-value {
+                font-size: 14px;
+            }
+
+            .ticket-actions {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .download-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .download-btn span {
+                display: none;
+            }
         }
 
         .ticket-download-template {
@@ -1369,19 +1605,1221 @@
         .home-btn i {
             font-size: 16px;
         }
+
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .events-grid {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .events-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .modal-content {
+                width: 90%;
+                margin: 2rem auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.6rem 1rem; /* Even smaller padding on mobile */
+            }
+
+            .user-profile {
+                padding-right: 0.8rem;
+                gap: 6px;
+            }
+
+            .user-profile i {
+                font-size: 1.2rem;
+            }
+
+            .user-details {
+                max-width: 120px; /* Limit width on mobile */
+            }
+
+            .user-email {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .nav-actions {
+                gap: 0.4rem;
+            }
+
+            .nav-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .nav-btn i {
+                font-size: 0.8rem;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .event-card {
+                height: auto;
+            }
+
+            .event-card img {
+                height: 180px;
+            }
+
+            .event-content {
+                padding: 1rem;
+            }
+
+            .event-details h3 {
+                font-size: 1.1rem;
+            }
+
+            .event-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+
+            .event-badge {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+                padding: 1rem;
+                max-height: 90vh;
+            }
+
+            .event-images {
+                height: 200px;
+            }
+
+            .event-info-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .ticket-type-selection {
+                flex-direction: column;
+            }
+
+            .book-tickets-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar h1 {
+                font-size: 1.1rem;
+            }
+
+            .user-details {
+                max-width: 100px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            .book-btn,
+            .home-btn,
+            .my-tickets-btn,
+            .logout-btn {
+                -webkit-tap-highlight-color: transparent;
+                min-height: 44px;
+            }
+
+            .event-card {
+                transform: none !important;
+            }
+
+            .event-card:active {
+                opacity: 0.9;
+            }
+        }
+    
+
+        /* Prevent text overflow */
+        .event-details h3,
+        .event-details p {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* Improve modal scrolling on mobile */
+        .modal-content {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Loading states for better UX */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Improve form usability on mobile */
+        input[type="number"],
+        input[type="text"],
+        input[type="email"],
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+
+        .event-info-list {
+            margin-top: 1rem;
+        }
+
+        .event-info-list p {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        .event-info-list i {
+            width: 16px;
+            color: #3B82F6;
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .event-header h3 {
+            font-size: 1.2rem;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Add/Update these styles in dashboard.html */
+        .tickets-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+}
+
+        .ticket-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .ticket-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .ticket-status.active {
+            background: #4CAF50;
+        }
+
+        .ticket-status.used {
+            background: #9E9E9E;
+        }
+
+        .ticket-status.expired {
+            background: #F44336;
+        }
+
+        .ticket-content {
+            padding: 20px;
+        }
+
+        .ticket-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ticket-info p {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .ticket-info i {
+            width: 20px;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .ticket-info .label {
+            color: #64748b;
+            min-width: 100px;
+        }
+
+        .ticket-info .value {
+            color: #1a202c;
+            font-weight: 500;
+        }
+
+        .ticket-info .value.highlight {
+            color: #667eea;
+        }
+
+        .ticket-info .value.price {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .ticket-info .value.mono {
+            font-family: monospace;
+            color: #4a5568;
+            letter-spacing: 0.5px;
+        }
+
+        .ticket-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .download-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .ticket-header {
+                padding: 15px;
+            }
+
+            .ticket-content {
+                padding: 15px;
+            }
+
+            .ticket-info .label {
+                min-width: 80px;
+                font-size: 0.9rem;
+            }
+
+            .ticket-info .value {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Loading Animation */
+        .tickets-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .tickets-loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Add to both dashboard.html and event-details.html */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .nav-btn {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn::after {
+            content: attr(title);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .nav-btn:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Style for logout button */
+        .nav-btn[title="Logout"] {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-btn[title="Logout"]:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* User profile styles */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-right: 1.5rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-profile i {
+            font-size: 1.8rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .user-profile {
+                display: none;
+            }
+
+            .nav-actions {
+                gap: 0.5rem;
+            }
+
+            .nav-btn {
+                width: 35px;
+                height: 35px;
+            }
+
+            .nav-btn i {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 4rem;
+            position: relative;
+        }
+
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 3rem;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .footer-section ul li:hover {
+            transform: translateX(5px);
+        }
+
+        .footer-section ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-section ul li a::before {
+            content: '→';
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-links a:hover {
+            transform: translateY(-5px);
+            background: #667eea;
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 4rem;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                padding: 3rem 0 0;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .footer-section h3::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .footer-section ul li a {
+                justify-content: center;
+            }
+
+            .footer-section ul li:hover {
+                transform: translateX(0) translateY(-2px);
+            }
+        }
+
+        /* Featured Carousel Styles */
+        .featured-carousel {
+            width: 100%;
+            height: 400px; /* Increased height */
+            position: relative;
+            overflow: hidden;
+            background: #f0f2f5; /* Changed from black to match body background */
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .carousel-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+            background: white; /* Added white background */
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+        }
+
+        .carousel-content h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .carousel-info {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .carousel-info i {
+            color: #667eea;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .featured-carousel {
+                height: 300px;
+            }
+
+            .carousel-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .carousel-info {
+                font-size: 0.9rem;
+                gap: 1rem;
+            }
+        }
+
+        /* Add these styles for the heading section */
+        .heading-section {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+            margin-bottom: 2rem;
+        }
+
+        .main-heading {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-transform: capitalize;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-heading {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Minimal Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 5px;  /* Reduced from 8px to 5px */
+            height: 5px;
+        }
+
+        /* For Firefox */
+        * {
+            scrollbar-width: thin;
+        }
+
+        /* Hide scrollbar for carousel while keeping functionality */
+        .carousel-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .carousel-container {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Optional: Make body scroll smooth */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Add these inside your <style> tag */
+        .ticket-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .ticket-header {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .ticket-details {
+            display: grid;
+            gap: 0.8rem;
+        }
+
+        .ticket-status {
+            font-weight: 500;
+            padding: 0.5rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .ticket-status.valid {
+            background: #e6fffa;
+            color: #319795;
+        }
+
+        .ticket-status.used {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        /* Add these styles for ticket cards and modal responsiveness */
+        .ticket-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 15px 20px;
+            position: relative;
+        }
+
+        .ticket-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            padding-right: 40px;
+        }
+
+        .ticket-date {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .ticket-content {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ticket-details {
+            flex: 1;
+        }
+
+        .ticket-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #1a202c;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .ticket-actions {
+            margin-left: 20px;
+        }
+
+        .download-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background: #4f46e5;
+        }
+
+        .download-btn i {
+            font-size: 16px;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .ticket-card {
+                border-radius: 8px;
+            }
+
+            .ticket-header {
+                padding: 12px 15px;
+            }
+
+            .ticket-title {
+                font-size: 16px;
+                padding-right: 35px;
+            }
+
+            .ticket-content {
+                padding: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ticket-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .info-item {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .info-label {
+                font-size: 12px;
+                margin-bottom: 0;
+            }
+
+            .info-value {
+                font-size: 14px;
+            }
+
+            .ticket-actions {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .download-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .download-btn span {
+                display: none;
+            }
+        }
+
+        /* Modal Responsive Styles */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+                max-height: 90vh;
+            }
+
+            #eventFullDetails {
+                padding: 15px;
+            }
+
+            .ticket-download {
+                transform: scale(0.8);
+                transform-origin: top center;
+            }
+        }
+
+        .tickets-modal {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .tickets-container {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tickets-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .ticket-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+            min-height: 220px;
+            flex-shrink: 0;
+        }
+
+        /* Custom scrollbar for tickets container */
+        .tickets-container::-webkit-scrollbar {
+            width: 0.1px;
+        }
+
+        .tickets-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .tickets-container::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 3px;
+            transition: background 0.2s ease;
+        }
+
+        .tickets-container::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* For Firefox */
+        .tickets-container {
+            scrollbar-width: thin;
+            scrollbar-color: #c5c5c5 #f1f1f1;
+        }
+
+        @media (max-width: 768px) {
+            .tickets-modal {
+                width: 95%;
+                margin: 1rem auto;
+                max-height: 90vh;
+            }
+
+            .tickets-container {
+                padding: 1rem;
+            }
+
+            .ticket-card {
+                min-height: 200px;
+            }
+        }
+
+        /* Empty State Styling */
+        .tickets-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+        }
+
+        .tickets-empty i {
+            font-size: 3rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .tickets-empty p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .tickets-empty .empty-action {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .tickets-modal {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .tickets-footer {
+            padding: 1rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .ticket-note {
+            color: #64748b;
+            font-size: 0.9rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .ticket-note i {
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <h1>EventTix Dashboard</h1>
-        <div class="user-info">
-            <span id="userEmail"></span>
-            <a href="index.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
-            <button onclick="showMyTickets()" class="my-tickets-btn">My Tickets</button>
-            <button onclick="logout()" class="logout-btn">Logout</button>
+    <!-- Loader -->
+    <div id="loader-wrapper">
+        <div class="loader">
+            <div class="loader-inner">
+                <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                </div>
+                <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                </div>
+                <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                </div>
+                <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                </div>
+                <div class="loader-line-wrap">
+                    <div class="loader-line"></div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- First: Navbar -->
+    <div class="navbar">
+        <h1>EventTix</h1>
+        <div class="user-info">
+            <div class="user-profile">
+                <i class="fas fa-user-circle"></i>
+                <div class="user-details">
+                    <span class="user-name">Welcome,</span>
+                    <span id="userEmail" class="user-email"></span>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <a href="INDEX.html" class="nav-btn" title="Dashboard">
+                    <i class="fas fa-home"></i>
+                </a>
+                <button class="nav-btn" title="My Tickets" onclick="viewMyTickets()">
+                    <i class="fas fa-ticket-alt"></i>
+                </button>
+                <button class="nav-btn" title="Logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second: Carousel -->
+    <div class="featured-carousel">
+        <div class="carousel-container" id="carouselContainer">
+            <!-- Events will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Third: Heading Section (after carousel) -->
+    <div class="heading-section">
+        <h2 class="main-heading" id="dynamicHeading"></h2>
+    </div>
+
+    <!-- Fourth: Container -->
     <div class="container">
         <div class="events-grid" id="eventsContainer">
             <!-- Events will be dynamically added here -->
@@ -1455,14 +2893,33 @@
 
     <!-- My Tickets Modal -->
     <div id="myTicketsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeMyTicketsModal()">&times;</span>
-            <h2>My Tickets</h2>
-            <div id="ticketsList">
-                <!-- Tickets will be dynamically added here -->
+        <div class="modal-content tickets-modal">
+            <div class="tickets-header">
+                <div class="tickets-title">
+                    <h2><i class="fas fa-ticket-alt"></i> My Tickets</h2>
+                </div>
+                <span class="close" onclick="closeMyTicketsModal()">&times;</span>
+            </div>
+            <div class="tickets-container">
+                <div id="ticketsList" class="tickets-grid">
+                    <!-- Tickets will be dynamically added here -->
+                </div>
+            </div>
+            <div class="tickets-footer">
+                <p class="ticket-note">
+                    <i class="fas fa-info-circle"></i>
+                    Note: Tickets are automatically removed after the event ends
+                </p>
             </div>
         </div>
     </div>
+
+    <!-- Add footer -->
+    <footer class="footer">
+        <div class="footer-bottom">
+            <p>&copy; 2024 EventTix. All rights reserved.</p>
+        </div>
+    </footer>
 
     <!-- Firebase Scripts -->
     <script type="module">
@@ -1478,7 +2935,8 @@
             doc,
             getDoc,
             updateDoc,
-            increment
+            increment,
+            deleteDoc
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -1496,6 +2954,294 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Define downloadTicket function globally right after Firebase initialization
+        window.downloadTicket = async function(ticketId) {
+            try {
+                // Get ticket data
+                const ticketDoc = await getDoc(doc(db, 'tickets', ticketId));
+                if (!ticketDoc.exists()) {
+                    alert('Ticket not found');
+                    return;
+                }
+
+                const ticket = ticketDoc.data();
+
+                // Get event data for rules
+                const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
+                const eventData = eventDoc.exists() ? eventDoc.data() : null;
+
+                // Create a container div with specific styles
+                const containerDiv = document.createElement('div');
+                containerDiv.style.position = 'absolute';
+                containerDiv.style.top = '0';
+                containerDiv.style.left = '0';
+                containerDiv.style.width = '1000px';
+                containerDiv.style.height = 'auto';
+                containerDiv.style.backgroundColor = 'transparent';
+                containerDiv.style.zIndex = '-1000';
+                containerDiv.style.opacity = '1';
+                containerDiv.style.transform = 'none';
+
+                // Generate QR code for the ticket
+                const qrCodeUrl = await new Promise((resolve) => {
+                    const qr = new QRCode(document.createElement("div"), {
+                        text: `${ticket.ticketIdentifier}`,
+                        width: 128,
+                        height: 128
+                    });
+                    resolve(qr._el.firstChild.toDataURL());
+                });
+
+                // Create ticket content
+                containerDiv.innerHTML = `
+                    <div style="
+                        width: 1200px;
+                        padding: 20px;
+                        background: transparent;
+                        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    ">
+                        <div style="
+                            width: 100%;
+                            background: white;
+                            border-radius: 16px;
+                            overflow: hidden;
+                            border: 1px solid rgba(99, 102, 241, 0.2);
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        ">
+                            <!-- Header with gradient -->
+                            <div style="
+                                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                                padding: 15px 30px;
+                                color: white;
+                                position: relative;
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                height: 80px;
+                            ">
+                                <!-- Left: Ticket ID -->
+                                <div style="
+                                    background: rgba(255, 255, 255, 0.1);
+                                    padding: 8px 16px;
+                                    border-radius: 20px;
+                                    font-family: monospace;
+                                    font-size: 14px;
+                                ">${ticket.ticketIdentifier}</div>
+
+                                <!-- Center: EventTix Logo -->
+                                <div style="
+                                    text-align: center;
+                                ">
+                                    <div style="
+                                        font-size: 42px;
+                                        font-weight: bold;
+                                        letter-spacing: 1px;
+                                        line-height: 1;
+                                    ">
+                                        <span style="color: #ff4d4d;">Event</span>
+                                        <span style="color: white;">Tix</span>
+                                    </div>
+                                    <div style="
+                                        font-size: 14px;
+                                        opacity: 0.9;
+                                        margin-top: 4px;
+                                    ">Official Digital Event Ticket</div>
+                                </div>
+
+                                <!-- Right: Empty space for balance -->
+                                <div style="width: 150px;"></div>
+                            </div>
+
+                            <!-- Event Name -->
+                            <div style="
+                                text-align: center;
+                                padding: 15px;
+                                background: white;
+                                border-bottom: 1px solid #e2e8f0;
+                            ">
+                                <h2 style="
+                                    font-size: 24px;
+                                    color: #1a202c;
+                                    margin: 0;
+                                ">🎵 ${ticket.eventName} 🎵</h2>
+                            </div>
+
+                            <!-- Main Content Area -->
+                            <div style="
+                                display: flex;
+                                padding: 25px;
+                                position: relative;
+                                min-height: 180px;
+                            ">
+                                <!-- Left Section -->
+                                <div style="flex: 1; padding-right: 20px;">
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: 600;">Event Date:</div>
+                                        <div style="font-size: 16px;">${new Date(ticket.eventDate).toLocaleDateString()}</div>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: 600;">Venue:</div>
+                                        <div style="font-size: 16px;">${ticket.venue || 'Online'}</div>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: 600;">Ticket Type:</div>
+                                        <div style="font-size: 16px;">${ticket.ticketType || 'Standard'}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Center Section -->
+                                <div style="flex: 1; padding: 0 20px; border-left: 1px dashed #e2e8f0;">
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: 600;">Quantity:</div>
+                                        <div style="font-size: 24px; color: #4299e1; font-weight: bold;">${ticket.ticketCount} tickets</div>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: 600;">Amount Paid:</div>
+                                        <div style="font-size: 16px;">₹${ticket.totalPrice}</div>
+                                    </div>
+
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: 600;">Booked By:</div>
+                                        <div style="font-size: 16px;">${ticket.userEmail}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Section (QR Code) -->
+                                <div style="
+                                    width: 200px;
+                                    text-align: center;
+                                    border-left: 1px dashed #e2e8f0;
+                                    padding-left: 20px;
+                                ">
+                                    <img src="${qrCodeUrl}" style="
+                                        width: 150px;
+                                        height: 150px;
+                                        margin-bottom: 10px;
+                                        padding: 8px;
+                                        background: white;
+                                        border: 1px solid #e2e8f0;
+                                        border-radius: 8px;
+                                    ">
+                                    <div style="
+                                        color: #4299e1;
+                                        font-size: 14px;
+                                        margin-bottom: 5px;
+                                    ">Thank you for choosing EventTix!</div>
+                                    <div style="
+                                        color: #718096;
+                                        font-size: 12px;
+                                    ">Scan QR code at venue for entry</div>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Footer Combined -->
+                            <div style="
+                                background: #f8fafc;
+                                border-top: 1px solid #e2e8f0;
+                                display: flex;
+                                align-items: stretch;
+                                min-height: 120px;
+                            ">
+                                <!-- Terms -->
+                                <div style="
+                                    flex: 1;
+                                    padding: 15px 25px;
+                                    display: flex;
+                                    flex-direction: column;
+                                ">
+                                    <div style="
+                                        font-weight: 600;
+                                        color: #4a5568;
+                                        margin-bottom: 8px;
+                                    ">Terms and Conditions</div>
+                                    <div style="
+                                        font-size: 13px;
+                                        color: #718096;
+                                        overflow-y: auto;
+                                        max-height: 120px;
+                                        scrollbar-width: thin;
+                                        scrollbar-color: #cbd5e0 #f8fafc;
+                                        line-height: 1.5;
+                                    ">
+                                        <div style="padding-right: 10px;">
+                                            ${eventData?.rules ? `
+                                                ${eventData.rules}
+                                            ` : `
+                                                • Valid ID proof is mandatory for entry
+                                                • Outside food and beverages are not allowed
+                                                • No photography or recording without permission
+                                                • Entry will be denied if ticket is damaged
+                                                • Ticket is non-transferable and non-refundable
+                                                • One ticket valid for one person only
+                                                • Re-entry may not be permitted
+                                                • Organizers reserve the right to deny entry
+                                            `}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Footer -->
+                                <div style="
+                                    text-align: right;
+                                    padding: 15px 25px;
+                                    color: #718096;
+                                    font-size: 12px;
+                                    border-left: 1px solid #e2e8f0;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: flex-end;
+                                    min-width: 200px;
+                                ">
+                                    This is an official digital ticket.<br>Valid only with matching ID proof.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add container to body
+                document.body.appendChild(containerDiv);
+
+                // Wait for the next frame to ensure rendering
+                await new Promise(resolve => requestAnimationFrame(resolve));
+
+                try {
+                    // Capture the ticket
+                    const canvas = await html2canvas(containerDiv.firstElementChild, {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: 'transparent',
+                        logging: true,
+                        onclone: function(clonedDoc) {
+                            const clonedElement = clonedDoc.querySelector('div');
+                            if (clonedElement) {
+                                clonedElement.style.transform = 'none';
+                                clonedElement.style.opacity = '1';
+                            }
+                        }
+                    });
+
+                    // Convert to image and download
+                    const image = canvas.toDataURL('image/png', 1.0);
+                    const link = document.createElement('a');
+                    link.download = `EventTix-${ticket.ticketIdentifier}.png`;
+                    link.href = image;
+                    link.click();
+                } finally {
+                    // Clean up
+                    document.body.removeChild(containerDiv);
+                }
+
+            } catch (error) {
+                console.error('Error downloading ticket:', error);
+                alert('Error downloading ticket. Please try again.');
+            }
+        };
+
         // Make Firebase instances and functions available globally
         window.auth = auth;
         window.db = db;
@@ -1509,6 +3255,7 @@
         window.getDoc = getDoc;
         window.updateDoc = updateDoc;
         window.increment = increment;
+        window.deleteDoc = deleteDoc;
 
         // Define the logout function in the module scope
         window.logout = async function() {
@@ -1540,40 +3287,78 @@
             }
         };
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log("User authenticated:", user.email);
-                document.getElementById('userEmail').textContent = user.email;
-                loadEvents();
-            } else {
-                console.log("No user authenticated");
-                window.location.href = 'index.html';
+        // Add this right after Firebase initialization
+        let loaderStartTime = Date.now();
+        const minLoaderTime = 500; // Minimum time to show loader in milliseconds
+
+        // Function to hide loader
+        function hideLoader() {
+            const loader = document.getElementById('loader-wrapper');
+            if (loader) {
+                const currentTime = Date.now();
+                const elapsedTime = currentTime - loaderStartTime;
+                
+                if (elapsedTime >= minLoaderTime) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                } else {
+                    // Wait for the remaining time
+                    setTimeout(() => {
+                        loader.style.opacity = '0';
+                        setTimeout(() => {
+                            loader.style.display = 'none';
+                        }, 500);
+                    }, minLoaderTime - elapsedTime);
+                }
             }
-        });
-    </script>
+        }
 
-    <script>
-        let currentTicketType = null;
-        let currentEvent = null;
-
+        // Add this function after Firebase initialization and before the event listeners
         async function loadEvents() {
             console.log("Loading events...");
             const eventsContainer = document.getElementById('eventsContainer');
             eventsContainer.innerHTML = '';
 
             try {
+                const now = new Date();
                 const querySnapshot = await getDocs(collection(db, 'events'));
                 console.log("Events query response:", querySnapshot.size, "events found");
-                
+
                 if (querySnapshot.empty) {
                     eventsContainer.innerHTML = '<p>No events available.</p>';
                     return;
                 }
 
                 querySnapshot.forEach((doc) => {
-                    console.log("Event data:", doc.id, doc.data());
                     const event = doc.data();
-                    const eventCard = createEventCard(event, doc.id);
+                    
+                    // Check if event should be visible based on scheduling
+                    if (event.scheduling) {
+                        if (event.scheduling.publishDate && new Date(event.scheduling.publishDate) > now) {
+                            return; // Skip this event if not published yet
+                        }
+                        if (event.scheduling.hideDate && new Date(event.scheduling.hideDate) < now) {
+                            return; // Skip this event if already hidden
+                        }
+                    }
+
+                    // Check ticket availability
+                    let availableTickets = 0;
+                    if (event.eventType === 'hybrid') {
+                        availableTickets = (event.tickets?.venue?.available || 0) + (event.tickets?.online?.available || 0);
+                    } else {
+                        availableTickets = event.availableTickets || 0;
+                    }
+
+                    // Check booking period
+                    const bookingStart = new Date(event.bookingStartDate);
+                    const bookingEnd = new Date(event.bookingDeadline);
+                    const isBookingOpen = now >= bookingStart && now <= bookingEnd;
+
+                    // Create event card with all necessary information
+                    const eventCard = createEventCard(event, doc.id, isBookingOpen, availableTickets);
                     eventsContainer.appendChild(eventCard);
                 });
             } catch (error) {
@@ -1582,7 +3367,7 @@
             }
         }
 
-        function createEventCard(event, eventId) {
+        function createEventCard(event, eventId, isBookingOpen, availableTickets) {
             const eventDate = new Date(event.date);
             const formattedDate = eventDate.toLocaleDateString('en-IN', {
                 day: 'numeric',
@@ -1590,78 +3375,128 @@
                 year: 'numeric'
             });
 
-            // Get event status badge
-            const statusBadge = getEventStatusBadge(event);
+            // Get booking status message
+            let bookingStatus = '';
+            let buttonText = 'View Details';
+            let buttonDisabled = false;
 
+            if (availableTickets <= 0) {
+                bookingStatus = '<div class="booking-status error">Sold Out</div>';
+                buttonText = 'Sold Out';
+                buttonDisabled = true;
+            } else if (!isBookingOpen) {
+                const bookingStart = new Date(event.bookingStartDate);
+                const now = new Date();
+                if (now < bookingStart) {
+                    bookingStatus = `<div class="booking-status warning">Booking starts on ${bookingStart.toLocaleDateString()} at ${bookingStart.toLocaleTimeString()}</div>`;
+                    buttonText = 'Coming Soon';
+                } else {
+                    bookingStatus = '<div class="booking-status error">Booking closed</div>';
+                    buttonText = 'Booking Closed';
+                }
+                buttonDisabled = true;
+            }
+
+            // Create the card HTML
             const div = document.createElement('div');
             div.className = 'event-card';
             div.innerHTML = `
                 <div class="event-status-container">
-                    ${statusBadge}
+                    ${getEventStatusBadge(event)}
                 </div>
-                <img src="${event.images ? event.images[0] : 'https://via.placeholder.com/300x200'}" alt="${event.name}">
+                <img src="${event.images?.[0] || 'default-image.jpg'}" alt="${event.name}">
                 <div class="event-content">
                     <div class="event-details">
                         <div class="event-header">
                             <h3>${event.name}</h3>
                             ${getEventTypeBadge(event.eventType)}
                         </div>
-                        <p>${event.description.substring(0, 100)}...</p>
-                        <p>Date: ${formattedDate}</p>
-                        <p>Price: ₹${event.price}</p>
+                        <div class="event-info-list">
+                            <p><i class="fas fa-calendar"></i> ${formattedDate}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${event.eventType === 'online' ? 'Online Event' : event.venueDetails?.venue || 'Venue TBA'}</p>
+                            <p><i class="fas fa-ticket-alt"></i> Available: ${availableTickets}</p>
+                        </div>
+                        ${bookingStatus}
                     </div>
-                    <button class="book-btn" onclick="openBooking('${eventId}')">View Details</button>
+                    <button class="book-btn" onclick="viewEventDetails('${eventId}')" ${buttonDisabled ? 'disabled' : ''}>
+                        ${buttonText}
+                    </button>
                 </div>
             `;
+
             return div;
         }
 
-        // Add this new helper function to determine event status
+        // Add this after Firebase initialization
+        const headingQuotes = [
+            "Get Your Event Tickets Now! 🎟️",
+            "Don't Miss Out on Amazing Events! ✨",
+            "Book Your Experience Today! 🎉",
+            "Create Memories, Book Events! 🌟",
+            "Your Next Adventure Awaits! 🚀",
+            "Discover Amazing Events Near You! 🎭",
+            "Join the Experience - Book Now! 🎪",
+            "Find Your Perfect Event! 🎯",
+            "Live, Laugh, Book Events! 🎊",
+            "Make It Happen - Book Today! ⭐"
+        ];
+
+        function updateHeading() {
+            const headingElement = document.getElementById('dynamicHeading');
+            if (headingElement) {
+                const randomIndex = Math.floor(Math.random() * headingQuotes.length);
+                headingElement.textContent = headingQuotes[randomIndex];
+            }
+        }
+
+        // Update the window load event listener to include the heading update
+        window.addEventListener('load', function() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    document.getElementById('userEmail').textContent = user.email;
+                    loadEvents();
+                    initializeCarousel();
+                    updateHeading(); // Add this line
+                    hideLoader();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+        });
+
+        // Add these helper functions if not already present
         function getEventStatusBadge(event) {
             const now = new Date();
             const eventDate = new Date(event.date);
             const bookingStart = new Date(event.bookingStartDate);
             const bookingEnd = new Date(event.bookingDeadline);
 
-            // First check if event is in the past
             if (eventDate < now) {
                 return '<div class="status-badge closed">EVENT CLOSED</div>';
             }
 
-            // Then check if booking hasn't started yet
             if (now < bookingStart) {
                 return '<div class="status-badge upcoming">UPCOMING</div>';
             }
 
-            // Only check ticket availability for active or ended booking periods
             let availableTickets = 0;
-            if (now >= bookingStart) {
-                if (event.eventType === 'hybrid') {
-                    availableTickets = (event.tickets?.venue?.available || 0) + (event.tickets?.online?.available || 0);
-                } else if (event.eventType === 'venue') {
-                    availableTickets = event.tickets?.venue?.available || 0;
-                } else {
-                    availableTickets = event.tickets?.online?.available || 0;
-                }
-
-                if (availableTickets === 0) {
-                    return '<div class="status-badge sold-out">SOLD OUT</div>';
-                }
+            if (event.eventType === 'hybrid') {
+                availableTickets = (event.tickets?.venue?.available || 0) + (event.tickets?.online?.available || 0);
+            } else {
+                availableTickets = event.availableTickets || 0;
             }
 
-            // Check current booking status
+            if (availableTickets === 0) {
+                return '<div class="status-badge sold-out">SOLD OUT</div>';
+            }
+
             if (now >= bookingStart && now <= bookingEnd) {
                 return '<div class="status-badge live">BOOKING LIVE</div>';
             }
 
-            if (now > bookingEnd && eventDate > now) {
-                return '<div class="status-badge closed">BOOKING CLOSED</div>';
-            }
-
-            return '<div class="status-badge">UNAVAILABLE</div>';
+            return '<div class="status-badge closed">BOOKING CLOSED</div>';
         }
 
-        // Helper function to get event type badge HTML
         function getEventTypeBadge(eventType) {
             const badges = {
                 venue: '<span class="event-badge venue">Venue Event</span>',
@@ -1671,1211 +3506,388 @@
             return badges[eventType] || '';
         }
 
-        async function openBooking(eventId) {
+        // Add this function before the window.addEventListener
+        async function initializeCarousel() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'events'));
+                const carouselContainer = document.getElementById('carouselContainer');
+                const events = [];
+
+                querySnapshot.forEach((doc) => {
+                    const event = doc.data();
+                    if (event.images && event.images.length > 0) {
+                        // Randomly select an image from the array
+                        const randomIndex = Math.floor(Math.random() * event.images.length);
+                        events.push({
+                            id: doc.id,
+                            name: event.name,
+                            image: event.images[randomIndex], // Use random image instead of first one
+                            date: new Date(event.date).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                            }),
+                            venue: event.eventType === 'online' ? 
+                                'Online Event' : 
+                                (event.venueDetails?.venue || 'Venue TBA')
+                        });
+                    }
+                });
+
+                if (events.length === 0) {
+                    carouselContainer.innerHTML = '<div class="carousel-item"><p style="color: white; text-align: center; padding: 2rem;">No events available</p></div>';
+                    return;
+                }
+
+                // Create carousel items
+                events.forEach((event) => {
+                    const item = document.createElement('div');
+                    item.className = 'carousel-item';
+                    item.innerHTML = `
+                        <img src="${event.image}" alt="${event.name}">
+                        <div class="carousel-content">
+                            <h2>${event.name}</h2>
+                            <div class="carousel-info">
+                                <span><i class="fas fa-calendar"></i> ${event.date}</span>
+                                <span><i class="fas fa-map-marker-alt"></i> ${event.venue}</span>
+                            </div>
+                        </div>
+                    `;
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('click', () => {
+                        window.location.href = `event-details.html?id=${event.id}`;
+                    });
+                    carouselContainer.appendChild(item);
+                });
+
+                // Auto scroll functionality
+                let currentIndex = 0;
+                const totalItems = events.length;
+
+                function scrollCarousel() {
+                    currentIndex = (currentIndex + 1) % totalItems;
+                    carouselContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
+                }
+
+                // Start auto-scroll if there's more than one event
+                if (totalItems > 1) {
+                    setInterval(scrollCarousel, 5000);
+                }
+
+            } catch (error) {
+                console.error('Error initializing carousel:', error);
+            }
+        }
+
+        // Add this function to handle view details
+        async function viewEventDetails(eventId) {
             try {
                 const eventDoc = await getDoc(doc(db, 'events', eventId));
                 if (!eventDoc.exists()) {
-                    throw new Error('Event not found');
+                    alert('Event not found');
+                    return;
                 }
 
                 const event = eventDoc.data();
-                currentEvent = { id: eventId, ...event };
-
-                // Check booking status
                 const now = new Date();
                 const bookingStart = new Date(event.bookingStartDate);
                 const bookingEnd = new Date(event.bookingDeadline);
-                
-                let bookingStatus = '';
-                let canBook = true;
-                let bookingTimeInfo = '';
 
-                // Format dates for display
-                const formatDateTime = (date) => {
-                    return date.toLocaleString('en-IN', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-                };
-
-                // Get available tickets and prices
-                const venueAvailable = event.tickets?.venue?.available || 0;
-                const onlineAvailable = event.tickets?.online?.available || 0;
-                const venuePrice = event.tickets?.venue?.price || 0;
-                const onlinePrice = event.tickets?.online?.price || 0;
-
-                // Determine booking status
-                if (now < bookingStart) {
-                    bookingStatus = '<span class="status-badge upcoming">Booking Not Started</span>';
-                    bookingTimeInfo = `
-                        <div class="booking-time-info">
-                            <p><i class="fas fa-clock"></i> Booking Starts: ${formatDateTime(bookingStart)}</p>
-                            <p><i class="fas fa-clock"></i> Booking Closes: ${formatDateTime(bookingEnd)}</p>
-                        </div>`;
-                    canBook = false;
-                } else if (now > bookingEnd) {
-                    bookingStatus = '<span class="status-badge closed">Booking Closed</span>';
-                    canBook = false;
+                // Check ticket availability
+                let availableTickets = 0;
+                if (event.eventType === 'hybrid') {
+                    availableTickets = (event.tickets?.venue?.available || 0) + (event.tickets?.online?.available || 0);
                 } else {
-                    if (event.eventType === 'hybrid' && venueAvailable === 0 && onlineAvailable === 0) {
-                        bookingStatus = '<span class="status-badge sold-out">Sold Out</span>';
-                        canBook = false;
-                    } else if (event.eventType === 'venue' && venueAvailable === 0) {
-                        bookingStatus = '<span class="status-badge sold-out">Sold Out</span>';
-                        canBook = false;
-                    } else if (event.eventType === 'online' && onlineAvailable === 0) {
-                        bookingStatus = '<span class="status-badge sold-out">Sold Out</span>';
-                        canBook = false;
-                    } else {
-                        bookingStatus = '<span class="status-badge live">Booking Live</span>';
-                        bookingTimeInfo = `
-                            <div class="booking-time-info">
-                                <p><i class="fas fa-clock"></i> Booking Closes: ${formatDateTime(bookingEnd)}</p>
-                            </div>`;
-                    }
+                    availableTickets = event.availableTickets || 0;
                 }
 
-                // Format event date
-                const eventDate = new Date(event.date);
-                const formattedDate = eventDate.toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                });
+                // Store booking period info in session storage
+                sessionStorage.setItem('eventBookingStart', bookingStart.toISOString());
+                sessionStorage.setItem('eventBookingEnd', bookingEnd.toISOString());
+                sessionStorage.setItem('availableTickets', availableTickets.toString());
 
-                // Create ticket information HTML
-                const getTicketInfoHTML = () => {
-                    // Get prices and available tickets
-                    const venuePrice = event.tickets?.venue?.price || 0;
-                    const onlinePrice = event.tickets?.online?.price || 0;
-                    const venueAvailable = event.tickets?.venue?.available || 0;
-                    const onlineAvailable = event.tickets?.online?.available || 0;
-
-                    // Check if booking hasn't started yet
-                    const now = new Date();
-                    const bookingStart = new Date(event.bookingStartDate);
-                    const isBookingNotStarted = now < bookingStart;
-
-                    const getAvailabilityText = (available) => {
-                        if (isBookingNotStarted) {
-                            return `<span class="available-count upcoming">${available} seats</span>`;
-                        }
-                        if (available === 0) {
-                            return '<span class="available-count sold">Sold Out</span>';
-                        }
-                        return `<span class="available-count">${available} available</span>`;
-                    };
-
-                    if (event.eventType === 'hybrid') {
-                        return `
-                            <div class="ticket-info">
-                                <div class="price-tag ${!canBook ? 'inactive' : ''}">
-                                    <div class="price-details">
-                                        <strong>Venue Ticket:</strong>
-                                        <span class="price">₹${venuePrice.toLocaleString('en-IN')}</span>
-                                    </div>
-                                    ${getAvailabilityText(venueAvailable)}
-                                </div>
-                                <div class="price-tag ${!canBook ? 'inactive' : ''}">
-                                    <div class="price-details">
-                                        <strong>Online Access:</strong>
-                                        <span class="price">₹${onlinePrice.toLocaleString('en-IN')}</span>
-                                    </div>
-                                    ${getAvailabilityText(onlineAvailable)}
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        const price = event.eventType === 'venue' ? 
-                            event.tickets?.venue?.price || 0 : 
-                            event.tickets?.online?.price || 0;
-                        const available = event.eventType === 'venue' ? 
-                            event.tickets?.venue?.available || 0 : 
-                            event.tickets?.online?.available || 0;
-                        
-                        return `
-                            <div class="ticket-info">
-                                <div class="price-tag ${!canBook ? 'inactive' : ''}">
-                                    <div class="price-details">
-                                        <strong>${event.eventType === 'venue' ? 'Venue Ticket' : 'Online Access'}:</strong>
-                                        <span class="price">₹${price.toLocaleString('en-IN')}</span>
-                                    </div>
-                                    ${getAvailabilityText(available)}
-                                </div>
-                            </div>
-                        `;
-                    }
-                };
-
-                // Update event details HTML
-                const eventDetails = document.getElementById('eventFullDetails');
-                eventDetails.innerHTML = `
-                    <div class="event-full-details">
-                        <div class="event-images-carousel">
-                            ${event.images ? event.images.map(img => `
-                                <img src="${img}" alt="${event.name}" class="event-detail-image">
-                            `).join('') : '<img src="https://via.placeholder.com/600x400" alt="No image available">'}
-                        </div>
-
-                        <div class="event-header">
-                            <h2>${event.name}</h2>
-                            ${bookingStatus}
-                        </div>
-
-                        ${bookingTimeInfo}
-
-                        <div class="event-info-grid">
-                            <div class="event-info-section">
-                                <h3>Event Details</h3>
-                                <div class="info-item">
-                                    <i class="fas fa-calendar"></i>
-                                    <span><strong>Date:</strong> ${formattedDate}</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-clock"></i>
-                                    <span><strong>Time:</strong> ${event.time || '10:00 AM'}</span>
-                                </div>
-                                ${event.eventType !== 'online' ? `
-                                    <div class="info-item">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        <span><strong>Venue:</strong> ${event.venueDetails?.venue || 'To be announced'}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-location-dot"></i>
-                                        <span><strong>Location:</strong> ${event.venueDetails?.place || 'To be announced'}</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-
-                            <div class="event-info-section">
-                                <h3>Ticket Information</h3>
-                                ${getTicketInfoHTML()}
-                            </div>
-                        </div>
-
-                        <div class="event-description">
-                            <h3>Description</h3>
-                            <p>${event.description || 'No description available.'}</p>
-                        </div>
-
-                        ${canBook ? `
-                            <div class="booking-actions">
-                                ${event.eventType === 'venue' ? `
-                                    <button onclick="bookTicket('venue')" class="book-tickets-btn venue">
-                                        <i class="fas fa-ticket"></i> Book Venue Ticket
-                                    </button>
-                                ` : event.eventType === 'online' ? `
-                                    <button onclick="bookTicket('online')" class="book-tickets-btn online">
-                                        <i class="fas fa-laptop"></i> Book Online Access
-                                    </button>
-                                ` : `
-                                    <div class="hybrid-buttons">
-                                        ${venueAvailable > 0 ? `
-                                            <button onclick="bookTicket('venue')" class="book-tickets-btn venue">
-                                                <i class="fas fa-ticket"></i> Book Venue Ticket
-                                            </button>
-                                        ` : ''}
-                                        ${onlineAvailable > 0 ? `
-                                            <button onclick="bookTicket('online')" class="book-tickets-btn online">
-                                                <i class="fas fa-laptop"></i> Book Online Access
-                                            </button>
-                                        ` : ''}
-                                    </div>
-                                `}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-
-                // Show modal and reset other sections
-                document.getElementById('bookingModal').style.display = 'block';
-                document.getElementById('paymentDetails').style.display = 'none';
-                document.getElementById('successSection').style.display = 'none';
+                // If all checks pass, proceed to event details page
+                const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+                window.location.href = `${baseUrl}/event-details.html?id=${eventId}`;
 
             } catch (error) {
-                console.error('Error opening booking:', error);
+                console.error('Error viewing event details:', error);
                 alert('Error loading event details. Please try again.');
             }
         }
 
-        function showTicketSelection() {
-            document.getElementById('eventFullDetails').style.display = 'none';
-            document.getElementById('ticketSelection').style.display = 'block';
-        }
+        // Make the function globally available
+        window.viewEventDetails = viewEventDetails;
 
-        function proceedToPayment() {
-            try {
-                const ticketCount = parseInt(document.getElementById('ticketCount').value);
-                if (!ticketCount || ticketCount < 1) {
-                    alert('Please select at least 1 ticket');
-                    return;
-                }
-
-                // Get price for selected ticket type
-                const ticketPrice = currentTicketType === 'venue' ? 
-                    currentEvent.tickets.venue.price : 
-                    currentEvent.tickets.online.price;
-
-                const totalPrice = ticketPrice * ticketCount;
-                
-                // Show payment details section
-                document.getElementById('ticketSelection').style.display = 'none';
-                document.getElementById('paymentDetails').style.display = 'block';
-
-                // Update payment details with total amount
-                const paymentDetails = document.getElementById('paymentDetails');
-                paymentDetails.innerHTML = `
-                    <h3>Payment Details</h3>
-                    <p><strong>Total Amount:</strong> ₹${totalPrice.toLocaleString('en-IN')}</p>
-                    <div class="form-group">
-                        <label>Card Type</label>
-                        <select id="cardType" class="form-control">
-                            <option value="credit">Credit Card</option>
-                            <option value="debit">Debit Card</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Card Number</label>
-                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
-                    </div>
-                    <div class="form-group">
-                        <label>Expiry Date</label>
-                        <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
-                    </div>
-                    <div class="form-group">
-                        <label>CVV</label>
-                        <input type="text" id="cardCVV" placeholder="123" maxlength="3">
-                    </div>
-                    <div class="form-group">
-                        <label>Name on Card</label>
-                        <input type="text" id="cardName" placeholder="John Doe">
-                    </div>
-                    <button onclick="processPayment()" class="book-btn">Pay Now</button>
-                `;
-            } catch (error) {
-                console.error('Error proceeding to payment:', error);
-                alert('Error proceeding to payment. Please try again.');
-            }
-        }
-
-        async function processPayment() {
-            try {
-                // Show processing screen
-                document.getElementById('paymentDetails').style.display = 'none';
-                document.getElementById('paymentProcessing').style.display = 'block';
-
-                // Get ticket count and validate
-                const ticketCount = parseInt(document.getElementById('ticketCount').value);
-                if (!ticketCount || ticketCount < 1) {
-                    throw new Error('Please select at least 1 ticket');
-                }
-
-                // Get ticket price based on type
-                const ticketPrice = currentTicketType === 'venue' ? 
-                    currentEvent.tickets.venue.price : 
-                    currentEvent.tickets.online.price;
-
-                const totalPrice = ticketPrice * ticketCount;
-
-                // Validate user is logged in
-                if (!auth.currentUser) {
-                    throw new Error('Please log in to continue');
-                }
-
-                // Format dates
-                const eventDate = new Date(currentEvent.date).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                });
-                
-                const eventTime = currentEvent.time || 
-                    new Date(currentEvent.date).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-
-                // Create ticket data
-                const ticketData = {
-                    userId: auth.currentUser.uid,
-                    userEmail: auth.currentUser.email,
-                    eventId: currentEvent.id,
-                    eventName: currentEvent.name,
-                    eventDate: eventDate,
-                    eventTime: eventTime,
-                    ticketCount: ticketCount,
-                    ticketPrice: ticketPrice,
-                    totalPrice: totalPrice,
-                    purchaseDate: new Date().toISOString(),
-                    status: 'active',
-                    paymentStatus: 'completed',
-                    ticketType: currentTicketType,
-                    eventType: currentEvent.eventType,
-                    ticketIdentifier: generateTicketIdentifier(),
-                    venue: currentEvent.venueDetails?.venue || 'Online Event'
-                };
-
-                // Add ticket to database
-                const ticketRef = await addDoc(collection(db, 'tickets'), ticketData);
-
-                // Update available tickets count
-                const eventRef = doc(db, 'events', currentEvent.id);
-                await updateDoc(eventRef, {
-                    [`tickets.${currentTicketType}.available`]: increment(-ticketCount),
-                    soldTickets: increment(ticketCount)
-                });
-
-                // Generate QR code data
-                const qrData = ticketData.ticketIdentifier;  // Only use the ticket identifier
-
-                // Generate QR code
-                const qrcodeContainer = document.createElement('div');
-                new QRCode(qrcodeContainer, {
-                    text: qrData,  // Simplified QR data
-                    width: 256,
-                    height: 256,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-
-                // Show success message
-                document.getElementById('paymentProcessing').style.display = 'none';
-                document.getElementById('successSection').style.display = 'block';
-                
-                document.getElementById('successMessage').innerHTML = `
-                    <h3>Booking Successful!</h3>
-                    <p>Your ticket has been booked successfully.</p>
-                    <p><strong>Ticket ID:</strong> ${ticketData.ticketIdentifier}</p>
-                    <p><strong>Event:</strong> ${currentEvent.name}</p>
-                    <p><strong>Date:</strong> ${eventDate}</p>
-                    <p><strong>Time:</strong> ${eventTime}</p>
-                    <p><strong>Venue:</strong> ${currentEvent.venueDetails?.venue || 'Online Event'}</p>
-                    <p><strong>Ticket Type:</strong> ${currentTicketType}</p>
-                    <p><strong>Number of Tickets:</strong> ${ticketCount}</p>
-                    <p><strong>Total Amount Paid:</strong> ₹${totalPrice.toLocaleString('en-IN')}</p>
-                `;
-
-                // Display QR code
-                document.getElementById('qrcode').innerHTML = '';
-                document.getElementById('qrcode').appendChild(qrcodeContainer);
-
-            } catch (error) {
-                console.error('Payment Error:', error);
-                document.getElementById('paymentProcessing').style.display = 'none';
-                document.getElementById('paymentDetails').style.display = 'block';
-                alert(error.message);
-            }
-        }
-
-        // Helper function to generate unique ticket identifier
-        function generateTicketIdentifier() {
-            const timestamp = new Date().getTime();
-            const random = Math.floor(Math.random() * 1000000);
-            return `TIX-${timestamp}-${random}`;
-        }
-
-        function closeModal() {
-            document.getElementById('bookingModal').style.display = 'none';
-            document.getElementById('eventFullDetails').style.display = 'block';
-            document.getElementById('ticketSelection').style.display = 'none';
-            document.getElementById('paymentDetails').style.display = 'none';
-            document.getElementById('successSection').style.display = 'none';
-            currentEvent = null;
-            currentTicketType = null;
-        }
-
-        async function showMyTickets() {
-            const modal = document.getElementById('myTicketsModal');
+        // Add these functions right after Firebase initialization
+        window.viewMyTickets = async function() {
+            const ticketsModal = document.getElementById('myTicketsModal');
             const ticketsList = document.getElementById('ticketsList');
-            
-            // Show modal first
-            modal.style.display = 'block';
-            ticketsList.innerHTML = '<p>Loading tickets...</p>';
+            ticketsList.innerHTML = '';
             
             try {
-                if (!auth.currentUser) {
-                    ticketsList.innerHTML = '<p style="text-align: center; padding: 20px;">Please login to view tickets.</p>';
+                const auth = getAuth();
+                const user = auth.currentUser;
+                
+                if (!user) {
+                    console.error('No user logged in');
                     return;
                 }
 
-                // Get user's tickets
-                const q = query(
-                    collection(db, 'tickets'), 
-                    where("userId", "==", auth.currentUser.uid)
-                );
+                const now = new Date(); // Get current date/time
+                const ticketsRef = collection(db, 'tickets');
+                const q = query(ticketsRef, where('userId', '==', user.uid));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
                     ticketsList.innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <p>No active tickets found.</p>
-                            <button onclick="showArchivedTickets()" class="archive-btn">View Archived Tickets</button>
-                        </div>`;
-                    return;
-                }
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <i class="fas fa-ticket-alt" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+                            <p>No tickets found. Book an event to see your tickets here!</p>
+                        </div>
+                    `;
+                } else {
+                    const validTickets = [];
 
-                let validTickets = 0;
-                const ticketsData = [];
-
-                // First, collect and validate all tickets
-                for (const ticketDoc of querySnapshot.docs) {
-                    const ticket = ticketDoc.data();
-                    try {
-                        const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
-                        if (!eventDoc.exists()) {
-                            console.warn(`Event not found for ticket ${ticketDoc.id}`);
-                            continue;
-                        }
+                    // Check each ticket's event existence and visibility
+                    for (const ticketDoc of querySnapshot.docs) {
+                        const ticket = ticketDoc.data();
                         
-                        const event = eventDoc.data();
-                        const eventDate = new Date(event.date);
-                        const now = new Date();
+                        // Check if the event exists and is visible
+                        const eventRef = doc(db, 'events', ticket.eventId);
+                        const eventDoc = await getDoc(eventRef);
                         
-                        // Skip tickets that are more than 2 days past the event date
-                        if (now > new Date(eventDate.getTime() + (2 * 24 * 60 * 60 * 1000))) {
-                            continue;
-                        }
+                        if (eventDoc.exists()) {
+                            const event = eventDoc.data();
+                            let isVisible = true;
 
-                        ticketsData.push({
-                            ticket,
-                            event,
-                            ticketId: ticketDoc.id,
-                            isExpired: eventDate < now
+                            // Check if event is hidden by scheduler
+                            if (event.scheduling) {
+                                if (event.scheduling.hideDate && new Date(event.scheduling.hideDate) < now) {
+                                    isVisible = false;
+                                    // Delete ticket if event is hidden
+                                    await deleteDoc(ticketDoc.ref);
+                                    continue;
+                                }
+                            }
+
+                            // Check if event date has passed
+                            if (new Date(event.date) < now) {
+                                isVisible = false;
+                                // Delete ticket if event has ended
+                                await deleteDoc(ticketDoc.ref);
+                                continue;
+                            }
+
+                            if (isVisible) {
+                                validTickets.push({
+                                    id: ticketDoc.id,
+                                    ...ticket
+                                });
+                            }
+                        } else {
+                            // Event doesn't exist, delete the ticket
+                            await deleteDoc(ticketDoc.ref);
+                        }
+                    }
+
+                    if (validTickets.length === 0) {
+                        ticketsList.innerHTML = `
+                            <div style="text-align: center; padding: 2rem; color: #666;">
+                                <i class="fas fa-ticket-alt" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+                                <p>No valid tickets found. Book an event to see your tickets here!</p>
+                            </div>
+                        `;
+                    } else {
+                        validTickets.forEach(ticket => {
+                            const ticketCard = createTicketCard(ticket.id, ticket);
+                            ticketsList.appendChild(ticketCard);
                         });
-                        validTickets++;
-                    } catch (err) {
-                        console.error(`Error processing ticket ${ticketDoc.id}:`, err);
                     }
                 }
 
-                // Check if we have any valid tickets to display
-                if (validTickets === 0) {
-                    ticketsList.innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <p>No active tickets found.</p>
-                            <button onclick="showArchivedTickets()" class="archive-btn">View Archived Tickets</button>
-                        </div>`;
-                    return;
-                }
-
-                // Display valid tickets
-                ticketsList.innerHTML = `
-                    <div class="tickets-header">
-                        <h2>Active Tickets</h2>
-                        <button onclick="showArchivedTickets()" class="archive-btn">View Archived Tickets</button>
-                    </div>
-                    <div class="tickets-grid"></div>
-                `;
-
-                const ticketsGrid = document.querySelector('.tickets-grid');
-                
-                // Render each valid ticket
-                ticketsData.forEach(({ticket, event, ticketId, isExpired}) => {
-                    const ticketElement = createTicketCard(ticket, event, ticketId, isExpired);
-                    ticketsGrid.appendChild(ticketElement);
-                });
-
+                ticketsModal.style.display = 'block';
             } catch (error) {
-                console.error("Error loading tickets:", error);
+                console.error('Error fetching tickets:', error);
                 ticketsList.innerHTML = `
-                    <p style="text-align: center; color: red; padding: 20px;">
-                        Error loading tickets. Please try again.
-                    </p>
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <p>Error loading tickets. Please try again later.</p>
+                    </div>
                 `;
             }
-        }
+        };
 
-        function createTicketCard(ticket, event, ticketId, isExpired) {
-            const eventDate = new Date(event.date);
-            const formattedEventDate = eventDate.toLocaleDateString('en-IN', {
+        // Add this helper function to create ticket cards
+        function createTicketCard(ticketId, ticket) {
+            const card = document.createElement('div');
+            card.className = 'ticket-card';
+            
+            const eventDate = new Date(ticket.eventDate);
+            const formattedDate = eventDate.toLocaleDateString('en-IN', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
             });
-
-            const formattedTime = event.time || eventDate.toLocaleTimeString('en-IN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            });
-
-            const ticketType = ticket.ticketType ? ticket.ticketType.toUpperCase() : 'N/A';
-            const venue = event.venueDetails?.venue || 'Online Event';
-
-            const div = document.createElement('div');
-            div.className = 'ticket-card';
-            div.innerHTML = `
+            
+            card.innerHTML = `
                 <div class="ticket-header">
-                    <h3>${event.name}</h3>
-                    <span class="ticket-status ${isExpired ? 'expired' : 'active'}">
-                        ${isExpired ? 'Expired' : 'Active'}
-                    </span>
+                    <h3 class="ticket-title">${ticket.eventName}</h3>
+                    <div class="ticket-date">
+                        <i class="far fa-calendar-alt"></i>
+                        ${formattedDate}
+                    </div>
                 </div>
                 <div class="ticket-content">
-                    <div class="ticket-details">
-                        <p>
-                            <i class="fas fa-calendar"></i>
-                            <span class="detail-label">Date:</span> 
-                            ${formattedEventDate}
-                        </p>
-                        <p>
-                            <i class="fas fa-clock"></i>
-                            <span class="detail-label">Time:</span> 
-                            ${formattedTime}
-                        </p>
-                        <p>
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span class="detail-label">Venue:</span> 
-                            ${venue}
-                        </p>
-                        <p>
-                            <i class="fas fa-ticket"></i>
-                            <span class="detail-label">Quantity:</span> 
-                            ${ticket.ticketCount} Ticket(s)
-                        </p>
-                        <p>
-                            <i class="fas fa-tag"></i>
-                            <span class="detail-label">Amount Paid:</span> 
-                            ₹${ticket.totalPrice}
-                        </p>
-                        <p>
-                            <i class="fas fa-info-circle"></i>
-                            <span class="detail-label">Ticket Type:</span> 
-                            ${ticketType}
-                        </p>
-                        <p>
-                            <i class="fas fa-ticket"></i>
-                            <span class="detail-label">Ticket ID:</span> 
-                            ${ticket.ticketIdentifier || 'N/A'}
-                        </p>
+                    <div class="ticket-info">
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-map-marker-alt"></i> Venue
+                            </span>
+                            <span class="info-value">${ticket.venue || 'Online Event'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-ticket-alt"></i> Quantity
+                            </span>
+                            <span class="info-value highlight">${ticket.ticketCount} ticket${ticket.ticketCount > 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-fingerprint"></i> Ticket ID
+                            </span>
+                            <span class="info-value">${ticket.ticketIdentifier}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-rupee-sign"></i> Amount Paid
+                            </span>
+                            <span class="info-value highlight">₹${ticket.totalPrice}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="ticket-actions">
-                    <button onclick="downloadTicket('${ticketId}')" class="download-ticket-btn" ${isExpired ? 'disabled' : ''}>
-                        <i class="fas fa-download"></i> Download Ticket
-                    </button>
+                    <div class="ticket-actions">
+                        <button onclick="downloadTicket('${ticketId}')" class="download-btn" title="Download Ticket">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
                 </div>
             `;
-            return div;
+            
+            return card;
         }
 
-        async function showArchivedTickets() {
-            const ticketsList = document.getElementById('ticketsList');
-            ticketsList.innerHTML = '<p>Loading archived tickets...</p>';
+        // Add this function for ticket filtering
+        function filterTickets() {
+            const status = document.getElementById('ticketStatusFilter').value;
+            const searchText = document.getElementById('ticketSearch').value.toLowerCase();
+            const tickets = document.querySelectorAll('.ticket-card');
 
-            try {
-                const q = query(collection(db, 'tickets'), where("userId", "==", auth.currentUser.uid));
-                const querySnapshot = await getDocs(q);
-
-                ticketsList.innerHTML = `
-                    <div class="tickets-header">
-                        <h2>Archived Tickets</h2>
-                        <button onclick="showMyTickets()" class="back-btn">Back to Active Tickets</button>
-                    </div>
-                    <div class="tickets-grid"></div>
-                `;
-
-                const ticketsGrid = document.querySelector('.tickets-grid');
-                const now = new Date();
-
-                for (const ticketDoc of querySnapshot.docs) {
-                    const ticket = ticketDoc.data();
-                    const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
-                    
-                    if (!eventDoc.exists()) continue;
-                    
-                    const event = eventDoc.data();
-                    const eventDate = new Date(event.date);
-                    
-                    // Only show tickets that are more than 2 days past the event date
-                    if (now <= new Date(eventDate.getTime() + (2 * 24 * 60 * 60 * 1000))) {
-                        continue;
-                    }
-
-                    const ticketElement = createArchivedTicketCard(ticket, event, ticketDoc.id);
-                    ticketsGrid.appendChild(ticketElement);
-                }
-
-            } catch (error) {
-                console.error("Error loading archived tickets:", error);
-                ticketsList.innerHTML = `
-                    <p style="text-align: center; color: red; padding: 20px;">
-                        Error loading archived tickets. Please try again.
-                    </p>
-                `;
-            }
+            tickets.forEach(ticket => {
+                const title = ticket.querySelector('.ticket-title').textContent.toLowerCase();
+                const isPast = ticket.querySelector('.ticket-status').classList.contains('past');
+                
+                let statusMatch = status === 'all' || 
+                    (status === 'upcoming' && !isPast) || 
+                    (status === 'past' && isPast);
+                
+                let searchMatch = title.includes(searchText);
+                
+                ticket.style.display = statusMatch && searchMatch ? 'block' : 'none';
+            });
         }
 
+        // Add this function to close the tickets modal
+        window.closeMyTicketsModal = function() {
+            const ticketsModal = document.getElementById('myTicketsModal');
+            ticketsModal.style.display = 'none';
+        };
+
+        // Add styles to head
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = styles;
+        document.head.appendChild(styleSheet);
+
+        // Update the nav button click handler
+        document.querySelector('.nav-btn[title="My Tickets"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            viewMyTickets();
+        });
+
+        // Add this function to close modal
+        function closeModal() {
+            const modal = document.getElementById('bookingModal');
+            modal.style.display = 'none';
+        }
+
+        // Make it globally available
+        window.closeModal = closeModal;
+
+        // Add download ticket function
         async function downloadTicket(ticketId) {
             try {
-                // Show loading indicator
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'download-loading';
-                loadingDiv.innerHTML = `
-                    <div class="loading-spinner"></div>
-                    <p>Generating ticket...</p>
-                `;
-                document.body.appendChild(loadingDiv);
-
-                // Get ticket and event data
+                // Get ticket data
                 const ticketDoc = await getDoc(doc(db, 'tickets', ticketId));
                 if (!ticketDoc.exists()) {
-                    throw new Error('Ticket not found');
+                    alert('Ticket not found');
+                    return;
                 }
 
                 const ticket = ticketDoc.data();
-                const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
-                if (!eventDoc.exists()) {
-                    throw new Error('Event not found');
-                }
 
-                const event = eventDoc.data();
-
-                // Format date and time
-                const eventDate = new Date(event.date);
-                const formattedDate = eventDate.toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                });
-                const formattedTime = event.time || eventDate.toLocaleTimeString('en-IN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                });
-
-                // Create temporary container
-                const ticketContainer = document.createElement('div');
-                ticketContainer.className = 'ticket-download-template';
-                ticketContainer.innerHTML = `
+                // Create ticket HTML
+                const ticketHTML = `
                     <div class="ticket-download">
-                        <div class="ticket-header-download">
-                            <div class="header-content">
-                                <div class="logo-section">
-                                    <h2>EventTix</h2>
-                                    <div class="header-right">
-                                        <span class="ticket-type-badge">${ticket.ticketType?.toUpperCase() || 'N/A'}</span>
-                                        <span class="ticket-serial">#${ticketId.slice(-6).toUpperCase()}</span>
-                                    </div>
-                                </div>
-                                <h3>${event.name}</h3>
+                        <div class="ticket-header">
+                            <h2>EventTix</h2>
+                            <p class="ticket-id">ID: ${ticket.ticketIdentifier}</p>
+                        </div>
+                        <div class="ticket-body">
+                            <h3>${ticket.eventName}</h3>
+                            <div class="ticket-info">
+                                <p><strong>Date:</strong> ${new Date(ticket.eventDate).toLocaleDateString()}</p>
+                                <p><strong>Tickets:</strong> ${ticket.ticketCount}</p>
+                                <p><strong>Amount Paid:</strong> ₹${ticket.totalPrice}</p>
+                                <p><strong>Status:</strong> ${ticket.used ? 'Used' : 'Valid'}</p>
                             </div>
                         </div>
-                        
-                        <div class="ticket-content-download">
-                            <div class="ticket-details-download">
-                                <div class="detail-row">
-                                    <div class="detail-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <div class="detail-text">
-                                            <label>Event Date</label>
-                                            <span>${formattedDate}</span>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-clock"></i>
-                                        <div class="detail-text">
-                                            <label>Event Time</label>
-                                            <span>${formattedTime}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="detail-row">
-                                    <div class="detail-item">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        <div class="detail-text">
-                                            <label>Venue</label>
-                                            <span>${event.venueDetails?.venue || 'Online Event'}</span>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-ticket-alt"></i>
-                                        <div class="detail-text">
-                                            <label>Ticket Quantity</label>
-                                            <span>${ticket.ticketCount} Ticket(s)</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="detail-row">
-                                    <div class="detail-item">
-                                        <i class="fas fa-tag"></i>
-                                        <div class="detail-text">
-                                            <label>Amount Paid</label>
-                                            <span>₹${ticket.totalPrice}</span>
-                                        </div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-user"></i>
-                                        <div class="detail-text">
-                                            <label>Booked By</label>
-                                            <span>${auth.currentUser.email}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="qr-section">
-                                <div class="qr-container">
-                                    <div id="qrcode-${ticketId}"></div>
-                                    <p class="qr-label">Scan for verification</p>
-                                </div>
-                                <div class="verification-text">
-                                    <p>Valid until: ${formattedDate} ${formattedTime}</p>
-                                    <p>Ticket ID: ${ticket.ticketIdentifier || 'N/A'}</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="ticket-footer">
-                            <div class="terms-section">
-                                <div class="terms-conditions">
-                                    <p class="terms-header">Terms & Conditions:</p>
-                                    <ul>
-                                        <li>This ticket is valid only for the specified date and time</li>
-                                        <li>Entry will be denied if the ticket is damaged or tampered</li>
-                                        <li>Please carry a valid ID proof along with this ticket</li>
-                                        <li>This ticket is non-transferable and non-refundable</li>
-                                        <li>Outside food and beverages are not permitted</li>
-                                        <li>Photography and recording may be restricted as per event policy</li>
-                                    </ul>
-                                </div>
-                                <div class="restrictions">
-                                    <p>Important Notes:</p>
-                                    <ul>
-                                        <li>Arrive 30 minutes before event time</li>
-                                        <li>Follow venue COVID-19 guidelines</li>
-                                        <li>Age restrictions may apply</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="footer-info">
-                                <p class="support-text">For support: support@eventtix.com | +91 XXX XXX XXXX</p>
-                                <p class="copyright">© ${new Date().getFullYear()} EventTix. All rights reserved.</p>
-                            </div>
+                            <p>This is an electronically generated ticket.</p>
                         </div>
                     </div>
                 `;
 
-                document.body.appendChild(ticketContainer);
-
-                // Generate QR Code
-                const qrData = ticket.ticketIdentifier;  // Only use the ticket identifier
-
-                // Create QR Code
-                const qrCode = new QRCode(document.getElementById(`qrcode-${ticketId}`), {
-                    text: qrData,  // Simplified QR data
-                    width: 128,
-                    height: 128,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-
-                // Wait for QR code to generate
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // Load html2canvas dynamically if not available
-                if (typeof html2canvas === 'undefined') {
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                        script.onload = resolve;
-                        script.onerror = reject;
-                        document.head.appendChild(script);
-                    });
-                }
+                // Create a temporary container
+                const container = document.createElement('div');
+                container.innerHTML = ticketHTML;
+                document.body.appendChild(container);
 
                 // Use html2canvas to create image
-                const canvas = await html2canvas(ticketContainer, {
-                    scale: 2,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    useCORS: true
-                });
+                const canvas = await html2canvas(container.firstChild);
+                document.body.removeChild(container);
 
-                // Create download link
+                // Convert to image and download
+                const image = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = `EventTix-${ticketId}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.download = `EventTix-${ticket.ticketIdentifier}.png`;
+                link.href = image;
                 link.click();
-
-                // Clean up
-                document.body.removeChild(ticketContainer);
-                document.body.removeChild(loadingDiv);
 
             } catch (error) {
                 console.error('Error downloading ticket:', error);
                 alert('Error downloading ticket. Please try again.');
-                // Remove loading indicator if there's an error
-                const loadingDiv = document.querySelector('.download-loading');
-                if (loadingDiv) {
-                    document.body.removeChild(loadingDiv);
-                }
-                // Remove ticket container if it exists
-                const ticketContainer = document.querySelector('.ticket-download-template');
-                if (ticketContainer) {
-                    document.body.removeChild(ticketContainer);
-                }
             }
         }
 
-        // Add this function to close the tickets modal
-        function closeMyTicketsModal() {
-            document.getElementById('myTicketsModal').style.display = 'none';
+        // Make function globally available
+        window.downloadTicket = downloadTicket;
+
+        // Add this right after Firebase initialization and before the event listeners
+        function viewMyTickets() {
+            const modal = document.getElementById('bookingModal');
+            modal.style.display = 'block';
         }
 
-        // Update the modal HTML to use the correct function
-        const myTicketsModalHTML = `
-        <div id="myTicketsModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeMyTicketsModal()">&times;</span>
-                <h2>My Tickets</h2>
-                <div id="ticketsList">
-                    <!-- Tickets will be dynamically added here -->
-                </div>
-            </div>
-        </div>
-        `;
-
-        // Make sure the function is available in the global scope
-        window.closeMyTicketsModal = closeMyTicketsModal;
-
-        // Add this function to update the tickets display
-        function displayUserTickets(tickets, events) {
-            const ticketsContainer = document.getElementById('userTicketsContainer');
-            if (!ticketsContainer) return;
-
-            ticketsContainer.innerHTML = `
-                <div class="tix-container">
-                    ${tickets.map(ticket => {
-                        const event = events[ticket.eventId] || {};
-                        const eventDate = new Date(event.date);
-                        const isPastEvent = eventDate < new Date();
-                        
-                        return `
-                            <div class="tix-card ${isPastEvent ? 'tix-past' : ''}">
-                                <div class="tix-header">
-                                    <div class="tix-event-name">${event.name || 'Event'}</div>
-                                    <div class="tix-badge ${getTicketStatusClass(ticket, event)}">${getTicketStatus(ticket, event)}</div>
-                                </div>
-                                
-                                <div class="tix-body">
-                                    <div class="tix-info">
-                                        <div class="tix-detail">
-                                            <i class="far fa-calendar"></i>
-                                            ${eventDate.toLocaleDateString()}
-                                        </div>
-                                        <div class="tix-detail">
-                                            <i class="far fa-clock"></i>
-                                            ${eventDate.toLocaleTimeString()}
-                                        </div>
-                                        <div class="tix-detail">
-                                            <i class="fas ${event.eventType === 'online' ? 'fa-video' : 'fa-map-marker-alt'}"></i>
-                                            ${event.eventType === 'online' ? 'Online Event' : (event.venueDetails?.venue || 'Venue TBA')}
-                                        </div>
-                                        <div class="tix-detail">
-                                            <i class="fas fa-ticket-alt"></i>
-                                            ${ticket.ticketId}
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="tix-price">
-                                        <span class="tix-price-label">Price Paid</span>
-                                        <span class="tix-price-value">₹${ticket.totalPrice || 0}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="tix-footer">
-                                    <button onclick="showUserTicketDetails('${ticket.ticketId}')" class="tix-view-btn">
-                                        <i class="fas fa-ticket-alt"></i> View Ticket
-                                    </button>
-                                    ${event.eventType === 'online' && !isPastEvent ? `
-                                        <button onclick="joinOnlineEvent('${event.onlineDetails?.meetingLink}')" class="tix-join-btn">
-                                            <i class="fas fa-video"></i> Join Event
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        // Helper functions
-        function getTicketStatus(ticket, event) {
-            const eventDate = new Date(event.date);
-            const now = new Date();
-            
-            if (eventDate < now) return 'Past Event';
-            if (ticket.used) return 'Used';
-            return 'Valid';
-        }
-
-        function getTicketStatusClass(ticket, event) {
-            const eventDate = new Date(event.date);
-            const now = new Date();
-            
-            if (eventDate < now) return 'tix-status-past';
-            if (ticket.used) return 'tix-status-used';
-            return 'tix-status-valid';
-        }
-
-        // Add this CSS to your dashboard.html
-        const ticketStyles = `
-        <style>
-            .tix-container {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 20px;
-                padding: 20px;
-            }
-
-            .tix-card {
-                background: white;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                transition: transform 0.2s;
-            }
-
-            .tix-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            }
-
-            .tix-past {
-                opacity: 0.7;
-            }
-
-            .tix-header {
-                padding: 15px;
-                background: linear-gradient(135deg, #1a237e, #0d47a1);
-                color: white;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .tix-event-name {
-                font-size: 1.2em;
-                font-weight: 600;
-                flex: 1;
-                margin-right: 10px;
-            }
-
-            .tix-badge {
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 0.8em;
-                font-weight: 500;
-            }
-
-            .tix-status-valid {
-                background: #4caf50;
-                color: white;
-            }
-
-            .tix-status-used {
-                background: #f44336;
-                color: white;
-            }
-
-            .tix-status-past {
-                background: #9e9e9e;
-                color: white;
-            }
-
-            .tix-body {
-                padding: 15px;
-            }
-
-            .tix-info {
-                display: grid;
-                gap: 10px;
-            }
-
-            .tix-detail {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                color: #666;
-            }
-
-            .tix-detail i {
-                width: 20px;
-                color: #1a237e;
-            }
-
-            .tix-price {
-                margin-top: 15px;
-                padding-top: 15px;
-                border-top: 1px solid #eee;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .tix-price-label {
-                color: #666;
-                font-size: 0.9em;
-            }
-
-            .tix-price-value {
-                font-size: 1.2em;
-                font-weight: 600;
-                color: #1a237e;
-            }
-
-            .tix-footer {
-                padding: 15px;
-                background: #f8f9fa;
-                display: flex;
-                gap: 10px;
-            }
-
-            .tix-view-btn, .tix-join-btn {
-                padding: 8px 16px;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 0.9em;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                transition: background-color 0.2s;
-            }
-
-            .tix-view-btn {
-                background: #1a237e;
-                color: white;
-            }
-
-            .tix-view-btn:hover {
-                background: #0d47a1;
-            }
-
-            .tix-join-btn {
-                background: #4caf50;
-                color: white;
-            }
-
-            .tix-join-btn:hover {
-                background: #45a049;
-            }
-
-            @media (max-width: 768px) {
-                .tix-container {
-                    grid-template-columns: 1fr;
-                    padding: 10px;
-                }
-            }
-        </style>
-        `;
-
-        // Add the styles to the document
-        document.head.insertAdjacentHTML('beforeend', ticketStyles);
-
-        // Function to join online event
-        function joinOnlineEvent(meetingLink) {
-            if (meetingLink) {
-                window.open(meetingLink, '_blank');
-            } else {
-                alert('Meeting link will be available before the event.');
-            }
-        }
-
-        // Make functions globally available
-        window.displayUserTickets = displayUserTickets;
-        window.joinOnlineEvent = joinOnlineEvent;
-
-        // Add this function after the openBooking function
-        function bookTicket(type) {
-            try {
-                // Validate ticket type
-                if (!['venue', 'online'].includes(type)) {
-                    throw new Error('Invalid ticket type');
-                }
-
-                // Store the selected ticket type
-                currentTicketType = type;
-
-                // Check if tickets are available
-                const availableTickets = currentEvent.tickets[type]?.available || 0;
-                if (availableTickets <= 0) {
-                    throw new Error('No tickets available for this type');
-                }
-
-                // Show ticket selection section
-                document.getElementById('eventFullDetails').style.display = 'none';
-                document.getElementById('ticketSelection').style.display = 'block';
-
-                // Update ticket selection form with available tickets and price
-                const ticketPrice = currentEvent.tickets[type].price;
-                document.getElementById('ticketSelection').innerHTML = `
-                    <h3>Book ${type.charAt(0).toUpperCase() + type.slice(1)} Ticket</h3>
-                    <div class="form-group">
-                        <label>Number of Tickets (Max: ${Math.min(availableTickets, 10)})</label>
-                        <input type="number" id="ticketCount" min="1" max="${Math.min(availableTickets, 10)}" value="1">
-                        <p>Price per ticket: ₹${ticketPrice}</p>
-                    </div>
-                    <button onclick="proceedToPayment()" class="book-btn">Continue to Payment</button>
-                    <button onclick="backToEventDetails()" class="book-btn" style="background: #718096; margin-top: 10px;">Back</button>
-                `;
-
-            } catch (error) {
-                console.error('Error booking ticket:', error);
-                alert(error.message);
-            }
-        }
-
-        // Add this helper function to go back to event details
-        function backToEventDetails() {
-            document.getElementById('eventFullDetails').style.display = 'block';
-            document.getElementById('ticketSelection').style.display = 'none';
-        }
-
-        // Make functions globally available
-        window.bookTicket = bookTicket;
-        window.backToEventDetails = backToEventDetails;
-
-        function logout() {
-            try {
-                // First sign out from Firebase
-                auth.signOut().then(() => {
-                    // Clear all localStorage
-                    localStorage.clear();
-                    
-                    // Use window.location.replace for immediate redirect
-                    window.location.replace('index.html');
-                    
-                    // Prevent back navigation
-                    window.history.pushState(null, '', 'index.html');
-                    
-                    // Additional fallback redirect
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 100);
-                }).catch((error) => {
-                    console.error("Error signing out:", error);
-                    // Force redirect even if there's an error
-                    window.location.replace('index.html');
-                });
-            } catch (error) {
-                console.error("Logout error:", error);
-                // Force redirect even if there's an error
-                window.location.replace('index.html');
-            }
-        }
+        // Make it globally available
+        window.viewMyTickets = viewMyTickets;
     </script>
 </body>
 </html>
-

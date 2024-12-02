@@ -10,10 +10,412 @@
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
+    /* Scheduler Styles */
+    <style>
+        /* Update Scheduler Styles */
+        .scheduling-section {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .schedule-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .schedule-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .schedule-checkbox label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .schedule-details {
+            margin-left: 1.5rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .schedule-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .helper-text {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* Animation for showing/hiding schedule sections */
+        .schedule-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-details[style*="block"] {
+            max-height: 200px;
+            opacity: 1;
+        }
+    </style>
+    <style>
+        /* Event Type Dropdown Styles */
+        .event-type-select {
+            position: relative;
+            width: 100%;
+        }
+
+        select#eventType {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: white;
+            font-size: 1rem;
+            color: #1a202c;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding-right: 40px;
+        }
+
+        select#eventType:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .event-type-select::after {
+            content: '\f107';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4a5568;
+            pointer-events: none;
+            transition: transform 0.2s ease;
+        }
+
+        .event-type-select:hover::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        select#eventType option {
+            padding: 12px;
+            background-color: white;
+            color: #1a202c;
+        }
+
+        select#eventType option:hover {
+            background-color: #f7fafc;
+        }
+
+        /* Style for disabled state */
+        select#eventType:disabled {
+            background-color: #f7fafc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Style for different event types */
+        select#eventType option[value="venue"] {
+            color: #2f855a;
+        }
+
+        select#eventType option[value="online"] {
+            color: #2b6cb0;
+        }
+
+        select#eventType option[value="hybrid"] {
+            color: #6b46c1;
+        }
+
+        /* Add focus styles for better accessibility */
+        select#eventType:focus-visible {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        /* Style for the select when opened */
+        select#eventType:active {
+            background-color: #f7fafc;
+        }
+
+  </style>
+
+    <style>
+        /* Mobile Bottom Navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            z-index: 1000;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .mobile-nav-items {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 0 10px;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mobile-nav-item i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .mobile-nav-item.active {
+            color: #667eea;
+        }
+
+        .mobile-nav-item span {
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        /* Update Sidebar and Main Content Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none !important;
+            }
+
+            .mobile-nav {
+                display: block !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding-bottom: 80px !important; /* Space for mobile nav */
+            }
+
+            .container {
+                padding: 10px;
+                margin-left: 0 !important;
+            }
+
+            /* Adjust stats grid for mobile */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            /* Adjust event cards for mobile */
+            .event-card {
+                margin-bottom: 15px;
+            }
+
+            /* Adjust form groups for mobile */
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            /* Adjust modal content for mobile */
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+
+    <style>
+        /* Mobile Top Navigation */
+        .mobile-top-nav {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            color: white;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .mobile-top-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .mobile-logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-logout-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* Update media queries */
+        @media (max-width: 768px) {
+            .mobile-top-nav {
+                display: flex;
+            }
+
+            .main-content {
+                margin-top: 60px !important; /* Space for top nav */
+                width: 100vw !important; /* Full viewport width */
+                padding: 0 !important;
+            }
+
+            .sidebar {
+                display: none !important;
+            }
+
+            .mobile-nav {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .container {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+            }
+
+            /* Adjust content sections */
+            .content-section {
+                padding: 10px !important;
+                width: 100% !important;
+            }
+
+            /* Adjust stats grid for mobile */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 10px;
+                width: 100%;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            /* Adjust event cards for mobile */
+            .event-card {
+                margin: 10px 0;
+                width: 100%;
+            }
+
+            /* Adjust form groups for mobile */
+            .form-group {
+                margin-bottom: 15px;
+                width: 100%;
+            }
+
+            /* Adjust modal content for mobile */
+            .modal-content {
+                width: 95%;
+                margin: 10px auto;
+                padding: 15px;
+            }
+
+            /* Hide desktop user info */
+            .user-info {
+                display: none !important;
+            }
+
+            /* Remove any fixed widths */
+            .events-grid,
+            .tickets-grid,
+            .form-container,
+            .event-form {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 10px !important;
+            }
+        }
+    </style>
+
+
+
+
 
     
 </head>
 <body>
+    <!-- Mobile Top Navbar -->
+    <div class="mobile-top-nav">
+        <div class="mobile-top-title">EventTix Admin</div>
+        <button onclick="logout()" class="mobile-logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
     <div class="container">
         <div class="sidebar">
             <div class="logo">
@@ -47,7 +449,7 @@
                 </div>
                 
                 <div class="menu-item" onclick="showSection('generateTicket')">
-                    <i class="fas fa-ticket-alt"></i>
+                    <i class="fas fa-plus-circle"></i>
                     <span>Generate Ticket</span>
                 </div>
                 
@@ -56,8 +458,14 @@
             
             <div class="user-info">
                 <span id="userEmail"></span>
-                <a href="index.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
+                <div class="sidebar-actions">
+                    <a href="index.html" class="home-btn" title="Go to Home">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button id="logoutBtn" class="logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -143,6 +551,27 @@
                         <div class="form-group">
                             <label>Event Date</label>
                             <input type="datetime-local" id="eventDate" required>
+                        </div>
+                        <!-- Event Scheduling Section -->
+                        <div class="scheduling-section">
+                            <h3>Event Scheduling</h3>
+                            <div class="schedule-checkbox">
+                                <input type="checkbox" id="enablePublishSchedule" onchange="toggleScheduleSection('publish')">
+                                <label for="enablePublishSchedule">Schedule Event Publishing</label>
+                            </div>
+                            <div id="publishScheduleSection" class="schedule-details" style="display: none;">
+                                <input type="datetime-local" id="publishDate" class="schedule-input">
+                                <div class="helper-text">Event will become visible to users at this time</div>
+                            </div>
+                            
+                            <div class="schedule-checkbox">
+                                <input type="checkbox" id="enableHideSchedule" onchange="toggleScheduleSection('hide')">
+                                <label for="enableHideSchedule">Schedule Event Hiding</label>
+                            </div>
+                            <div id="hideScheduleSection" class="schedule-details" style="display: none;">
+                                <input type="datetime-local" id="hideDate" class="schedule-input">
+                                <div class="helper-text">Event will be hidden from users at this time</div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Booking Start Date</label>
@@ -469,53 +898,61 @@
 
     <script>
     // Navigation
-function showSection(sectionId) {
-    // Hide all sections
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.style.display = 'none';
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Show selected section
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
+        }
+
+        // Update active menu item for both sidebar and mobile nav
+        document.querySelectorAll('.menu-item, .mobile-nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Activate sidebar menu item
+        const menuItem = document.querySelector(`.menu-item[onclick*="${sectionId}"]`);
+        if (menuItem) {
+            menuItem.classList.add('active');
+        }
+
+        // Activate mobile nav item
+        const mobileNavItem = document.querySelector(`.mobile-nav-item[onclick*="${sectionId}"]`);
+        if (mobileNavItem) {
+            mobileNavItem.classList.add('active');
+        }
+
+        // Handle section-specific initialization
+        switch (sectionId) {
+            case 'dashboard':
+                loadDashboard();
+                break;
+            case 'events':
+                loadEvents();
+                break;
+            case 'tickets':
+                loadTickets();
+                break;
+            case 'verification':
+                switchVerificationMethod('manual');
+                break;
+        }
+
+        // Clean up verification when switching away
+        if (sectionId !== 'verification') {
+            cleanupVerification();
+        }
+    }
+
+    // Ensure the dashboard is active on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        showSection('dashboard');
     });
-
-    // Show selected section
-    const selectedSection = document.getElementById(sectionId);
-    if (selectedSection) {
-        selectedSection.style.display = 'block';
-    }
-
-    // Update active menu item
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    const menuItem = document.querySelector(`.menu-item[onclick*="${sectionId}"]`);
-    if (menuItem) {
-        menuItem.classList.add('active');
-    }
-
-    // Handle section-specific initialization
-    switch (sectionId) {
-        case 'dashboard':
-            loadDashboard();
-            break;
-        case 'events':
-            loadEvents();
-            break;
-        case 'tickets':
-            loadTickets();
-            break;
-        case 'verification':
-            switchVerificationMethod('manual');
-            break;
-    }
-
-    // Clean up verification when switching away
-    if (sectionId !== 'verification') {
-        cleanupVerification();
-    }
-}
-
-// Ensure the dashboard is active on page load
-document.addEventListener('DOMContentLoaded', () => {
-    showSection('dashboard');
-});
 
     
 
@@ -694,6 +1131,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     bookingStartDate: new Date(document.getElementById('bookingStartDate').value).toISOString(),
                     bookingDeadline: new Date(document.getElementById('bookingDeadline').value).toISOString(),
                     eventType: eventType,
+                    scheduling: {
+                        publishDate: document.getElementById('enablePublishSchedule').checked ? 
+                            new Date(document.getElementById('publishDate').value).toISOString() : null,
+                        hideDate: document.getElementById('enableHideSchedule').checked ? 
+                            new Date(document.getElementById('hideDate').value).toISOString() : null
+                    },
                     images: Array.from(document.querySelectorAll('.eventImage'))
                         .map(input => input.value.trim())
                         .filter(url => url !== ''),
@@ -878,10 +1321,46 @@ document.addEventListener('DOMContentLoaded', () => {
         // Helper function to create event cards
         function createEventCard(event, eventId) {
             try {
-                const card = document.createElement('div');
-                card.className = 'event-card';
-                card.id = `event-${eventId}`;
-    
+                const div = document.createElement('div');
+                div.className = 'event-card';
+                div.setAttribute('data-event-id', eventId);
+
+                // Determine event visibility status
+                const now = new Date();
+                let visibilityStatus = '';
+                
+                if (event.scheduling) {
+                    if (event.scheduling.hideDate && new Date(event.scheduling.hideDate) < now) {
+                        visibilityStatus = `
+                            <span class="visibility-status archived">
+                                <i class="fas fa-archive"></i>
+                                Archived
+                            </span>
+                        `;
+                    } else if (event.scheduling.publishDate && new Date(event.scheduling.publishDate) > now) {
+                        visibilityStatus = `
+                            <span class="visibility-status scheduled">
+                                <i class="fas fa-clock"></i>
+                                Scheduled
+                            </span>
+                        `;
+                    } else {
+                        visibilityStatus = `
+                            <span class="visibility-status published">
+                                <i class="fas fa-globe"></i>
+                                Published
+                            </span>
+                        `;
+                    }
+                } else {
+                    visibilityStatus = `
+                        <span class="visibility-status published">
+                            <i class="fas fa-globe"></i>
+                            Published
+                        </span>
+                    `;
+                }
+
                 const eventTypeBadge = `
                     <span class="event-type-badge ${event.eventType}">
                         ${event.eventType ? event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1) : 'Unknown'}
@@ -966,10 +1445,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 ` : '';
     
-                card.innerHTML = `
+                div.innerHTML = `
                     <div class="event-card-content">
                         <div class="event-header">
-                            <h3>${event.name || 'Unnamed Event'} ${eventTypeBadge}</h3>
+                            <h3>
+                                ${event.name || 'Unnamed Event'} 
+                                ${eventTypeBadge}
+                                ${visibilityStatus}
+                            </h3>
                             <div class="event-id">ID: ${event.eventId || eventId}</div>
                         </div>
     
@@ -1001,7 +1484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
     
-                return card;
+                return div;
     
             } catch (error) {
                 console.error("Error creating event card:", error, event);
@@ -1164,15 +1647,51 @@ document.addEventListener('DOMContentLoaded', () => {
 });
         });
     
+        // Update the deleteEvent function
         async function deleteEvent(eventId) {
-            if (confirm('Are you sure you want to delete this event?')) {
-                try {
-                    await deleteDoc(doc(db, 'events', eventId));
-                    alert('Event deleted successfully!');
-                    loadEvents();
-                } catch (error) {
-                    console.error("Error deleting event:", error);
-                    alert('Error deleting event');
+            try {
+                if (!confirm('Are you sure you want to delete this event? This will also delete all associated tickets.')) {
+                    return;
+                }
+
+                // Show loading state
+                const deleteBtn = document.querySelector(`button[onclick="deleteEvent('${eventId}')"]`);
+                const originalText = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                deleteBtn.disabled = true;
+
+                // First, get all tickets associated with this event
+                const ticketsRef = collection(db, 'tickets');
+                const ticketQuery = query(ticketsRef, where('eventId', '==', eventId));
+                const ticketSnapshot = await getDocs(ticketQuery);
+
+                // Delete all associated tickets
+                const ticketDeletions = ticketSnapshot.docs.map(doc => 
+                    deleteDoc(doc.ref)
+                );
+
+                // Wait for all ticket deletions to complete
+                await Promise.all(ticketDeletions);
+
+                // Then delete the event
+                await deleteDoc(doc(db, 'events', eventId));
+
+                // Remove the event card from UI
+                const eventCard = document.querySelector(`[data-event-id="${eventId}"]`);
+                if (eventCard) {
+                    eventCard.remove();
+                }
+
+                alert('Event and associated tickets have been deleted successfully');
+
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                alert('Error deleting event: ' + error.message);
+                
+                // Restore delete button
+                if (deleteBtn) {
+                    deleteBtn.innerHTML = originalText;
+                    deleteBtn.disabled = false;
                 }
             }
         }
@@ -2247,6 +2766,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Error marking ticket as used: ' + error.message);
             }
         }
+
+        // Add these functions to handle image management
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            const imageGrid = document.getElementById('imageGrid');
+            
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-item';
+                    imageItem.innerHTML = `
+                        <img src="${e.target.result}" alt="Event image">
+                        <div class="image-actions">
+                            <button class="image-action-btn" onclick="moveImage(this, 'up')" title="Move Up">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button class="image-action-btn" onclick="moveImage(this, 'down')" title="Move Down">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button class="image-action-btn delete" onclick="deleteImage(this)" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    imageGrid.appendChild(imageItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function moveImage(button, direction) {
+            const imageItem = button.closest('.image-item');
+            const grid = imageItem.parentElement;
+            
+            if (direction === 'up' && imageItem.previousElementSibling) {
+                grid.insertBefore(imageItem, imageItem.previousElementSibling);
+            } else if (direction === 'down' && imageItem.nextElementSibling) {
+                grid.insertBefore(imageItem.nextElementSibling, imageItem);
+            }
+        }
+
+        function deleteImage(button) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                button.closest('.image-item').remove();
+            }
+        }
+
+        // Add event listener for image upload
+        document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
     </script>
     
     <!-- Add this modal HTML just before closing body tag -->
@@ -2408,6 +2977,238 @@ document.addEventListener('DOMContentLoaded', () => {
 <script type="module" src="scripts/admin.js"></script>
     <!-- Loader iframe -->
 
+    <!-- Add this function to handle scheduler sections -->
+    <script>
+    function toggleScheduleSection(type) {
+        const section = document.getElementById(`${type}ScheduleSection`);
+        const checkbox = document.getElementById(`enable${type.charAt(0).toUpperCase() + type.slice(1)}Schedule`);
+        
+        if (checkbox.checked) {
+            section.style.display = 'block';
+            // Set minimum date to today for publish date
+            if (type === 'publish') {
+                const today = new Date();
+                today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+                document.getElementById('publishDate').min = today.toISOString().slice(0, 16);
+            }
+            // Set minimum date to event date for hide date
+            if (type === 'hide') {
+                const eventDate = document.getElementById('eventDate').value;
+                if (eventDate) {
+                    document.getElementById('hideDate').min = eventDate;
+                }
+            }
+        } else {
+            section.style.display = 'none';
+            document.getElementById(`${type}Date`).value = '';
+        }
+    }
+
+    // Add event listener for event date change
+    document.getElementById('eventDate').addEventListener('change', function() {
+        const hideDate = document.getElementById('hideDate');
+        if (hideDate && this.value) {
+            hideDate.min = this.value;
+        }
+    });
+
+    // Make the function globally available
+    window.toggleScheduleSection = toggleScheduleSection;
+    </script>
+
+    <script>
+    async function handleEventSelect() {
+        const eventSelect = document.getElementById('eventSelect');
+        const ticketInfoDiv = document.getElementById('ticketInfo');
+        const generateBtn = document.getElementById('generateTicketBtn');
+        
+        if (!eventSelect.value) {
+            ticketInfoDiv.innerHTML = '';
+            generateBtn.disabled = true;
+            return;
+        }
+
+        try {
+            // Get event details
+            const eventDoc = await getDoc(doc(db, 'events', eventSelect.value));
+            if (!eventDoc.exists()) {
+                throw new Error('Event not found');
+            }
+
+            const event = eventDoc.data();
+            const now = new Date();
+            const bookingStart = new Date(event.bookingStartDate);
+            const bookingEnd = new Date(event.bookingDeadline);
+
+            // Check if booking is allowed
+            if (now < bookingStart) {
+                ticketInfoDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock"></i>
+                        Booking hasn't started yet. Starts on ${bookingStart.toLocaleDateString()} at ${bookingStart.toLocaleTimeString()}
+                    </div>
+                `;
+                generateBtn.disabled = true;
+                return;
+            }
+
+            if (now > bookingEnd) {
+                ticketInfoDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-times-circle"></i>
+                        Booking period has ended
+                    </div>
+                `;
+                generateBtn.disabled = true;
+                return;
+            }
+
+            // Check ticket availability
+            let availabilityHTML = '';
+            let canGenerate = false;
+
+            if (event.eventType === 'hybrid') {
+                const venueAvailable = event.tickets?.venue?.available || 0;
+                const onlineAvailable = event.tickets?.online?.available || 0;
+                
+                availabilityHTML = `
+                    <div class="ticket-availability">
+                        <h4>Ticket Availability:</h4>
+                        <div class="availability-item ${venueAvailable > 0 ? 'available' : 'sold-out'}">
+                            <span>Venue Tickets:</span>
+                            <span>${venueAvailable} available</span>
+                            <span>Price: ₹${event.tickets?.venue?.price || 0}</span>
+                        </div>
+                        <div class="availability-item ${onlineAvailable > 0 ? 'available' : 'sold-out'}">
+                            <span>Online Tickets:</span>
+                            <span>${onlineAvailable} available</span>
+                            <span>Price: ₹${event.tickets?.online?.price || 0}</span>
+                        </div>
+                    </div>
+                `;
+                canGenerate = venueAvailable > 0 || onlineAvailable > 0;
+            } else {
+                const available = event.availableTickets || 0;
+                availabilityHTML = `
+                    <div class="ticket-availability">
+                        <h4>Ticket Availability:</h4>
+                        <div class="availability-item ${available > 0 ? 'available' : 'sold-out'}">
+                            <span>Available Tickets:</span>
+                            <span>${available}</span>
+                            <span>Price: ₹${event.price || 0}</span>
+                        </div>
+                    </div>
+                `;
+                canGenerate = available > 0;
+            }
+
+            ticketInfoDiv.innerHTML = `
+                <div class="event-info">
+                    <h3>${event.name}</h3>
+                    <p><i class="fas fa-calendar"></i> ${new Date(event.date).toLocaleDateString()}</p>
+                    ${availabilityHTML}
+                </div>
+            `;
+
+            generateBtn.disabled = !canGenerate;
+            if (!canGenerate) {
+                ticketInfoDiv.innerHTML += `
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        No tickets available for this event
+                    </div>
+                `;
+            }
+
+        } catch (error) {
+            console.error('Error fetching event details:', error);
+            ticketInfoDiv.innerHTML = `
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Error fetching event details
+                </div>
+            `;
+            generateBtn.disabled = true;
+        }
+    }
+    </script>
+
+    <script>
+    function toggleMoreMenu() {
+        const moreMenu = document.getElementById('moreMenu');
+        const moreButton = document.querySelector('.mobile-nav-item[onclick="toggleMoreMenu()"]');
+        
+        moreMenu.classList.toggle('active');
+        moreButton.classList.toggle('active');
+        
+        // Update the More button icon
+        const moreIcon = moreButton.querySelector('i');
+        if (moreMenu.classList.contains('active')) {
+            moreIcon.classList.remove('fa-ellipsis-h');
+            moreIcon.classList.add('fa-times');
+        } else {
+            moreIcon.classList.remove('fa-times');
+            moreIcon.classList.add('fa-ellipsis-h');
+        }
+    }
+
+    // Close more menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const moreMenu = document.getElementById('moreMenu');
+        const moreButton = document.querySelector('.mobile-nav-item[onclick="toggleMoreMenu()"]');
+        
+        if (!moreButton.contains(event.target) && !moreMenu.contains(event.target)) {
+            moreMenu.classList.remove('active');
+            moreButton.classList.remove('active');
+            const moreIcon = moreButton.querySelector('i');
+            moreIcon.classList.remove('fa-times');
+            moreIcon.classList.add('fa-ellipsis-h');
+        }
+    });
+    </script>
+
 </body>
 </html>
+
+<!-- Add this right before closing body tag -->
+<div class="mobile-nav">
+    <div class="mobile-nav-items">
+        <div class="mobile-nav-item active" onclick="showSection('dashboard')">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </div>
+        
+        <div class="mobile-nav-item" onclick="showSection('events')">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Events</span>
+        </div>
+        
+        <div class="mobile-nav-item" onclick="showSection('tickets')">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Tickets</span>
+        </div>
+        
+        <div class="mobile-nav-item" onclick="showSection('passes')">
+            <i class="fas fa-id-card"></i>
+            <span>Passes</span>
+        </div>
+        
+        <div class="mobile-nav-item" onclick="toggleMoreMenu()">
+            <i class="fas fa-ellipsis-h"></i>
+            <span>More</span>
+        </div>
+    </div>
+
+    <!-- Move more menu inside mobile-nav -->
+    <div class="more-menu" id="moreMenu">
+        <div class="mobile-nav-item" onclick="showSection('verification')">
+            <i class="fas fa-check-circle"></i>
+            <span>Verify</span>
+        </div>
+        <div class="mobile-nav-item" onclick="showSection('generateTicket')">
+            <i class="fas fa-plus-circle"></i>
+            <span>Generate</span>
+        </div>
+    </div>
+</div>
 

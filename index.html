@@ -27,20 +27,14 @@
 
         /* Custom Scrollbar Styles */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 3px;
+            height: 3px;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3B82F6;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2563EB;
+        /* For Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #ddd #fff;
         }
 
         /* Loader Styles */
@@ -62,7 +56,7 @@
             width: 50px;
             height: 50px;
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #3B82F6;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -76,7 +70,7 @@
         .loader-logo {
             font-size: 2rem;
             font-weight: bold;
-            color: #3B82F6;
+            color: #667eea;
             margin-bottom: 1rem;
         }
 
@@ -96,53 +90,46 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0.8rem 1rem;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
         }
 
-        .navbar.scrolled {
-            padding: 0.5rem 2rem;
-            background: rgba(255, 255, 255, 0.98);
-        }
-
+        /* Update nav-content styles */
         .nav-content {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: flex-end; /* This will push everything to the right */
+            padding: 0 1rem;
         }
 
+        /* Update logo styles */
         .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #3B82F6;
+            margin-right: auto; /* This keeps the logo on the left */
+            font-size: 1.5rem;
+            font-weight: 800; /* Make text bolder */
+            color: white !important; /* Force white color */
             text-decoration: none;
-            transition: color 0.3s ease;
         }
 
+        /* Update nav-links styles */
         .nav-links {
             display: flex;
-            gap: 2rem;
-            align-items: center;
+            gap: 2.5rem; /* Slightly increase gap between nav items */
         }
 
         .nav-links a {
+            color: white;
             text-decoration: none;
-            color: #333;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #3B82F6;
+            font-weight: 500;
         }
 
         .account-icon {
             font-size: 1.5rem;
-            color: #3B82F6;
+            color: white;
             cursor: pointer;
             transition: color 0.3s ease;
         }
@@ -153,21 +140,25 @@
 
         .menu-btn {
             display: none;
+            background: none;
+            border: none;
             cursor: pointer;
+            z-index: 2;
         }
 
         .menu-btn .bar {
             width: 25px;
             height: 3px;
-            background-color: #3B82F6;
+            background-color: white;
             margin: 5px 0;
             transition: all 0.3s ease;
         }
 
         /* Hero Section Styles */
         .hero {
-            height: 100vh;
-            background: linear-gradient(rgba(59, 130, 246, 0.7), rgba(59, 130, 246, 0.7)), 
+            padding-top: 80px;
+            min-height: 100vh;
+            background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)), 
                         url('https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
@@ -176,8 +167,7 @@
             justify-content: center;
             text-align: center;
             color: white;
-            padding: 0 20px;
-            margin-top: -80px; /* Adjust for navbar */
+            margin: 0;
         }
 
         .hero-content {
@@ -216,12 +206,12 @@
         }
 
         .cta-btn.primary {
-            background: #3B82F6;
+            background: #667eea;
             color: white;
         }
 
         .cta-btn.primary:hover {
-            background: #2563EB;
+            background: #5a67d8;
             transform: translateY(-2px);
         }
 
@@ -252,8 +242,8 @@
         .stat-number {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #FFC107;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #667eea;
+            text-shadow: none;
         }
 
         .stat-text {
@@ -286,7 +276,7 @@
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             max-width: 1200px;
             margin: 0 auto;
@@ -294,13 +284,12 @@
         }
 
         .feature-card {
-            padding: 2rem;
-            border-radius: 10px;
-            background: #EBF5FF;
+            padding: 2.5rem;
+            border-radius: 20px;
+            background: white;
             text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
 
         .feature-card.visible {
@@ -309,101 +298,68 @@
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-card:hover i,
+        .feature-card:hover h3,
+        .feature-card:hover p {
+            color: white;
         }
 
         .feature-card i {
             font-size: 2.5rem;
-            color: #3B82F6;
+            color: #667eea;
             margin-bottom: 1.5rem;
+            transition: color 0.3s ease;
         }
 
         .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #333;
+            transition: color 0.3s ease;
         }
 
         .feature-card p {
-            color: #4a5568;
-        }
-
-        /* Events Categories Styles */
-        .event-categories {
-            padding: 5rem 1rem;
-            background: #EBF5FF;
-        }
-
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        .category-card {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            height: 300px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .category-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .category-card:hover img {
-            transform: scale(1.1);
-        }
-
-        .category-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 1.5rem;
-            background: linear-gradient(transparent, rgba(59, 130, 246, 0.8));
-            color: white;
-        }
-
-        .category-content h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .events-count {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            background: rgba(255, 193, 7, 0.9);
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
+            transition: color 0.3s ease;
         }
 
         /* Trending Events Styles */
+        .trending-events,
+        .popular-events,
+        .upcoming-events {
+            padding: 3rem 1rem;
+        }
+
         .trending-events {
-            padding: 5rem 1rem;
             background: white;
         }
 
-        .events-slider {
+        .popular-events {
+            background: #f8fafc;
+        }
+
+        .upcoming-events {
+            background: white;
+        }
+
+        .events-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: 2rem;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1rem;
+            padding: 0;
+        }
+
+        .event-pair {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .event-pair {
+                grid-template-columns: 1fr;
+            }
         }
 
         .event-card {
@@ -491,69 +447,119 @@
 
         /* Contact Section Styles */
         .contact {
-            padding: 5rem 1rem;
-            background: #EBF5FF;
+            padding: 5rem 0;
+            background: #f8fafc;
         }
 
         .contact-container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 3rem;
+            padding: 2rem;
+        }
+
+        .contact-info {
+            display: grid;
             gap: 2rem;
         }
 
-        .contact-info, .contact-form {
+        .info-card {
             background: white;
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
         }
 
-        .contact-info h3, .contact-form h3 {
-            font-size: 1.5rem;
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .info-card i {
+            font-size: 2rem;
+            color: #667eea;
             margin-bottom: 1rem;
-            color: #3B82F6;
         }
 
-        .contact-info p {
+        .info-card h4 {
+            color: #1a202c;
             margin-bottom: 1rem;
         }
 
-        .contact-info i {
-            color: #3B82F6;
-            margin-right: 0.5rem;
+        .info-card p {
+            color: #4a5568;
         }
 
-        .contact-form form {
+        .contact-form-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .contact-form {
             display: grid;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
-        .contact-form input, .contact-form textarea {
+        .form-group input,
+        .form-group textarea {
             width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            outline: none;
+        }
+
+        .form-group textarea {
+            height: 150px;
+            resize: none;
         }
 
         .contact-form button {
-            padding: 0.8rem;
-            background: #3B82F6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            padding: 1rem 2rem;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .contact-form button:hover {
-            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .contact-form-container {
+                padding: 1.5rem;
+            }
         }
 
         /* Footer Styles */
         .footer {
-            background: #1E3A8A;
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
             color: #fff;
             padding: 4rem 1rem 2rem;
         }
@@ -638,7 +644,7 @@
 
         .newsletter-form button {
             padding: 0.8rem 1.5rem;
-            background: #3B82F6;
+            background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
@@ -647,7 +653,7 @@
         }
 
         .newsletter-form button:hover {
-            background: #2563EB;
+            background: #5a67d8;
         }
 
         .social-links {
@@ -662,7 +668,7 @@
         }
 
         .social-links a:hover {
-            color: #3B82F6;
+            color: #667eea;
         }
 
         .footer-bottom {
@@ -776,26 +782,46 @@
             }
 
             .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
+                position: fixed;
+                left: auto;
+                transform: none;
+                right: -100%;
+                height: 100vh;
+                width: 80%;
                 background: white;
-                padding: 1rem;
                 flex-direction: column;
-                text-align: center;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                padding: 80px 2rem;
+                transition: 0.3s ease-in-out;
+                box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+                z-index: 1000;
             }
 
             .nav-links.active {
-                display: flex;
+                right: 0;
+            }
+
+            .nav-links a {
+                color: #333;
+                font-size: 1.1rem;
+                padding: 1rem 0;
+                width: 100%;
+                text-align: left;
+            }
+
+            .hero {
+                padding-top: 60px;
             }
 
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: clamp(1.8rem, 4vw, 2.5rem);
+                padding: 0 1rem;
             }
-            
+
+            .hero p {
+                font-size: clamp(1rem, 3vw, 1.2rem);
+                padding: 0 1rem;
+            }
+
             .hero-stats {
                 flex-direction: column;
                 gap: 1.5rem;
@@ -839,6 +865,14 @@
             .contact-container {
                 grid-template-columns: 1fr;
             }
+
+            .logo {
+                font-size: 1.3rem; /* Slightly smaller on mobile */
+            }
+
+            .nav-content {
+                justify-content: space-between; /* Different layout for mobile */
+            }
         }
 
         @media (max-width: 480px) {
@@ -878,6 +912,781 @@
                 transform: translateY(0);
             }
         }
+
+        /* Add to your existing styles */
+        .event-pair {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .event-info {
+            padding: 1.5rem;
+        }
+
+        .event-info h3 {
+            color: #1a237e;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .event-info p {
+            color: #666;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-info i {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .event-pair {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Login Modal Styles */
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .login-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        .login-modal-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-modal-header i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .login-modal-header h2 {
+            color: #1a237e;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .login-modal-body {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-modal-body p {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-benefits {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .benefit-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .benefit-item i {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .benefit-item span {
+            font-size: 0.9rem;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        .login-modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+
+        .modal-btn.primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #f7fafc;
+            transform: translateY(-2px);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translate(-50%, -60%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-benefits {
+                grid-template-columns: 1fr;
+            }
+            
+            .login-modal-footer {
+                flex-direction: column;
+            }
+            
+            .modal-btn {
+                width: 100%;
+            }
+        }
+
+        /* Update hero section styles */
+        .hero {
+            padding: 6rem 1rem;
+            min-height: 80vh;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Update section headers */
+        .section-header {
+            padding: 0 1rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+        }
+
+        .section-header p {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+        }
+
+        /* Update features section */
+        .features-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            padding: 0 1rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+        }
+
+        /* Update event sections */
+        .trending-events,
+        .popular-events,
+        .upcoming-events {
+            padding: 3rem 1rem;
+        }
+
+        .events-grid {
+            padding: 0;
+        }
+
+        /* Additional responsive adjustments */
+        @media (max-width: 480px) {
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .cta-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .feature-card {
+                padding: 1rem;
+            }
+        }
+
+        /* Update container padding */
+        .container {
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                padding: 0 2rem;
+            }
+        }
+
+        /* About Section Styles */
+        .about {
+            padding: 5rem 0;
+            background: #f0f2f5;
+        }
+
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            gap: 3rem;
+        }
+
+        .about-text {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .about-text:hover {
+            transform: translateY(-5px);
+        }
+
+        .about-text h3 {
+            color: #1a202c;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .about-text h3 i {
+            color: #667eea;
+        }
+
+        .about-text p {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .mission-vision {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .mission, .vision {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .mission:hover, .vision:hover {
+            transform: translateY(-5px);
+        }
+
+        .mission h3, .vision h3 {
+            color: #1a202c;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mission i, .vision i {
+            color: #667eea;
+            font-size: 1.8rem;
+        }
+
+        .mission p, .vision p {
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .achievements {
+            margin: 3rem 0;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .achievement-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .achievement-item:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .achievement-item:hover i,
+        .achievement-item:hover h4,
+        .achievement-item:hover p {
+            color: white;
+        }
+
+        .achievement-item i {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .achievement-item h4 {
+            color: #1a202c;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .achievement-item p {
+            color: #4a5568;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .team-section {
+            margin-top: 3rem;
+        }
+
+        .team-section h3 {
+            color: #1a202c;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .team-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+        }
+
+        .team-member {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .team-member:hover {
+            transform: translateY(-10px);
+        }
+
+        .member-image {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-info {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .member-info h4 {
+            color: #1a202c;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .member-info p {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .member-skills span {
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 992px) {
+            .achievements-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .about-container {
+                padding: 0 1rem;
+            }
+
+            .mission-vision {
+                grid-template-columns: 1fr;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .achievements-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .member-image {
+                height: 250px;
+            }
+        }
+
+        /* Update navbar styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0.8rem 1rem;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Keep logo on left */
+        .logo {
+            margin-right: auto;
+        }
+
+        /* Move nav links to right */
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            margin-right: 2rem; /* Add space between nav links and profile icon */
+        }
+
+        /* Keep profile icon on far right */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Desktop nav links */
+        @media (min-width: 769px) {
+            .nav-links a i {
+                display: none; /* Hide icons on desktop */
+            }
+
+            .nav-links {
+                gap: 2rem;
+            }
+
+            .nav-links a {
+                font-weight: 500;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.6rem 1rem; /* Slightly thicker */
+            }
+
+            .nav-content {
+                justify-content: space-between; /* Space between logo and icons on mobile */
+            }
+
+            .logo {
+                margin-right: 0; /* Reset margin on mobile */
+            }
+
+            /* Adjust body padding for thicker navbar */
+            body {
+                padding-top: 52px; /* Match new navbar height */
+            }
+
+            .nav-links a {
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+            }
+
+            .nav-links a i {
+                width: 20px; /* Fixed width for icons */
+                text-align: center;
+            }
+        }
+
+        /* Profile icon styles */
+        .profile-icon {
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+        }
+
+        .profile-icon:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Nav actions container */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        @media (max-width: 768px) {
+            .nav-actions {
+                gap: 0.8rem;
+            }
+        }
+
+        /* Add these styles for bottom navbar */
+        @media (max-width: 768px) {
+            /* Hide original nav-links */
+            .nav-links {
+                display: none;
+            }
+
+            /* Bottom Navigation Bar */
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 10px 0 5px 0;
+            }
+
+            .bottom-nav a {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-decoration: none;
+                color: #666;
+                font-size: 0.7rem;
+                padding: 5px 0;
+                transition: all 0.3s ease;
+            }
+
+            .bottom-nav a.active {
+                color: #667eea;
+            }
+
+            .bottom-nav i {
+                font-size: 1.2rem;
+                margin-bottom: 3px;
+            }
+
+            /* Add padding to body to prevent content from being hidden behind bottom nav */
+            body {
+                padding-bottom: 65px;
+            }
+
+            /* Hide menu button since we don't need it anymore */
+            .menu-btn {
+                display: none;
+            }
+        }
+
+        /* Update bottom nav styles */
+        .bottom-nav {
+            display: none; /* Hide by default */
+        }
+
+        /* Only show on mobile */
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 8px 0;
+            }
+
+            .bottom-nav a {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-decoration: none;
+                color: rgba(255, 255, 255, 0.7); /* Slightly transparent white */
+                font-size: 0.7rem;
+                padding: 8px 0;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+
+            .bottom-nav a.active {
+                color: white;
+            }
+
+            .bottom-nav i {
+                font-size: 1.3rem;
+                margin-bottom: 4px;
+            }
+
+            .bottom-nav span {
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
+
+            /* Add bottom padding to body only on mobile */
+            body {
+                padding-bottom: 55px;
+            }
+        }
+
+        /* Remove WhatsApp float button styles */
+        .whatsapp-float {
+            display: none;
+        }
+
+        /* Update bottom nav styles */
+        @media (max-width: 768px) {
+            .bottom-nav {
+                padding: 4px 0; /* Reduced from 8px */
+            }
+
+            .bottom-nav a {
+                padding: 4px 0; /* Reduced from 8px */
+            }
+
+            .bottom-nav i {
+                font-size: 1.1rem; /* Reduced from 1.3rem */
+                margin-bottom: 2px; /* Reduced from 4px */
+            }
+
+            .bottom-nav span {
+                font-size: 0.65rem; /* Reduced from 0.75rem */
+            }
+
+            /* Adjust body padding */
+            body {
+                padding-bottom: 45px; /* Reduced from 55px */
+            }
+        }
     </style>
 </head>
 <body>
@@ -894,20 +1703,22 @@
     <nav class="navbar">
         <div class="nav-content">
             <a href="#" class="logo">EventTix</a>
-            <button class="menu-btn">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </button>
             <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#events">Events</a>
-                <a href="#about">About</a>
-                <a href="#popular">Popular</a>
-                <a href="#contact">Contact</a>
-                <a class="account-icon" id="accountLink">
+                <a href="#features"><i class="fas fa-star"></i>Features</a>
+                <a href="#events"><i class="fas fa-calendar"></i>Events</a>
+                <a href="#about"><i class="fas fa-info-circle"></i>About</a>
+                <a href="#popular"><i class="fas fa-fire"></i>Popular</a>
+                <a href="#contact"><i class="fas fa-envelope"></i>Contact</a>
+            </div>
+            <div class="nav-actions">
+                <a href="#" class="profile-icon" id="accountLink">
                     <i class="fas fa-user-circle"></i>
                 </a>
+                <button class="menu-btn">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </button>
             </div>
         </div>
     </nav>
@@ -933,6 +1744,101 @@
                 <div class="stat-item">
                     <span class="stat-number">100+</span>
                     <span class="stat-text">Cities</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="about" id="about">
+        <div class="section-header">
+            <h2>About EventTix</h2>
+            <p>Your trusted partner in event ticketing</p>
+        </div>
+        <div class="about-container">
+            <!-- Story Section -->
+            <div class="about-text">
+                <h3><i class="fas fa-book"></i> Our Story</h3>
+                <p>EventTix was founded with a vision to revolutionize event ticketing in India. We understand the passion and excitement that comes with attending live events, and we're here to make that experience seamless and memorable.</p>
+                <p>Our platform serves millions of event enthusiasts across India, connecting them to a diverse range of events from cultural festivals to sporting events, concerts to comedy shows.</p>
+            </div>
+
+            <!-- Mission & Vision -->
+            <div class="mission-vision">
+                <div class="mission">
+                    <h3><i class="fas fa-bullseye"></i> Our Mission</h3>
+                    <p>To provide a seamless and secure ticketing platform that connects event organizers with their audience, making event discovery and booking accessible to everyone.</p>
+                </div>
+                <div class="vision">
+                    <h3><i class="fas fa-eye"></i> Our Vision</h3>
+                    <p>To become India's most trusted and preferred event ticketing platform, setting new standards in customer experience and technological innovation.</p>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="achievements">
+                <div class="achievements-grid">
+                    <div class="achievement-item">
+                        <i class="fas fa-users"></i>
+                        <h4>1M+</h4>
+                        <p>Happy Customers</p>
+                    </div>
+                    <div class="achievement-item">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h4>10K+</h4>
+                        <p>Events Managed</p>
+                    </div>
+                    <div class="achievement-item">
+                        <i class="fas fa-city"></i>
+                        <h4>100+</h4>
+                        <p>Cities Covered</p>
+                    </div>
+                    <div class="achievement-item">
+                        <i class="fas fa-handshake"></i>
+                        <h4>500+</h4>
+                        <p>Event Partners</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Section -->
+            <div class="team-section">
+                <h3>Designed & Developed By</h3>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="member-image">
+                            <img src="https://avatars.githubusercontent.com/u/manish" alt="Manish Sharma">
+                            <div class="social-overlay">
+                                <a href="https://github.com/manish" target="_blank"><i class="fab fa-github"></i></a>
+                                <a href="https://linkedin.com/in/manish" target="_blank"><i class="fab fa-linkedin"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h4>Manish Sharma</h4>
+                            <p>Lead Developer</p>
+                            <div class="member-skills">
+                                <span>Full Stack Development</span>
+                                <span>UI/UX Design</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-image">
+                            <img src="https://avatars.githubusercontent.com/u/pranit" alt="Pranit Pathak">
+                            <div class="social-overlay">
+                                <a href="https://github.com/pranit" target="_blank"><i class="fab fa-github"></i></a>
+                                <a href="https://linkedin.com/in/pranit" target="_blank"><i class="fab fa-linkedin"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h4>Pranit Pathak</h4>
+                            <p>UI/UX Designer</p>
+                            <div class="member-skills">
+                                <span>Frontend Development</span>
+                                <span>UI/UX Design</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -965,139 +1871,48 @@
                 <h3>24/7 Support</h3>
                 <p>Round-the-clock customer support in multiple Indian languages</p>
             </div>
-        </div>
-    </section>
-
-    <!-- Events Categories Section -->
-    <section class="event-categories" id="events">
-        <div class="section-header">
-            <h2>Discover Events</h2>
-            <p>Find the perfect events happening across India</p>
-        </div>
-        <div class="categories-grid">
-            <div class="category-card">
-                <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=800&q=80" alt="Music Concerts">
-                <div class="category-content">
-                    <h3>Music Concerts</h3>
-                    <p>Bollywood, Classical, Rock & more</p>
-                    <span class="events-count">200+ Events</span>
-                </div>
+            <!-- Add these inside the features-grid div -->
+            <div class="feature-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Mobile First</h3>
+                <p>Book tickets on the go with our mobile-optimized platform</p>
             </div>
-            <div class="category-card">
-                <img src="https://images.unsplash.com/photo-1518744826297-d7d70c1def5b?auto=format&fit=crop&w=800&q=80" alt="Comedy Shows">
-                <div class="category-content">
-                    <h3>Comedy Shows</h3>
-                    <p>Stand-up comedy in multiple languages</p>
-                    <span class="events-count">150+ Shows</span>
-                </div>
-            </div>
-            <div class="category-card">
-                <img src="https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=800&q=80" alt="Cricket Matches">
-                <div class="category-content">
-                    <h3>Sports</h3>
-                    <p>Cricket, Football & more</p>
-                    <span class="events-count">50+ Matches</span>
-                </div>
-            </div>
-            <div class="category-card">
-                <img src="https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80" alt="Classical Dance">
-                <div class="category-content">
-                    <h3>Cultural Events</h3>
-                    <p>Dance, Theatre & Traditional Arts</p>
-                    <span class="events-count">100+ Shows</span>
-                </div>
-            </div>
-            <div class="category-card">
-                <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80" alt="Food Festivals">
-                <div class="category-content">
-                    <h3>Food Festivals</h3>
-                    <p>Culinary delights from across India</p>
-                    <span class="events-count">30+ Festivals</span>
-                </div>
-            </div>
-            <div class="category-card">
-                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80" alt="Tech Conferences">
-                <div class="category-content">
-                    <h3>Tech Conferences</h3>
-                    <p>Cutting-edge technology events</p>
-                    <span class="events-count">20+ Conferences</span>
-                </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Secure Platform</h3>
+                <p>End-to-end encryption for all your transactions and data</p>
             </div>
         </div>
     </section>
 
     <!-- Trending Events Section -->
-    <section class="trending-events" id="popular">
+    <section class="trending-events" id="trending">
         <div class="section-header">
             <h2>Trending Now</h2>
-            <p>Don't miss out on these popular events</p>
+            <p>Hot events that everyone's talking about</p>
         </div>
-        <div class="events-slider">
-            <div class="event-card">
-                <div class="event-date">
-                    <span class="date">25</span>
-                    <span class="month">Dec</span>
-                </div>
-                <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" alt="Arijit Singh Live">
-                <div class="event-details">
-                    <h3>Arijit Singh Live in Concert</h3>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> DY Patil Stadium, Mumbai</p>
-                    <p class="price">Starting from ₹1,499</p>
-                    <button class="book-btn">Book Now</button>
-                </div>
-            </div>
-            <div class="event-card">
-                <div class="event-date">
-                    <span class="date">31</span>
-                    <span class="month">Dec</span>
-                </div>
-                <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80" alt="New Year Party">
-                <div class="event-details">
-                    <h3>Sunburn NYE 2024</h3>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> Goa Beach, Goa</p>
-                    <p class="price">Starting from ₹2,999</p>
-                    <button class="book-btn">Book Now</button>
-                </div>
-            </div>
-            <div class="event-card">
-                <div class="event-date">
-                    <span class="date">15</span>
-                    <span class="month">Jan</span>
-                </div>
-                <img src="https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80" alt="Comedy Show">
-                <div class="event-details">
-                    <h3>Comedy Nights with Kapil</h3>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> JLN Stadium, Delhi</p>
-                    <p class="price">Starting from ₹999</p>
-                    <button class="book-btn">Book Now</button>
-                </div>
-            </div>
-            <div class="event-card">
-                <div class="event-date">
-                    <span class="date">22</span>
-                    <span class="month">Feb</span>
-                </div>
-                <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" alt="AR Rahman Live">
-                <div class="event-details">
-                    <h3>AR Rahman Live in Concert</h3>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> Jawaharlal Nehru Stadium, Chennai</p>
-                    <p class="price">Starting from ₹1,999</p>
-                    <button class="book-btn">Book Now</button>
-                </div>
-            </div>
-            <div class="event-card">
-                <div class="event-date">
-                    <span class="date">10</span>
-                    <span class="month">Mar</span>
-                </div>
-                <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=800&q=80" alt="IPL Match">
-                <div class="event-details">
-                    <h3>IPL 2024: MI vs CSK</h3>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> Wankhede Stadium, Mumbai</p>
-                    <p class="price">Starting from ₹1,200</p>
-                    <button class="book-btn">Book Now</button>
-                </div>
-            </div>
+        <div class="events-grid" id="trendingContainer">
+            <!-- Trending events will be added here -->
+        </div>
+    </section>
+
+    <section class="popular-events" id="popular">
+        <div class="section-header">
+            <h2>Popular Events</h2>
+            <p>Most booked events this month</p>
+        </div>
+        <div class="events-grid" id="popularContainer">
+            <!-- Popular events will be added here -->
+        </div>
+    </section>
+
+    <section class="upcoming-events" id="upcoming">
+        <div class="section-header">
+            <h2>Upcoming Events</h2>
+            <p>Mark your calendar for these upcoming events</p>
+        </div>
+        <div class="events-grid" id="upcomingContainer">
+            <!-- Upcoming events will be added here -->
         </div>
     </section>
 
@@ -1109,20 +1924,42 @@
         </div>
         <div class="contact-container">
             <div class="contact-info">
-                <h3>Contact Information</h3>
-                <p><i class="fas fa-map-marker-alt"></i> 123 Event Street, Mumbai, 400001</p>
-                <p><i class="fas fa-phone"></i> +91 9876543210</p>
-                <p><i class="fas fa-envelope"></i> support@eventtix.com</p>
-                <p><i class="fas fa-clock"></i> Mon-Sat: 9:00 AM - 8:00 PM</p>
+                <div class="info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h4>Our Location</h4>
+                    <p>123 Event Street, Mumbai, 400001</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-phone"></i>
+                    <h4>Call Us</h4>
+                    <p>+91 9876543210</p>
+                    <p>Mon-Sat: 9:00 AM - 8:00 PM</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Email Us</h4>
+                    <p>support@eventtix.com</p>
+                    <p>business@eventtix.com</p>
+                </div>
             </div>
-            <div class="contact-form">
-                <h3>Send us a Message</h3>
-                <form id="contact-form">
-                    <input type="text" name="name" placeholder="Your Name" required>
-                    <input type="email" name="email" placeholder="Your Email" required>
-                    <input type="text" name="subject" placeholder="Subject" required>
-                    <textarea name="message" placeholder="Your Message" required></textarea>
-                    <button type="submit">Send Message</button>
+            <div class="contact-form-container">
+                <form id="contact-form" class="contact-form">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="subject" placeholder="Subject" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" placeholder="Your Message" required></textarea>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                        Send Message
+                    </button>
                 </form>
             </div>
         </div>
@@ -1207,14 +2044,40 @@
         </div>
     </footer>
 
-    <!-- WhatsApp Float Button -->
-    <a href="https://wa.me/919XXXXXXXXX" class="whatsapp-float" target="_blank">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
     <!-- Newsletter Submission Message -->
     <div class="newsletter-message" id="newsletter-message">
         Thank you for subscribing to our newsletter!
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="login-modal">
+        <div class="login-modal-content">
+            <div class="login-modal-header">
+                <i class="fas fa-lock"></i>
+                <h2>Login Required</h2>
+            </div>
+            <div class="login-modal-body">
+                <p>Please login to view event details and book tickets.</p>
+                <div class="login-benefits">
+                    <div class="benefit-item">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Easy booking</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-history"></i>
+                        <span>Booking history</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-bell"></i>
+                        <span>Event updates</span>
+                    </div>
+                </div>
+            </div>
+            <div class="login-modal-footer">
+                <button class="modal-btn secondary" onclick="closeLoginModal()">Maybe Later</button>
+                <button class="modal-btn primary" onclick="redirectToLogin()">Login Now</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1380,6 +2243,414 @@
             alert('Thank you for your message. We will get back to you soon!');
             this.reset();
         });
+
+        // Add this to your existing script
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuBtn = document.querySelector('.menu-btn');
+            const closeBtn = document.querySelector('.close-menu');
+            const navLinks = document.querySelector('.nav-links');
+            const links = document.querySelectorAll('.nav-links a');
+
+            menuBtn.addEventListener('click', () => {
+                navLinks.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+            });
+
+            closeBtn.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            });
+
+            // Close menu when clicking a link
+            links.forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (navLinks.classList.contains('active') && 
+                    !navLinks.contains(e.target) && 
+                    !menuBtn.contains(e.target)) {
+                    navLinks.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCg7vwuwfN8oWSMagExshHCtMHnxzc7pH0",
+            authDomain: "event-ticket-fc753.firebaseapp.com",
+            projectId: "event-ticket-fc753",
+            storageBucket: "event-ticket-fc753.firebasestorage.app",
+            messagingSenderId: "216313948465",
+            appId: "1:216313948465:web:4c4b8eb9fbb4257fe6e810",
+            measurementId: "G-SGBZK0BYVL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Helper function to shuffle array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Helper function to create event pairs
+        function createEventPairs(events, containerId) {
+            const container = document.getElementById(containerId);
+            if (!events || events.length === 0) {
+                container.parentElement.style.display = 'none';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            // Create pairs
+            for (let i = 0; i < events.length; i += 2) {
+                const eventPair = document.createElement('div');
+                eventPair.className = 'event-pair';
+                
+                // First event
+                eventPair.innerHTML = `
+                    <div class="event-card" onclick="handleEventClick('${events[i].id}')">
+                        <img src="${events[i].images?.[0] || 'placeholder.jpg'}" alt="${events[i].name}">
+                        <div class="event-info">
+                            <h3>${events[i].name}</h3>
+                            <p><i class="fas fa-calendar"></i> ${new Date(events[i].date).toLocaleDateString()}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${events[i].eventType === 'online' ? 'Online Event' : events[i].venueDetails?.venue || 'TBA'}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Second event (if exists)
+                if (events[i + 1]) {
+                    eventPair.innerHTML += `
+                        <div class="event-card" onclick="handleEventClick('${events[i + 1].id}')">
+                            <img src="${events[i + 1].images?.[0] || 'placeholder.jpg'}" alt="${events[i + 1].name}">
+                            <div class="event-info">
+                                <h3>${events[i + 1].name}</h3>
+                                <p><i class="fas fa-calendar"></i> ${new Date(events[i + 1].date).toLocaleDateString()}</p>
+                                <p><i class="fas fa-map-marker-alt"></i> ${events[i + 1].eventType === 'online' ? 'Online Event' : events[i + 1].venueDetails?.venue || 'TBA'}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.appendChild(eventPair);
+            }
+            
+            container.parentElement.style.display = 'block';
+        }
+
+        // Update the loadAllEvents function
+        async function loadAllEvents() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'events'));
+                const allEvents = [];
+                const now = new Date();
+
+                querySnapshot.forEach((doc) => {
+                    const event = { id: doc.id, ...doc.data() };
+                    allEvents.push(event);
+                });
+
+                if (allEvents.length === 0) {
+                    hideAllSections();
+                    return;
+                }
+
+                // If we have at least 6 events, show 2 in each section
+                if (allEvents.length >= 6) {
+                    // Shuffle all events first
+                    const shuffledEvents = shuffleArray([...allEvents]);
+                    
+                    // Upcoming events (future dates)
+                    const upcomingEvents = shuffledEvents
+                        .filter(event => new Date(event.date) > now)
+                        .slice(0, 2);
+
+                    // Remove selected upcoming events from the pool
+                    const remainingEvents = shuffledEvents.filter(event => 
+                        !upcomingEvents.find(e => e.id === event.id)
+                    );
+
+                    // Trending events (most recent with high bookings)
+                    const trendingEvents = remainingEvents
+                        .sort((a, b) => (b.soldTickets || 0) - (a.soldTickets || 0))
+                        .slice(0, 2);
+
+                    // Remove selected trending events from the pool
+                    const finalEvents = remainingEvents.filter(event => 
+                        !trendingEvents.find(e => e.id === event.id)
+                    );
+
+                    // Popular events (different from trending)
+                    const popularEvents = shuffleArray(finalEvents)
+                        .slice(0, 2);
+
+                    // Create event pairs for each section
+                    if (upcomingEvents.length === 2) {
+                        createEventPairs(upcomingEvents, 'upcomingContainer');
+                        document.getElementById('upcoming').style.display = 'block';
+                    } else {
+                        document.getElementById('upcoming').style.display = 'none';
+                    }
+
+                    if (trendingEvents.length === 2) {
+                        createEventPairs(trendingEvents, 'trendingContainer');
+                        document.getElementById('trending').style.display = 'block';
+                    } else {
+                        document.getElementById('trending').style.display = 'none';
+                    }
+
+                    if (popularEvents.length === 2) {
+                        createEventPairs(popularEvents, 'popularContainer');
+                        document.getElementById('popular').style.display = 'block';
+                    } else {
+                        document.getElementById('popular').style.display = 'none';
+                    }
+
+                } else {
+                    // If less than 6 events, show all in one section
+                    const section = allEvents.length >= 2 ? 'popular' : null;
+                    hideAllSections();
+                    
+                    if (section) {
+                        createEventPairs(shuffleArray(allEvents), `${section}Container`);
+                        document.getElementById(section).style.display = 'block';
+                    }
+                }
+
+            } catch (error) {
+                console.error("Error loading events:", error);
+                hideAllSections();
+                showErrorMessage();
+            }
+        }
+
+        // Helper function to hide all sections
+        function hideAllSections() {
+            ['trending', 'popular', 'upcoming'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
+
+        // Helper function to show error message
+        function showErrorMessage() {
+            const popularSection = document.getElementById('popular');
+            popularSection.style.display = 'block';
+            document.getElementById('popularContainer').innerHTML = 
+                '<p style="text-align: center; grid-column: 1/-1;">Error loading events. Please try again later.</p>';
+        }
+
+        // Update the load event listener
+        window.addEventListener('load', () => {
+            loadAllEvents();
+        });
+
+        // Add this function to handle event clicks
+        function handleEventClick(eventId) {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                // Show custom login modal
+                document.getElementById('loginModal').style.display = 'block';
+                // Store eventId for later use
+                localStorage.setItem('pendingEventId', eventId);
+            } else {
+                // User is logged in, proceed to event details
+                const baseUrl = window.location.pathname.includes('/Event-Ticket-Management') ? '/Event-Ticket-Management' : '';
+                window.location.href = `${baseUrl}/event-details.html?id=${eventId}`;
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+            localStorage.removeItem('pendingEventId');
+        }
+
+        function redirectToLogin() {
+            window.location.href = 'login.html';
+        }
+
+        // Make functions globally available
+        window.handleEventClick = handleEventClick;
+        window.closeLoginModal = closeLoginModal;
+        window.redirectToLogin = redirectToLogin;
+    </script>
+    <!-- Add this right before closing body tag -->
+    <nav class="bottom-nav">
+        <a href="#" class="active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="#features">
+            <i class="fas fa-star"></i>
+            <span>Features</span>
+        </a>
+        <a href="#events">
+            <i class="fas fa-calendar"></i>
+            <span>Events</span>
+        </a>
+        <a href="#about">
+            <i class="fas fa-info-circle"></i>
+            <span>About</span>
+        </a>
+        <a href="#contact">
+            <i class="fas fa-envelope"></i>
+            <span>Contact</span>
+        </a>
+    </nav>
+
+    <script>
+        // Replace the existing scroll spy code with this
+        document.addEventListener('DOMContentLoaded', function() {
+            const bottomNav = document.querySelector('.bottom-nav');
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.bottom-nav a');
+
+            function setActiveLink() {
+                let found = false;
+                const scrollPosition = window.scrollY + window.innerHeight / 2;
+
+                // First, remove active class from all links
+                navLinks.forEach(link => link.classList.remove('active'));
+
+                // Check each section
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 100; // Adjust for header
+                    const sectionBottom = sectionTop + section.offsetHeight;
+                    const sectionId = section.getAttribute('id');
+
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                        found = true;
+                        // Find and activate corresponding nav link
+                        const correspondingLink = document.querySelector(`.bottom-nav a[href="#${sectionId}"]`);
+                        if (correspondingLink) {
+                            correspondingLink.classList.add('active');
+                        }
+                    }
+                });
+
+                // If we're at the top of the page, activate home
+                if (window.scrollY < 100) {
+                    document.querySelector('.bottom-nav a[href="#"]').classList.add('active');
+                    found = true;
+                }
+
+                // If no section is active and we're not at the top, activate the closest section
+                if (!found) {
+                    const closest = [...sections].reduce((prev, curr) => {
+                        const prevDiff = Math.abs(prev.offsetTop - scrollPosition);
+                        const currDiff = Math.abs(curr.offsetTop - scrollPosition);
+                        return prevDiff < currDiff ? prev : curr;
+                    });
+                    
+                    const closestId = closest.getAttribute('id');
+                    const correspondingLink = document.querySelector(`.bottom-nav a[href="#${closestId}"]`);
+                    if (correspondingLink) {
+                        correspondingLink.classList.add('active');
+                    }
+                }
+            }
+
+            // Add click event listeners
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const href = this.getAttribute('href');
+                    
+                    if (href === '#') {
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        const target = document.querySelector(href);
+                        if (target) {
+                            const headerOffset = 80;
+                            const elementPosition = target.offsetTop;
+                            const offsetPosition = elementPosition - headerOffset;
+
+                            window.scrollTo({
+                                top: offsetPosition,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Add scroll event listener with debounce
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                if (scrollTimeout) {
+                    window.cancelAnimationFrame(scrollTimeout);
+                }
+                scrollTimeout = window.requestAnimationFrame(() => {
+                    setActiveLink();
+                });
+            });
+
+            // Initial check for active section
+            setActiveLink();
+        });
+    </script>
+
+    <!-- Add this function to handle random event section redirection -->
+    <script>
+    function redirectToRandomEventSection(e) {
+        e.preventDefault();
+        const eventSections = ['#trending', '#popular', '#upcoming'];
+        const randomSection = eventSections[Math.floor(Math.random() * eventSections.length)];
+        const target = document.querySelector(randomSection);
+        
+        if (target) {
+            const headerOffset = 80;
+            const elementPosition = target.offsetTop;
+            const offsetPosition = elementPosition - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+
+            // Update active states in bottom nav
+            document.querySelectorAll('.bottom-nav a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#events') {
+                    link.classList.add('active');
+                }
+            });
+        }
+    }
+
+    // Add event listeners for both top and bottom nav Events links
+    document.addEventListener('DOMContentLoaded', function() {
+        // For top navigation
+        const topNavEventLink = document.querySelector('.nav-links a[href="#events"]');
+        if (topNavEventLink) {
+            topNavEventLink.addEventListener('click', redirectToRandomEventSection);
+        }
+
+        // For bottom navigation
+        const bottomNavEventLink = document.querySelector('.bottom-nav a[href="#events"]');
+        if (bottomNavEventLink) {
+            bottomNavEventLink.addEventListener('click', redirectToRandomEventSection);
+        }
+    });
     </script>
 </body>
 </html>
