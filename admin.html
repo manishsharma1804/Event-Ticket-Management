@@ -411,7 +411,7 @@
 <body>
     <!-- Mobile Top Navbar -->
     <div class="mobile-top-nav">
-        <div class="mobile-top-title">EventTix Admin</div>
+        <div class="mobile-top-title" onclick="window.location.href='index.html'" style="cursor: pointer;">EventTix Admin</div>
         <button onclick="logout()" class="mobile-logout-btn">
             <i class="fas fa-sign-out-alt"></i>
         </button>
@@ -419,7 +419,7 @@
     <div class="container">
         <div class="sidebar">
             <div class="logo">
-                <h2>Admin Panel</h2>
+                <h2 onclick="window.location.href='index.html'" style="cursor: pointer;">EventTix Admin</h2>
             </div>
             
             <div class="menu">
@@ -460,7 +460,7 @@
                 <span id="userEmail"></span>
                 <div class="sidebar-actions">
                     <a href="index.html" class="home-btn" title="Go to Home">
-                        <i class="fas fa-home"></i>
+                        
                     </a>
                     <button id="logoutBtn" class="logout-btn" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
