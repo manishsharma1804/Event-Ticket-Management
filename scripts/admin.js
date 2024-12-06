@@ -84,106 +84,92 @@ async function initializeData() {
     }
 }
 
-// Initialize TinyMCE
-tinymce.init({
-    selector: '.tinymce-editor',
-    height: 300,
-    plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 
-        'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'wordcount'
-    ],
-    toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | help',
-    apiKey: 'your-api-key-here',
-    readonly: false
-});
 
+function initializeDashboardListeners() {
+    const eventsRef = collection(db, 'events');
+    const ticketsRef = collection(db, 'tickets');
+
+    const unsubscribeTickets = onSnapshot(ticketsRef, () => {
+        if (document.getElementById('dashboard').style.display === 'block') {
+            loadDashboard();
+        }
+    });
+
+    const unsubscribeEvents = onSnapshot(eventsRef, () => {
+        if (document.getElementById('dashboard').style.display === 'block') {
+            loadDashboard();
+        }
+    });
+
+    return () => {
+        unsubscribeTickets();
+        unsubscribeEvents();
+    };
+}
 // Navigation function
 async function showSection(sectionId) {
-    console.log(`Showing section: ${sectionId}`);
-    
-    // Hide all sections first
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.style.display = 'none';
-    });
-
-    // Show selected section
-    const selectedSection = document.getElementById(sectionId);
-    if (selectedSection) {
-        selectedSection.style.display = 'block';
-    }
-
-    // Update menu items
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    const menuItem = document.querySelector(`.menu-item[onclick*="${sectionId}"]`);
-    if (menuItem) {
-        menuItem.classList.add('active');
-    }
-
-    // Initialize section-specific content
     try {
-        switch (sectionId) {
-            case 'passes':
-                console.log('Initializing passes section...');
-                await initializePassesSection();
-                break;
-            case 'generateTicket':
-                console.log('Initializing ticket generation...');
-                await populateEventSelector('ticketEventSelector');
-                break;
-            // ... other cases ...
+        console.log(`Showing section: ${sectionId}`);
+        
+        // Hide all sections first
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Show selected section
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
         }
+
+        // Update menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const menuItem = document.querySelector(`.menu-item[onclick*="${sectionId}"]`);
+        if (menuItem) {
+            menuItem.classList.add('active');
+        }
+
+        // Initialize section-specific content
+        if (sectionId === 'dashboard') {
+            await loadDashboard();
+            initializeDashboardListeners();
+        }
+
     } catch (error) {
-        console.error(`Error initializing section ${sectionId}:`, error);
+        console.error(`Error showing section ${sectionId}:`, error);
     }
 }
 
 // Update populateEventSelector function to properly handle passes
 async function populateEventSelector(selectorId) {
     try {
-        console.log(`Populating event selector: ${selectorId}`);
         const selector = document.getElementById(selectorId);
-        if (!selector) {
-            console.error(`Selector not found: ${selectorId}`);
-            return;
-        }
+        if (!selector) return;
 
-        // Clear existing options
         selector.innerHTML = '<option value="">Select an Event</option>';
+        const now = new Date();
 
         // Get events from Firestore
         const eventsRef = collection(db, 'events');
         const eventsSnapshot = await getDocs(eventsRef);
         
-        // Sort events by date (newest first)
-        const events = [];
         eventsSnapshot.forEach(doc => {
-            const eventData = doc.data();
-            events.push({
-                id: doc.id,
-                name: eventData.name,
-                date: new Date(eventData.date)
-            });
+            const event = doc.data();
+            const bookingStart = new Date(event.bookingStartDate);
+            const bookingEnd = new Date(event.bookingDeadline);
+            
+            // Only show events with open bookings
+            if (now >= bookingStart && now <= bookingEnd) {
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = event.name;
+                selector.appendChild(option);
+            }
         });
-
-        events.sort((a, b) => b.date - a.date);
-
-        // Add events to selector
-        events.forEach(event => {
-            const option = document.createElement('option');
-            option.value = event.id;
-            option.textContent = `${event.name} (${event.date.toLocaleDateString()})`;
-            selector.appendChild(option);
-        });
-
-        console.log(`Populated ${events.length} events`);
-
     } catch (error) {
         console.error("Error populating event selector:", error);
-        alert("Error loading events. Please try again.");
     }
 }
 
@@ -201,76 +187,194 @@ async function loadDashboard() {
         const eventsRef = collection(db, 'events');
         const ticketsRef = collection(db, 'tickets');
 
-        const eventsSnapshot = await getDocs(eventsRef);
-        const totalEvents = eventsSnapshot.size;
+        const [eventsSnapshot, ticketsSnapshot] = await Promise.all([
+            getDocs(eventsRef),
+            getDocs(ticketsRef)
+        ]);
 
-        let totalRevenue = 0;
-        let ticketsSold = 0;
-        let totalTickets = 0;
-        let upcomingEvents = 0;
-        let completedEvents = 0;
-        let totalScannedTickets = 0;
+        let stats = {
+            totalEvents: 0,
+            upcomingEvents: 0,
+            completedEvents: 0,
+            totalTickets: 0,
+            ticketsSold: 0,
+            availableTickets: 0,
+            totalRevenue: 0,
+            ticketsScanned: 0
+        };
 
-        const currentDate = new Date();
-
-        // Calculate event-related stats
+        // Calculate stats
         eventsSnapshot.forEach(doc => {
             const event = doc.data();
-            const eventDate = new Date(event.date);
-            
-            // Calculate total tickets based on event type
-            if (event.eventType === 'hybrid') {
-                totalTickets += (Number(event.tickets?.venue?.total) || 0) + 
-                              (Number(event.tickets?.online?.total) || 0);
-            } else {
-                totalTickets += Number(event.totalTickets) || 0;
-            }
-            
-            if (eventDate > currentDate) {
-                upcomingEvents++;
-            } else {
-                completedEvents++;
-            }
-        });
+            if (!event.deleted && event.status !== 'deleted') {
+                stats.totalEvents++;
+                
+                if (new Date(event.date) > new Date()) {
+                    stats.upcomingEvents++;
+                } else {
+                    stats.completedEvents++;
+                }
 
-        // Calculate ticket sales, scanned tickets, and revenue only from active events
-        const ticketsSnapshot = await getDocs(ticketsRef);
-        const activeEventIds = new Set(eventsSnapshot.docs.map(doc => doc.id));
-
-        ticketsSnapshot.forEach(doc => {
-            const ticket = doc.data();
-            
-            // Only count tickets from active (non-deleted) events
-            if (activeEventIds.has(ticket.eventId) && ticket.paymentStatus === 'completed') {
-                ticketsSold += Number(ticket.ticketCount) || 0;
-                totalRevenue += Number(ticket.totalPrice) || 0;
-
-                // Count scanned tickets
-                if (ticket.used === true) {
-                    totalScannedTickets += Number(ticket.ticketCount) || 0;
+                if (event.eventType === 'hybrid') {
+                    stats.totalTickets += (parseInt(event.tickets?.venue?.total) || 0) + 
+                                        (parseInt(event.tickets?.online?.total) || 0);
+                } else {
+                    stats.totalTickets += parseInt(event.totalTickets) || 0;
                 }
             }
         });
 
-        // Ensure available tickets is never negative
-        const availableTickets = Math.max(0, totalTickets - ticketsSold);
+        // Calculate ticket stats
+        ticketsSnapshot.forEach(doc => {
+            const ticket = doc.data();
+            if (ticket.paymentStatus === 'completed') {
+                const ticketCount = parseInt(ticket.ticketCount) || 1;
+                stats.ticketsSold += ticketCount;
+                stats.totalRevenue += parseFloat(ticket.totalPrice) || 0;
+                
+                if (ticket.used) {
+                    stats.ticketsScanned += ticketCount;
+                }
+            }
+        });
 
-        // Update dashboard stats
-        document.getElementById('totalEvents').textContent = totalEvents;
-        document.getElementById('upcomingEvents').textContent = upcomingEvents;
-        document.getElementById('completedEvents').textContent = completedEvents;
-        document.getElementById('totalTickets').textContent = totalTickets;
-        document.getElementById('ticketsSold').textContent = ticketsSold;
-        document.getElementById('ticketsScanned').textContent = totalScannedTickets;
-        document.getElementById('availableTickets').textContent = availableTickets;
-        document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+        stats.availableTickets = Math.max(0, stats.totalTickets - stats.ticketsSold);
 
-        await loadRecentEvents();
-        await loadRecentTickets();
+        // Get dashboard container
+        const dashboardContent = document.getElementById('dashboard');
+        if (!dashboardContent) return;
+
+        // Create/update stats grid
+        let statsGrid = dashboardContent.querySelector('.stats-grid');
+        if (!statsGrid) {
+            statsGrid = document.createElement('div');
+            statsGrid.className = 'stats-grid';
+            dashboardContent.appendChild(statsGrid);
+        }
+
+        // Update stats display
+        statsGrid.innerHTML = `
+            <div class="stat-card">
+                <h3>Total Events</h3>
+                <div class="number" id="totalEvents">${stats.totalEvents}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Upcoming Events</h3>
+                <div class="number" id="upcomingEvents">${stats.upcomingEvents}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Completed Events</h3>
+                <div class="number" id="completedEvents">${stats.completedEvents}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Tickets</h3>
+                <div class="number" id="totalTickets">${stats.totalTickets}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Tickets Sold</h3>
+                <div class="number" id="ticketsSold">${stats.ticketsSold}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Available Tickets</h3>
+                <div class="number" id="availableTickets">${stats.availableTickets}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Revenue</h3>
+                <div class="number" id="totalRevenue">${formatCurrency(stats.totalRevenue)}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Tickets Scanned</h3>
+                <div class="number" id="ticketsScanned">${stats.ticketsScanned}</div>
+            </div>
+        `;
+
+        // Remove existing carousel
+        const existingCarousel = dashboardContent.querySelector('.events-carousel-section');
+        if (existingCarousel) {
+            existingCarousel.remove();
+        }
+
+        // Create carousel section
+        const carouselSection = document.createElement('div');
+        carouselSection.className = 'events-carousel-section';
+        carouselSection.innerHTML = `
+            <div class="carousel-container">
+                <h2>Event Gallery</h2>
+                <div class="swiper event-swiper">
+                    <div class="swiper-wrapper">
+                        <!-- Slides will be added here -->
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+        `;
+
+        // Add carousel after stats grid
+        statsGrid.insertAdjacentElement('afterend', carouselSection);
+
+        // Add event slides
+        const swiperWrapper = carouselSection.querySelector('.swiper-wrapper');
+        if (swiperWrapper) {
+            const eventsWithImages = eventsSnapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    imageUrl: Array.isArray(doc.data().images) ? doc.data().images[0] : doc.data().images
+                }))
+                .filter(event => {
+                    return event.imageUrl && 
+                           typeof event.imageUrl === 'string' && 
+                           event.imageUrl.trim() !== '' && 
+                           !event.deleted && 
+                           event.status !== 'deleted';
+                });
+
+            if (eventsWithImages.length > 0) {
+                eventsWithImages.forEach(event => {
+                    const slide = document.createElement('div');
+                    slide.className = 'swiper-slide';
+                    slide.innerHTML = `
+                        <div class="event-slide">
+                            <div class="event-slide-image">
+                                <img src="${event.imageUrl}" 
+                                     alt="${event.name}" 
+                                     onerror="this.src='assets/images/event-placeholder.jpg'"
+                                     loading="lazy"/>
+                            </div>
+                            <div class="event-slide-info">
+                                <h3>${event.name}</h3>
+                                <p>${new Date(event.date).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    `;
+                    swiperWrapper.appendChild(slide);
+                });
+
+                // Initialize Swiper
+                setTimeout(() => {
+                    new Swiper('.event-swiper', {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                        loop: true,
+                        autoplay: {
+                            delay: 5000,
+                            disableOnInteraction: false,
+                        },
+                        pagination: {
+                            el: '.swiper-pagination',
+                            clickable: true,
+                        },
+                        effect: 'fade',
+                        fadeEffect: {
+                            crossFade: true
+                        }
+                    });
+                }, 100);
+            }
+        }
 
     } catch (error) {
         console.error("Error loading dashboard:", error);
-        alert("Error loading dashboard data: " + error.message);
     }
 }
         // Update recent tickets display
@@ -482,13 +586,20 @@ async function generatePasses() {
         const generatedPasses = [];
 
         for (let i = 0; i < numberOfPasses; i++) {
+            const passIdentifier = `PASS-${generateRandomFiveDigits()}-${getCurrentYear()}`;
+            
             const passData = {
                 eventId,
                 role: finalRole,
-                passIdentifier: generatePassIdentifier(),
+                passIdentifier,
                 createdAt: serverTimestamp(),
-                used: false
+                used: false,
+                issuedBy: auth.currentUser.email,
+                issuedAt: new Date().toISOString(),
+                version: '1.0'  // Add version for future compatibility
             };
+
+            console.log('Creating pass with data:', passData);
 
             const newPassRef = doc(passesRef);
             batch.set(newPassRef, passData);
@@ -520,7 +631,9 @@ async function generatePasses() {
 
 // Generate unique pass identifier
 function generatePassIdentifier() {
-    return 'PASS-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    const randomNum = generateRandomFiveDigits();
+    const year = getCurrentYear();
+    return `PASS-${randomNum}-${year}`;
 }
 
 // Update displayGeneratedPasses function
@@ -834,36 +947,139 @@ async function verifyTicket(identifier) {
 // Make functions globally available
 window.verifyTicket = verifyTicket;
 window.markTicketAsUsed = markTicketAsUsed;
+async function getRealTimeAvailability(eventId, ticketType) {
+    try {
+        const eventDoc = await getDoc(doc(db, 'events', eventId));
+        if (!eventDoc.exists()) {
+            throw new Error('Event not found');
+        }
+        const event = eventDoc.data();
+
+        // Get all sold tickets
+        const ticketsRef = collection(db, 'tickets');
+        const ticketQuery = query(ticketsRef, 
+            where('eventId', '==', eventId),
+            where('ticketType', '==', ticketType),
+            where('paymentStatus', '==', 'completed')
+        );
+        const ticketSnapshot = await getDocs(ticketQuery);
+
+        // Calculate total sold tickets
+        let soldTickets = 0;
+        ticketSnapshot.forEach(doc => {
+            const ticket = doc.data();
+            soldTickets += Number(ticket.ticketCount) || 0;
+        });
+
+        // Get total and available tickets based on event type
+        let totalTickets = 0;
+        let availableTickets = 0;
+
+        if (event.eventType === 'hybrid') {
+            if (ticketType === 'venue') {
+                totalTickets = event.tickets.venue.total;
+                availableTickets = event.tickets.venue.available;
+            } else {
+                totalTickets = event.tickets.online.total;
+                availableTickets = event.tickets.online.available;
+            }
+        } else {
+            totalTickets = event.totalTickets;
+            availableTickets = event.availableTickets;
+        }
+
+        return {
+            total: totalTickets,
+            sold: soldTickets,
+            available: availableTickets // Use the stored available count instead of calculating
+        };
+    } catch (error) {
+        console.error('Error getting ticket availability:', error);
+        throw error;
+    }
+}
 
 // Function to update ticket type options based on selected event
 async function updateTicketTypeOptions() {
+    console.log('Updating ticket type options...');
     const eventId = document.getElementById('ticketEventSelector').value;
     const typeSelector = document.getElementById('ticketTypeSelector');
-    typeSelector.innerHTML = '<option value="">Select Ticket Type</option>';
+    const paymentModeSection = document.getElementById('paymentMode')?.parentElement;
+    const paymentMode = document.getElementById('paymentMode');
     
-    if (!eventId) return;
+    if (!eventId || !typeSelector) return;
+    
+    // Clear existing options
+    typeSelector.innerHTML = '<option value="">Select Ticket Type</option>';
     
     try {
         const eventDoc = await getDoc(doc(db, 'events', eventId));
         const event = eventDoc.data();
         
-        if (event.eventType === 'hybrid') {
-            typeSelector.innerHTML += `
-                <option value="venue">Venue Ticket (₹${event.tickets.venue.price})</option>
-                <option value="online">Online Ticket (₹${event.tickets.online.price})</option>
-            `;
-        } else {
-            typeSelector.innerHTML += `
-                <option value="standard">Standard Ticket (₹${event.price})</option>
-            `;
-        }
+        const isFreeEvent = event.pricingType === 'free' || event.price === 0;
         
+        if (paymentModeSection && paymentMode) {
+            paymentModeSection.style.display = isFreeEvent ? 'none' : 'block';
+            if (isFreeEvent) {
+                paymentMode.value = 'free';
+                paymentMode.removeAttribute('required'); // Remove required attribute for free events
+            } else {
+                paymentMode.value = ''; // Reset payment mode
+                paymentMode.setAttribute('required', 'required'); // Make required for paid events
+            }
+        }
+
+        if (event.eventType === 'hybrid') {
+            // Get real-time availability for both types
+            const venueAvailability = await getRealTimeAvailability(eventId, 'venue');
+            const onlineAvailability = await getRealTimeAvailability(eventId, 'online');
+            
+            console.log('Current availability:', {
+                venue: venueAvailability,
+                online: onlineAvailability
+            });
+
+            // Add venue option if available
+            if (venueAvailability.available > 0) {
+                typeSelector.innerHTML += `
+                    <option value="venue">
+                        Venue Ticket (${isFreeEvent ? 'Free' : '₹' + event.tickets.venue.price}) 
+                        - ${venueAvailability.available} available
+                    </option>
+                `;
+            }
+            
+            // Add online option if available
+            if (onlineAvailability.available > 0) {
+                typeSelector.innerHTML += `
+                    <option value="online">
+                        Online Ticket (${isFreeEvent ? 'Free' : '₹' + event.tickets.online.price}) 
+                        - ${onlineAvailability.available} available
+                    </option>
+                `;
+            }
+        } else {
+            // For standard events
+            const availability = await getRealTimeAvailability(eventId, 'standard');
+            console.log('Current availability:', availability);
+
+            if (availability.available > 0) {
+                typeSelector.innerHTML += `
+                    <option value="standard">
+                        Standard Ticket (${isFreeEvent ? 'Free' : '₹' + event.price}) 
+                        - ${availability.available} available
+                    </option>
+                `;
+            }
+        }
+
+        // Update price display
         updateTicketPrice();
+
     } catch (error) {
-        console.error("Error loading ticket types:", error);
+        console.error("Error updating ticket options:", error);
     }
 }
-
 // Function to update ticket price display
 function updateTicketPrice() {
     const quantity = parseInt(document.getElementById('ticketQuantity').value) || 0;
@@ -872,240 +1088,274 @@ function updateTicketPrice() {
     
     let pricePerTicket = 0;
     if (selectedOption && selectedOption.text) {
-        pricePerTicket = parseInt(selectedOption.text.match(/₹(\d+)/)[1]) || 0;
+        // Check if it's a free ticket
+        if (selectedOption.text.includes('Free')) {
+            pricePerTicket = 0;
+        } else {
+            // Extract price only if it's a paid ticket
+            const priceMatch = selectedOption.text.match(/₹(\d+)/);
+            pricePerTicket = priceMatch ? parseInt(priceMatch[1]) : 0;
+        }
     }
     
     const totalPrice = pricePerTicket * quantity;
     
-    document.getElementById('pricePerTicket').textContent = `₹${pricePerTicket}`;
-    document.getElementById('totalTicketPrice').textContent = `₹${totalPrice}`;
+    document.getElementById('pricePerTicket').textContent = pricePerTicket === 0 ? 'Free' : `₹${pricePerTicket}`;
+    document.getElementById('totalTicketPrice').textContent = totalPrice === 0 ? 'Free' : `₹${totalPrice}`;
 }
 
 // Function to generate ticket for user
 async function generateTicketForUser() {
     try {
-        console.log('Starting ticket generation...');
-        
-        // Get form elements
-        const eventSelector = document.getElementById('ticketEventSelector');
-        const typeSelector = document.getElementById('ticketTypeSelector');
-        const quantityInput = document.getElementById('ticketQuantity');
-        const emailInput = document.getElementById('ticketUserEmail');
-        const paymentModeSelect = document.getElementById('paymentMode');
-        
-        // Validate form elements
-        if (!eventSelector || !typeSelector || !quantityInput || !emailInput || !paymentModeSelect) {
-            throw new Error('Form elements not found');
-        }
+        const eventId = document.getElementById('ticketEventSelector').value;
+        const ticketType = document.getElementById('ticketTypeSelector').value;
+        const quantity = parseInt(document.getElementById('ticketQuantity').value);
+        const userEmail = document.getElementById('ticketUserEmail').value.trim();
+        const paymentMode = document.getElementById('paymentMode').value;
 
-        // Get values
-        const eventId = eventSelector.value;
-        const ticketType = typeSelector.value;
-        const quantity = parseInt(quantityInput.value);
-        const userEmail = emailInput.value.trim();
-        const paymentMode = paymentModeSelect.value;
-        
-        // Validate values
+        // Validate inputs
         if (!eventId || !ticketType || !quantity || !userEmail) {
             const missingFields = [];
             if (!eventId) missingFields.push('Event');
             if (!ticketType) missingFields.push('Ticket Type');
             if (!quantity) missingFields.push('Quantity');
             if (!userEmail) missingFields.push('Email');
-            if (!paymentMode) missingFields.push('Payment Mode');
             
             alert(`Please fill in the following fields: ${missingFields.join(', ')}`);
             return;
         }
-         // If card payment, show card details modal
-         if (paymentMode === 'card') {
-            showCardDetailsModal();
-            return;
-        }
 
-        // For cash payment, proceed directly
-        await processTicketGeneration(false);
-        
-
-        // Get event details
+        // Get event details to check if it's a free event
         const eventDoc = await getDoc(doc(db, 'events', eventId));
         if (!eventDoc.exists()) {
             throw new Error('Event not found');
         }
 
         const event = eventDoc.data();
-        
-        // Check current ticket count
-        const ticketsRef = collection(db, 'tickets');
-        const ticketQuery = query(ticketsRef, 
-            where('eventId', '==', eventId), 
-            where('ticketType', '==', ticketType),
-            where('paymentStatus', '==', 'completed')
-        );
-        const ticketSnapshot = await getDocs(ticketQuery);
-        const soldTickets = ticketSnapshot.docs.reduce((total, doc) => 
-            total + (doc.data().ticketCount || 1), 0);
+        const isFreeEvent = event.pricingType === 'free' || event.price === 0;
 
-        // Calculate availability and price
-        let availableTickets = 0;
-        let ticketPrice = 0;
-
-        if (event.eventType === 'hybrid') {
-            if (ticketType === 'venue') {
-                availableTickets = event.tickets.venue.total - soldTickets;
-                ticketPrice = event.tickets.venue.price;
-            } else {
-                availableTickets = event.tickets.online.total - soldTickets;
-                ticketPrice = event.tickets.online.price;
-            }
-        } else {
-            availableTickets = event.totalTickets - soldTickets;
-            ticketPrice = event.price;
+        // Validate payment mode for paid events
+        if (!isFreeEvent && !paymentMode) {
+            alert('Please select a payment mode');
+            return;
         }
 
-        if (availableTickets < quantity) {
-            throw new Error(`Only ${availableTickets} tickets available`);
+        // Check real-time availability
+        const availability = await getRealTimeAvailability(eventId, ticketType);
+        if (quantity > availability.available) {
+            throw new Error(`Only ${availability.available} tickets available`);
         }
 
-        const totalPrice = ticketPrice * quantity;
-        
-        // Start batch write
-        const batch = writeBatch(db);
+        // For paid events, handle payment
+        if (!isFreeEvent && paymentMode === 'card') {
+            showCardDetailsModal();
+            return;
+        }
 
-        // Create ticket document
-        const ticketData = {
-            eventId,
-            ticketType,
-            ticketCount: quantity,
-            userEmail,
-            ticketIdentifier: 'TKT-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-            purchaseDate: new Date().toISOString(),
-            paymentStatus: 'completed', // Set as completed for admin-generated tickets
-            used: false,
-            totalPrice,
-            pricePerTicket: ticketPrice,
-            adminGenerated: true,
-            generatedBy: auth.currentUser.email
-        };
+        // Show loader for cash/free payments
+        const generateBtn = document.querySelector('#generateTicket button[onclick="generateTicketForUser()"]');
+        const originalBtnText = generateBtn.innerHTML;
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = `
+            <span class="spinner"></span>
+            Generating ticket...
+        `;
 
-        const newTicketRef = doc(ticketsRef);
-        batch.set(newTicketRef, ticketData);
+        // Add loader styles if not already present
+        if (!document.getElementById('loaderStyles')) {
+            const style = document.createElement('style');
+            style.id = 'loaderStyles';
+            style.textContent = `
+                .spinner {
+                    display: inline-block;
+                    width: 16px;
+                    height: 16px;
+                    border: 2px solid #ffffff;
+                    border-top: 2px solid transparent;
+                    border-radius: 50%;
+                    margin-right: 8px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
-        // Update event document with new stats
-        const eventRef = doc(db, 'events', eventId);
-        batch.update(eventRef, {
-            soldTickets: increment(quantity),
-            totalRevenue: increment(totalPrice),
-            lastUpdated: serverTimestamp()
-        });
+        try {
+            // Process ticket generation
+            await processTicketGeneration(false);
+            alert('Ticket generated successfully!');
+        } finally {
+            // Reset button state
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = originalBtnText;
+        }
 
-        // Commit all changes
-        await batch.commit();
-        
-        // Clear form
-        eventSelector.value = '';
-        typeSelector.value = '';
-        quantityInput.value = '1';
-        emailInput.value = '';
-        
-        // Reset price displays
-        document.getElementById('pricePerTicket').textContent = '₹0';
-        document.getElementById('totalTicketPrice').textContent = '₹0';
-        
-        // Update all stats displays
-        await Promise.all([
-            loadDashboard(),
-            updateTicketStats(),
-            loadEvents()
-        ]);
-        
-  
     } catch (error) {
         console.error("Error generating ticket:", error);
         alert('Error generating ticket: ' + error.message);
+        
+        // Reset button if error occurs
+        const generateBtn = document.querySelector('#generateTicket button[onclick="generateTicketForUser()"]');
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = 'Generate Ticket';
+        }
     }
 }
 
 // Add function to update ticket stats
-// Update ticket stats function
-async function updateTicketStats() {
+// Update the updateTicketStats function to handle filtered tickets
+
+async function updateTicketStats(selectedEventId = null) {
     try {
-        console.log('Updating ticket stats...');
-        
-        // Get references
         const ticketsRef = collection(db, 'tickets');
         const eventsRef = collection(db, 'events');
         
-        // Get all active events
-        const eventsSnapshot = await getDocs(eventsRef);
-        const activeEventIds = new Set(eventsSnapshot.docs.map(doc => doc.id));
-        
-        let totalTickets = 0;
-        let soldTickets = 0;
-        let scannedTickets = 0;
-        let totalRevenue = 0;
-
-        // Calculate total tickets from events
-        eventsSnapshot.forEach(eventDoc => {
-            const event = eventDoc.data();
-            if (event.eventType === 'hybrid') {
-                totalTickets += (Number(event.tickets?.venue?.total) || 0) + 
-                              (Number(event.tickets?.online?.total) || 0);
-            } else {
-                totalTickets += Number(event.totalTickets) || 0;
+        // Get event data first
+        let eventCapacity = 0;
+        if (selectedEventId && selectedEventId !== 'all') {
+            const eventDoc = await getDoc(doc(eventsRef, selectedEventId));
+            if (eventDoc.exists()) {
+                const eventData = eventDoc.data();
+                if (eventData.eventType === 'hybrid') {
+                    eventCapacity = (parseInt(eventData.tickets?.venue?.total) || 0) + 
+                                  (parseInt(eventData.tickets?.online?.total) || 0);
+                } else {
+                    eventCapacity = parseInt(eventData.totalTickets) || 0;
+                }
             }
-        });
+        } else {
+            // If no event selected, sum up capacity of all events
+            const eventsSnapshot = await getDocs(eventsRef);
+            eventsSnapshot.forEach(doc => {
+                const event = doc.data();
+                if (!event.deleted && event.status !== 'deleted') {
+                    if (event.eventType === 'hybrid') {
+                        eventCapacity += (parseInt(event.tickets?.venue?.total) || 0) + 
+                                       (parseInt(event.tickets?.online?.total) || 0);
+                    } else {
+                        eventCapacity += parseInt(event.totalTickets) || 0;
+                    }
+                }
+            });
+        }
 
-        // Get all tickets with completed payments
-        const ticketsQuery = query(ticketsRef, where('paymentStatus', '==', 'completed'));
-        const ticketsSnapshot = await getDocs(ticketsQuery);
+        // Build ticket query
+        let ticketQuery;
+        if (selectedEventId && selectedEventId !== 'all') {
+            ticketQuery = query(ticketsRef, where('eventId', '==', selectedEventId));
+        } else {
+            ticketQuery = query(ticketsRef);
+        }
+
+        const ticketSnapshot = await getDocs(ticketQuery);
         
-        // Calculate sold, scanned tickets and revenue
-        ticketsSnapshot.forEach(doc => {
+        let stats = {
+            totalTickets: eventCapacity,
+            ticketsSold: 0,
+            ticketsScanned: 0,
+            totalRevenue: 0
+        };
+
+        // Calculate ticket stats
+        ticketSnapshot.forEach(doc => {
             const ticket = doc.data();
-            // Only count tickets from active events
-            if (activeEventIds.has(ticket.eventId)) {
-                const ticketCount = Number(ticket.ticketCount) || 1;
-                soldTickets += ticketCount;
-                totalRevenue += Number(ticket.totalPrice) || 0;
+            if (ticket.paymentStatus === 'completed') {
+                const ticketCount = parseInt(ticket.ticketCount) || 1;
+                stats.ticketsSold += ticketCount;
+                stats.totalRevenue += parseFloat(ticket.totalPrice) || 0;
                 
                 if (ticket.used) {
-                    scannedTickets += ticketCount;
+                    stats.ticketsScanned += ticketCount;
                 }
             }
         });
 
         // Calculate available tickets
-        const availableTickets = Math.max(0, totalTickets - soldTickets);
+        stats.availableTickets = Math.max(0, stats.totalTickets - stats.ticketsSold);
 
-        console.log('Ticket stats calculated:', {
-            total: totalTickets,
-            sold: soldTickets,
-            available: availableTickets,
-            scanned: scannedTickets,
-            revenue: totalRevenue
-        });
-
-        // Update stats display
-        const elements = {
-            adminTotalTickets: document.getElementById('adminTotalTickets'),
-            adminSoldTickets: document.getElementById('adminSoldTickets'),
-            adminAvailableTickets: document.getElementById('adminAvailableTickets'),
-            adminUsedTickets: document.getElementById('adminUsedTickets'),
-            adminTotalRevenue: document.getElementById('adminTotalRevenue')
+        // Update ticket section UI elements
+        const ticketElements = {
+            totalTickets: document.getElementById('adminTotalTickets'),
+            soldTickets: document.getElementById('adminSoldTickets'),
+            availableTickets: document.getElementById('adminAvailableTickets'),
+            usedTickets: document.getElementById('selectedEventUsedTickets'),
+            revenue: document.getElementById('selectedEventTotalRevenue')
         };
 
-        // Check if elements exist before updating
-        if (elements.adminTotalTickets) elements.adminTotalTickets.textContent = totalTickets;
-        if (elements.adminSoldTickets) elements.adminSoldTickets.textContent = soldTickets;
-        if (elements.adminAvailableTickets) elements.adminAvailableTickets.textContent = availableTickets;
-        if (elements.adminUsedTickets) elements.adminUsedTickets.textContent = scannedTickets;
-        if (elements.adminTotalRevenue) elements.adminTotalRevenue.textContent = formatCurrency(totalRevenue);
+        // Update elements if they exist
+        if (ticketElements.totalTickets) ticketElements.totalTickets.textContent = stats.totalTickets;
+        if (ticketElements.soldTickets) ticketElements.soldTickets.textContent = stats.ticketsSold;
+        if (ticketElements.availableTickets) ticketElements.availableTickets.textContent = stats.availableTickets;
+        if (ticketElements.usedTickets) ticketElements.usedTickets.textContent = stats.ticketsScanned;
+        if (ticketElements.revenue) ticketElements.revenue.textContent = formatCurrency(stats.totalRevenue);
+
+        console.log('Ticket Page Stats:', stats);
 
     } catch (error) {
-        console.error("Error updating ticket stats:", error);
-        console.error("Error stack:", error.stack);
+        console.error('Error updating ticket stats:', error);
     }
+}
+
+// Add event listeners for filters
+document.addEventListener('DOMContentLoaded', () => {
+    const eventSelector = document.getElementById('adminEventSelector');
+    const searchInput = document.getElementById('adminTicketSearch');
+
+    if (eventSelector) {
+        eventSelector.addEventListener('change', () => {
+            updateTicketStats(eventSelector.value);
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+            const selectedEventId = eventSelector?.value || 'all';
+            updateTicketStats(selectedEventId);
+        }, 300));
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const eventSelector = document.getElementById('adminEventSelector');
+    const searchInput = document.getElementById('adminTicketSearch');
+
+    if (eventSelector) {
+        eventSelector.addEventListener('change', () => {
+            updateTicketStats(eventSelector.value);
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+            updateTicketStats(eventSelector?.value);
+        }, 300));
+    }
+
+    // Initial load
+    updateTicketStats('all');
+});
+// Helper function to clear ticket stats
+// Helper function to clear ticket stats
+function clearTicketStats() {
+    const elements = {
+        totalTickets: document.getElementById('selectedEventTotalTickets'),
+        soldTickets: document.getElementById('selectedEventSoldTickets'),
+        usedTickets: document.getElementById('selectedEventUsedTickets'),
+        availableTickets: document.getElementById('selectedEventAvailableTickets'),
+        totalRevenue: document.getElementById('selectedEventTotalRevenue')
+    };
+
+    // Only update elements that exist
+    if (elements.totalTickets) elements.totalTickets.textContent = '0';
+    if (elements.soldTickets) elements.soldTickets.textContent = '0';
+    if (elements.usedTickets) elements.usedTickets.textContent = '0';
+    if (elements.availableTickets) elements.availableTickets.textContent = '0';
+    if (elements.totalRevenue) elements.totalRevenue.textContent = '₹0';
 }
 
 // Helper function for currency formatting
@@ -1116,7 +1366,6 @@ function formatCurrency(amount) {
 // Make functions globally available
 window.closeCardModal = closeCardModal;
 window.processCardPayment = processCardPayment;
-window.generateTicketForUser = generateTicketForUser;
 window.updateTicketStats = updateTicketStats;
 // Function to collect payment
 async function collectPayment() {
@@ -1316,89 +1565,222 @@ async function loadAllPasses(roleFilter = 'all', eventFilter = 'all') {
     }
 }
 
-// Add function to download single pass
+// Function to download a single pass
 async function downloadPass(passId) {
+    const downloadBtn = document.querySelector(`button[onclick="downloadPass('${passId}')"]`);
+    if (!downloadBtn) return;
+
     try {
+        // Update button state
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+        // Get pass data
         const passDoc = await getDoc(doc(db, 'passes', passId));
-        if (!passDoc.exists()) {
-            throw new Error('Pass not found');
-        }
+        if (!passDoc.exists()) throw new Error('Pass not found');
+        const pass = passDoc.data();
 
-        const passData = passDoc.data();
-        if (!passData.eventId) {
-            throw new Error('Pass has no associated event');
-        }
+        // Get event data
+        const eventDoc = await getDoc(doc(db, 'events', pass.eventId));
+        if (!eventDoc.exists()) throw new Error('Event not found');
+        const eventName = eventDoc.data().name;
 
-        const eventDoc = await getDoc(doc(db, 'events', passData.eventId));
-        if (!eventDoc.exists()) {
-            throw new Error('Associated event not found');
-        }
-
-        const eventData = eventDoc.data();
-
-        // Create a temporary container for the pass
-        const container = document.createElement('div');
-        container.className = 'pass-download-template';
-        container.innerHTML = `
-            <div class="pass-header">
-                <h2>Event Pass</h2>
-                <p class="pass-id">${passData.passIdentifier}</p>
-            </div>
-            <div class="pass-content">
-                <p><strong>Event:</strong> ${eventData.name}</p>
-                <p><strong>Date:</strong> ${new Date(eventData.date).toLocaleDateString()}</p>
-                <p><strong>Role:</strong> ${passData.role}</p>
-                <p><strong>Status:</strong> ${passData.used ? 'Used' : 'Valid'}</p>
-                <div id="pass-qr-${passId}"></div>
-            </div>
-        `;
-
-        document.body.appendChild(container);
+        // Create a temporary div for QR code
+        const qrContainer = document.createElement('div');
+        document.body.appendChild(qrContainer);
 
         // Generate QR code
-        new QRCode(document.getElementById(`pass-qr-${passId}`), {
-            text: passData.passIdentifier,
+        const qr = new QRCode(qrContainer, {
+            text: pass.passIdentifier,
             width: 128,
             height: 128
         });
 
-        // Use html2canvas to create image
-        const canvas = await html2canvas(container);
-        const link = document.createElement('a');
-        link.download = `pass-${passData.passIdentifier}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        // Wait for QR code to generate
+        await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Clean up
-        document.body.removeChild(container);
+        // Get QR code as image
+        const qrImage = qrContainer.querySelector('img');
+        const qrData = qrImage.src;
+
+        // Create PDF
+        const PDF = window.jspdf.jsPDF;
+        const pdf = new PDF();
+        
+        // Add content to PDF
+        pdf.setFontSize(20);
+        pdf.text('EventTix Pass', 105, 20, { align: 'center' });
+        
+        pdf.setFontSize(16);
+        pdf.text(pass.role.toUpperCase(), 105, 40, { align: 'center' });
+        
+        pdf.setFontSize(12);
+        pdf.text([
+            `Pass ID: ${pass.passIdentifier}`,
+            `Event: ${eventName}`,
+            `Role: ${pass.role}`,
+            `Created: ${new Date(pass.createdAt.toDate()).toLocaleDateString()}`
+        ], 20, 60);
+
+        // Add QR code to PDF
+        pdf.addImage(qrData, 'PNG', 70, 100, 70, 70);
+
+        // Add footer
+        pdf.setFontSize(10);
+        pdf.setTextColor(220, 53, 69); // Red color
+        pdf.text('AUTHORIZED ACCESS ONLY', 105, 200, { align: 'center' });
+
+        // Save the PDF
+        pdf.save(`Pass-${pass.passIdentifier}.pdf`);
+
+        // Cleanup
+        document.body.removeChild(qrContainer);
 
     } catch (error) {
-        console.error("Error downloading pass:", error);
-        alert('Error downloading pass: ' + error.message);
+        console.error('Error in downloadPass:', error);
+        alert('Failed to generate pass: ' + error.message);
+    } finally {
+        // Reset button state
+        if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
+        }
     }
 }
 
+// Update downloadCanvas function with better error handling
+async function downloadCanvas(canvas, filename) {
+    return new Promise((resolve, reject) => {
+        try {
+            canvas.toBlob(blob => {
+                if (!blob) {
+                    reject(new Error('Failed to create image blob'));
+                    return;
+                }
+                
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                
+                // Trigger download
+                link.click();
+                
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    resolve();
+                }, 100);
+                
+            }, 'image/png', 1.0);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
 
-// Add function to download selected passes
+// Update createPassTemplate function to ensure all elements are properly styled
+function createPassTemplate(pass, eventName) {
+    const div = document.createElement('div');
+    div.style.cssText = `
+        width: 500px;
+        padding: 40px;
+        background: white;
+        font-family: Arial, sans-serif;
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        z-index: -1;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    `;
+    
+    div.innerHTML = `
+        <div style="text-align: center; background: white;">
+            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">EventTix Pass</h2>
+            <div style="background: #4a90e2; color: white; padding: 10px; margin: 20px 0; font-size: 18px;">
+                ${pass.role.toUpperCase()}
+            </div>
+            <div class="qr-container" style="margin: 20px auto; width: 150px; height: 150px; background: white;"></div>
+            <div style="text-align: left; margin: 20px 0;">
+                <p style="margin: 10px 0; font-size: 14px;"><strong>Pass ID:</strong> ${pass.passIdentifier}</p>
+                <p style="margin: 10px 0; font-size: 14px;"><strong>Event:</strong> ${eventName}</p>
+                <p style="margin: 10px 0; font-size: 14px;"><strong>Role:</strong> ${pass.role}</p>
+                <p style="margin: 10px 0; font-size: 14px;"><strong>Created:</strong> ${new Date(pass.createdAt.toDate()).toLocaleDateString()}</p>
+            </div>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p style="color: #dc3545; font-weight: bold; font-size: 16px;">AUTHORIZED ACCESS ONLY</p>
+            </div>
+        </div>
+    `;
+    
+    return div;
+}
+
+async function generateQRCode(text, container) {
+    return new Promise((resolve, reject) => {
+        try {
+            new QRCode(container, {
+                text: text,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            setTimeout(resolve, 1000); // Wait for render
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+function cleanupElements(elements) {
+    Object.values(elements).forEach(element => {
+        if (element && document.body.contains(element)) {
+            document.body.removeChild(element);
+        }
+    });
+}
+
+// Function to download multiple passes
 async function downloadSelectedPasses() {
-    const selectedPasses = document.querySelectorAll('.pass-select:checked');
-    if (selectedPasses.length === 0) {
+    const selectedCheckboxes = document.querySelectorAll('.pass-select:checked');
+    
+    if (selectedCheckboxes.length === 0) {
         alert('Please select at least one pass to download');
         return;
     }
 
-    try {
-        for (const checkbox of selectedPasses) {
-            const passId = checkbox.dataset.passId;
-            await downloadPass(passId);
-            // Add small delay between downloads to prevent browser issues
-            await new Promise(resolve => setTimeout(resolve, 500));
+    let downloaded = 0;
+    let failed = 0;
+
+    for (const checkbox of selectedCheckboxes) {
+        try {
+            await downloadPass(checkbox.dataset.passId);
+            downloaded++;
+            // Add delay between downloads
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+            console.error('Error downloading pass:', error);
+            failed++;
         }
-    } catch (error) {
-        console.error("Error downloading passes:", error);
-        alert('Error downloading passes: ' + error.message);
+    }
+
+    // Show summary
+    if (failed > 0) {
+        alert(`Downloaded ${downloaded} passes. Failed to download ${failed} passes.`);
+    } else {
+        alert(`Successfully downloaded ${downloaded} passes!`);
     }
 }
+
+// Make functions available globally
+window.downloadPass = downloadPass;
+window.downloadSelectedPasses = downloadSelectedPasses;
+
 // Add function to delete selected passes
 async function deleteSelectedPasses() {
     const selectedPasses = document.querySelectorAll('.pass-select:checked');
@@ -1454,8 +1836,6 @@ function setupPassSearch() {
 }
 
 // Make sure to export all necessary functions
-window.downloadPass = downloadPass;
-window.downloadSelectedPasses = downloadSelectedPasses;
 window.deletePass = deletePass;
 window.deleteSelectedPasses = deleteSelectedPasses;
 window.toggleAllPasses = toggleAllPasses;
@@ -1629,9 +2009,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Make functions globally available
-window.generateTicketForUser = generateTicketForUser;
+
 window.updateTicketTypeOptions = updateTicketTypeOptions;
 window.updateTicketPrice = updateTicketPrice;
+
+
 
 
 
@@ -1887,13 +2269,17 @@ async function processCardPayment() {
 // Function to process ticket generation
 async function processTicketGeneration(isCardPayment = false) {
     try {
-        console.log('processTicketGeneration called from:', isCardPayment ? 'card payment' : 'cash payment');
-        // Get form values
         const eventId = document.getElementById('ticketEventSelector').value;
         const ticketType = document.getElementById('ticketTypeSelector').value;
         const quantity = parseInt(document.getElementById('ticketQuantity').value);
         const userEmail = document.getElementById('ticketUserEmail').value.trim();
         const paymentMode = document.getElementById('paymentMode').value;
+
+        // Check real-time availability again before proceeding
+        const availability = await getRealTimeAvailability(eventId, ticketType);
+        if (quantity > availability.available) {
+            throw new Error(`Only ${availability.available} tickets available`);
+        }
 
         // Get event details
         const eventDoc = await getDoc(doc(db, 'events', eventId));
@@ -1902,125 +2288,292 @@ async function processTicketGeneration(isCardPayment = false) {
         }
 
         const event = eventDoc.data();
+        const isFreeEvent = event.pricingType === 'free' || event.price === 0;
         
-        // Check current ticket count
-        const ticketsRef = collection(db, 'tickets');
-        const ticketQuery = query(ticketsRef, 
-            where('eventId', '==', eventId), 
-            where('ticketType', '==', ticketType),
-            where('paymentStatus', '==', 'completed')
-        );
-        const ticketSnapshot = await getDocs(ticketQuery);
-        const soldTickets = ticketSnapshot.docs.reduce((total, doc) => 
-            total + (doc.data().ticketCount || 1), 0);
-
-        // Calculate availability and price
-        let availableTickets = 0;
+        // Calculate price
         let ticketPrice = 0;
-
-        if (event.eventType === 'hybrid') {
-            if (ticketType === 'venue') {
-                availableTickets = event.tickets.venue.total - soldTickets;
-                ticketPrice = event.tickets.venue.price;
+        if (!isFreeEvent) {
+            if (event.eventType === 'hybrid') {
+                ticketPrice = ticketType === 'venue' ? 
+                    event.tickets.venue.price : 
+                    event.tickets.online.price;
             } else {
-                availableTickets = event.tickets.online.total - soldTickets;
-                ticketPrice = event.tickets.online.price;
+                ticketPrice = event.price;
             }
-        } else {
-            availableTickets = event.totalTickets - soldTickets;
-            ticketPrice = event.price;
-        }
-
-        if (availableTickets < quantity) {
-            throw new Error(`Only ${availableTickets} tickets available`);
         }
 
         const totalPrice = ticketPrice * quantity;
-        
+
         // Create ticket document
         const ticketData = {
             eventId,
             ticketType,
             ticketCount: quantity,
             userEmail,
-            ticketIdentifier: 'TKT-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            ticketIdentifier: generateTicketId(),
             purchaseDate: new Date().toISOString(),
             paymentStatus: 'completed',
-            paymentMethod: paymentMode,
+            paymentMethod: isFreeEvent ? 'free' : paymentMode,
             used: false,
-            totalPrice,
-            pricePerTicket: ticketPrice,
+            totalPrice: isFreeEvent ? 0 : totalPrice,
+            pricePerTicket: isFreeEvent ? 0 : ticketPrice,
             adminGenerated: true,
             generatedBy: auth.currentUser.email
         };
 
         // Start batch write
         const batch = writeBatch(db);
-
+        
         // Add ticket document
-        const newTicketRef = doc(ticketsRef);
+        const newTicketRef = doc(collection(db, 'tickets'));
         batch.set(newTicketRef, ticketData);
 
-        // Update event document with new stats
+        // Update event available tickets
         const eventRef = doc(db, 'events', eventId);
-        batch.update(eventRef, {
-            soldTickets: increment(quantity),
-            totalRevenue: increment(totalPrice),
-            lastUpdated: serverTimestamp()
-        });
-
-        // Commit the batch
-        await batch.commit();
-        // Show success message only if not called from card payment
-        if (!isCardPayment) {
-            alert(`Successfully generated ticket!\nTicket ID: ${ticketData.ticketIdentifier}`);
+        if (event.eventType === 'hybrid') {
+            const updateField = ticketType === 'venue' ? 
+                'tickets.venue.available' : 'tickets.online.available';
+            batch.update(eventRef, {
+                [updateField]: increment(-quantity),
+                lastUpdated: serverTimestamp()
+            });
+        } else {
+            batch.update(eventRef, {
+                availableTickets: increment(-quantity),
+                lastUpdated: serverTimestamp()
+            });
         }
 
-        // Clear form
+        await batch.commit();
+
+        // Show success message
+        alert(`Successfully generated ticket!\nTicket ID: ${ticketData.ticketIdentifier}`);
+        
+        // Clear form and update UI
         clearTicketForm();
-        
-        // Update stats displays
-        Promise.all([
-            loadDashboard(),
-            updateTicketStats(),
-            loadEvents()
-        ]).catch(error => {
-            console.error("Error updating stats:", error);
-        });
-        
-        // Return the ticket identifier for card payment flow
-        return ticketData.ticketIdentifier;
+        await updateTicketTypeOptions();
         
     } catch (error) {
         console.error("Error processing ticket:", error);
-        throw error; // Re-throw to be handled by the calling function
+        throw error;
     }
 }
 
-// Function to clear ticket form
-function clearTicketForm() {
-    const elements = {
-        ticketEventSelector: document.getElementById('ticketEventSelector'),
-        ticketTypeSelector: document.getElementById('ticketTypeSelector'),
-        ticketQuantity: document.getElementById('ticketQuantity'),
-        ticketUserEmail: document.getElementById('ticketUserEmail'),
-        paymentMode: document.getElementById('paymentMode'),
-        pricePerTicket: document.getElementById('pricePerTicket'),
-        totalTicketPrice: document.getElementById('totalTicketPrice')
-    };
-
-    // Clear form values
-    if (elements.ticketEventSelector) elements.ticketEventSelector.value = '';
-    if (elements.ticketTypeSelector) elements.ticketTypeSelector.value = '';
-    if (elements.ticketQuantity) elements.ticketQuantity.value = '1';
-    if (elements.ticketUserEmail) elements.ticketUserEmail.value = '';
-    if (elements.paymentMode) elements.paymentMode.value = '';
+// Initialize real-time listeners
+function initializeTicketListeners() {
+    const ticketsRef = collection(db, 'tickets');
     
-    // Reset price displays
-    if (elements.pricePerTicket) elements.pricePerTicket.textContent = '₹0';
-    if (elements.totalTicketPrice) elements.totalTicketPrice.textContent = '₹0';
+    onSnapshot(ticketsRef, (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "added" || change.type === "modified") {
+                const ticketData = change.doc.data();
+                const currentEventId = document.getElementById('ticketEventSelector')?.value;
+                if (currentEventId === ticketData.eventId) {
+                    await updateTicketTypeOptions();
+                }
+            }
+        });
+    });
+
+    // Also listen for event changes
+    const eventsRef = collection(db, 'events');
+    onSnapshot(eventsRef, (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "modified") {
+                const eventData = change.doc.data();
+                const currentEventId = document.getElementById('ticketEventSelector')?.value;
+                
+                if (currentEventId === change.doc.id) {
+                    console.log('Updating generate ticket section due to event change');
+                    await updateTicketTypeOptions();
+                    await updateTicketStats(currentEventId);
+                }
+            }
+        });
+    });
 }
 
+    // Make functions globally available
+    window.getRealTimeAvailability = getRealTimeAvailability;
+    window.updateTicketTypeOptions = updateTicketTypeOptions;
+    window.processTicketGeneration = processTicketGeneration;
+
+    // Initialize when document loads
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeTicketListeners();
+    });
+
+    // Function to clear ticket form
+    function clearTicketForm() {
+        const elements = {
+            ticketEventSelector: document.getElementById('ticketEventSelector'),
+            ticketTypeSelector: document.getElementById('ticketTypeSelector'),
+            ticketQuantity: document.getElementById('ticketQuantity'),
+            ticketUserEmail: document.getElementById('ticketUserEmail'),
+            paymentMode: document.getElementById('paymentMode'),
+            pricePerTicket: document.getElementById('pricePerTicket'),
+            totalTicketPrice: document.getElementById('totalTicketPrice')
+        };
+
+        // Clear form values
+        if (elements.ticketEventSelector) elements.ticketEventSelector.value = '';
+        if (elements.ticketTypeSelector) elements.ticketTypeSelector.value = '';
+        if (elements.ticketQuantity) elements.ticketQuantity.value = '1';
+        if (elements.ticketUserEmail) elements.ticketUserEmail.value = '';
+        if (elements.paymentMode) elements.paymentMode.value = '';
+        
+        // Reset price displays
+        if (elements.pricePerTicket) elements.pricePerTicket.textContent = '₹0';
+        if (elements.totalTicketPrice) elements.totalTicketPrice.textContent = '₹0';
+    }
+
+    // Add these utility functions near the top of admin.js, after the imports
+    function generateRandomFiveDigits() {
+        return Math.floor(10000 + Math.random() * 90000).toString();
+    }
+
+    function getCurrentYear() {
+        return new Date().getFullYear().toString();
+    }
+
+    function generateTicketId() {
+        const randomNum = generateRandomFiveDigits();
+        const year = getCurrentYear();
+        return `TIX-${randomNum}-${year}`;
+    }
+
+
+    window.generateTicketId = generateTicketId;
+
+    // Add this function to handle real-time updates for generate ticket section
+    function initializeGenerateTicketListeners() {
+        const ticketsRef = collection(db, 'tickets');
+        
+        // Listen for any ticket changes
+        onSnapshot(ticketsRef, (snapshot) => {
+            snapshot.docChanges().forEach(async (change) => {
+                if (change.type === "added" || change.type === "modified") {
+                    const ticketData = change.doc.data();
+                    // Get current selected event in generate ticket section
+                    const currentEventId = document.getElementById('ticketEventSelector')?.value;
+                    
+                    if (currentEventId === ticketData.eventId) {
+                        console.log('Updating generate ticket section due to ticket change');
+                        await updateTicketTypeOptions();
+                        await updateTicketStats(currentEventId);
+                    }
+                }
+            });
+        });
+
+        // Also listen for event changes
+        const eventsRef = collection(db, 'events');
+        onSnapshot(eventsRef, (snapshot) => {
+            snapshot.docChanges().forEach(async (change) => {
+                if (change.type === "modified") {
+                    const eventData = change.doc.data();
+                    const currentEventId = document.getElementById('ticketEventSelector')?.value;
+                    
+                    if (currentEventId === change.doc.id) {
+                        console.log('Updating generate ticket section due to event change');
+                        await updateTicketTypeOptions();
+                        await updateTicketStats(currentEventId);
+                    }
+                }
+            });
+        });
+    }
+
+    // Update the DOMContentLoaded event listener
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... existing initialization code ...
+
+        // Initialize generate ticket listeners if we're on that section
+        if (document.getElementById('generateTicket')?.style.display !== 'none') {
+            initializeGenerateTicketListeners();
+        }
+    });
+
+        // Add an event listener to sanitize pasted content
+        document.getElementById('eventDescription').addEventListener('paste', function (event) {
+            event.preventDefault(); // Prevent the default paste action
+            
+            // Get plain text from the clipboard
+            const text = (event.clipboardData || window.clipboardData).getData('text');
+
+            // Insert the plain text into the textarea
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + text + this.value.substring(end);
+            
+            // Place the cursor after the inserted text
+            this.selectionStart = this.selectionEnd = start + text.length;
+        });
+
+function cancelEdit() {
+    try {
+        // Reset editing state
+        isEditing = false;
+        currentEditingEventId = null;
+        document.getElementById('editingEventId').value = '';
+
+        // Reset form fields
+        document.getElementById('eventName').value = '';
+        document.getElementById('eventCategory').value = '';
+        document.getElementById('eventPricingType').value = '';
+        document.getElementById('eventDescription').value = '';
+        document.getElementById('eventDate').value = '';
+        document.getElementById('bookingStartDate').value = '';
+        document.getElementById('bookingDeadline').value = '';
+        document.getElementById('eventPrice').value = '';
+        document.getElementById('eventTickets').value = '';
+        document.getElementById('eventType').value = '';
+        document.getElementById('eventRules').innerHTML = '';
+
+        // Reset custom category
+        const otherCategoryGroup = document.getElementById('otherCategoryGroup');
+        const otherCategoryInput = document.getElementById('otherCategoryName');
+        if (otherCategoryGroup) otherCategoryGroup.style.display = 'none';
+        if (otherCategoryInput) otherCategoryInput.value = '';
+
+        // Reset scheduling
+        const publishSchedule = document.getElementById('enablePublishSchedule');
+        const hideSchedule = document.getElementById('enableHideSchedule');
+        if (publishSchedule) publishSchedule.checked = false;
+        if (hideSchedule) hideSchedule.checked = false;
+        document.getElementById('publishScheduleSection').style.display = 'none';
+        document.getElementById('hideScheduleSection').style.display = 'none';
+
+        // Reset images
+        const imageContainer = document.getElementById('imageUrlsContainer');
+        if (imageContainer) {
+            imageContainer.innerHTML = `
+                <div class="form-group image-input">
+                    <label>Image URL #1</label>
+                    <input type="text" class="eventImage" placeholder="Enter image URL">
+                    <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
+                </div>
+            `;
+        }
+        imageFieldCount = 1;
+
+        // Reset buttons
+        const cancelBtn = document.querySelector('.cancel-btn');
+        const createBtn = document.querySelector('.create-btn');
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        if (createBtn) createBtn.textContent = 'Create Event';
+
+        // Switch back to view mode
+        toggleEventsView('view');
+
+    } catch (error) {
+        console.error("Error canceling edit:", error);
+        alert("Error canceling edit. Please try again.");
+    }
+}
+
+// Make function globally available
+window.cancelEdit = cancelEdit;
 
 
 

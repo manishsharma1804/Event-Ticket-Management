@@ -111,12 +111,113 @@
             width: 80px;
             height: 80px;
         }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #667eea;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #5a67d8;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .help-section {
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .help-header {
+            color: #667eea;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .help-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #f8f8f8;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .help-content.expanded {
+            max-height: 200px;
+            padding: 1rem;
+        }
+
+        .help-text {
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-email {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">
-            <h1>EventTix</h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <h1>EventTix</h1>
+            </a>
         </div>
 
         <!-- Login Form -->
@@ -128,9 +229,33 @@
             </div>
             <div class="form-group">
                 <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                <div class="password-container">
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    <svg class="password-toggle" onclick="togglePassword('loginPassword')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </div>
             </div>
+            <div class="loader" id="loginLoader"></div>
             <button onclick="login()">Login</button>
+            <div class="help-section" onclick="toggleHelp(this)">
+                <div class="help-header">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Need Help?</span>
+                </div>
+                <div class="help-content">
+                    <div class="help-text">
+                        • Forgot your password? We can help you recover your account.
+                    </div>
+                    <div class="help-text">
+                        • Having trouble logging in? Our support team is here to assist.
+                    </div>
+                    <div class="help-text">
+                        Contact us at: <span class="contact-email">admin@eventTix.com</span>
+                    </div>
+                </div>
+            </div>
             <div class="auth-toggle">
                 <a href="#" onclick="toggleForms()">Need an account? Register</a>
             </div>
@@ -145,9 +270,30 @@
             </div>
             <div class="form-group">
                 <label for="registerPassword">Password</label>
-                <input type="password" id="registerPassword" placeholder="Enter your password" required>
+                <div class="password-container">
+                    <input type="password" id="registerPassword" placeholder="Enter your password" required>
+                    <svg class="password-toggle" onclick="togglePassword('registerPassword')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </div>
             </div>
+            <div class="loader" id="registerLoader"></div>
             <button onclick="register()">Register</button>
+            <div class="help-section" onclick="toggleHelp(this)">
+                <div class="help-header">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Need Help?</span>
+                </div>
+                <div class="help-content">
+                    <div class="help-text">
+                        • Having trouble registering? Our support team is here to assist.
+                    </div>
+                    <div class="help-text">
+                        Contact us at: <span class="contact-email">admin@eventTix.com</span>
+                    </div>
+                </div>
+            </div>
             <div class="auth-toggle">
                 <a href="#" onclick="toggleForms()">Already have an account? Login</a>
             </div>
@@ -161,7 +307,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -208,6 +354,9 @@
 
         // Login function
         async function login() {
+            const loginLoader = document.getElementById('loginLoader');
+            loginLoader.style.display = 'block';
+            
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
@@ -222,7 +371,7 @@
                 // Set new auth data
                 localStorage.setItem('isLoggedIn', 'true');
                 
-                // Check if user is admin
+                // Check if user is admin and redirect
                 if (email.toLowerCase().includes('admin')) {
                     localStorage.setItem('userRole', 'admin');
                     window.location.replace('admin.html');
@@ -231,23 +380,19 @@
                     window.location.replace('dashboard.html');
                 }
                 
-                // Additional fallback redirect
-                setTimeout(() => {
-                    if (email.toLowerCase().includes('admin')) {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                }, 100);
-                
             } catch (error) {
                 document.getElementById('error-message').textContent = error.message;
                 document.getElementById('success-message').textContent = '';
+            } finally {
+                loginLoader.style.display = 'none';
             }
         }
 
         // Register function
         async function register() {
+            const registerLoader = document.getElementById('registerLoader');
+            registerLoader.style.display = 'block';
+            
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
             
@@ -263,6 +408,8 @@
             } catch (error) {
                 document.getElementById('error-message').textContent = error.message;
                 document.getElementById('success-message').textContent = '';
+            } finally {
+                registerLoader.style.display = 'none';
             }
         }
 
@@ -270,6 +417,62 @@
         window.login = login;
         window.register = register;
         window.toggleForms = toggleForms;
+
+        // Add this new function
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const icon = passwordInput.nextElementSibling;
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.style.color = "#667eea";
+            } else {
+                passwordInput.type = "password";
+                icon.style.color = "#667eea";
+            }
+        }
+
+        // Make the new function available globally
+        window.togglePassword = togglePassword;
+
+        // Add event listeners for Enter key
+        document.getElementById('loginEmail').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('loginPassword').focus();
+            }
+        });
+
+        document.getElementById('loginPassword').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+
+        document.getElementById('registerEmail').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('registerPassword').focus();
+            }
+        });
+
+        document.getElementById('registerPassword').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                register();
+            }
+        });
+
+        // Make functions available globally
+        window.login = login;
+        window.register = register;
+        window.toggleForms = toggleForms;
+        window.togglePassword = togglePassword;
+
+        function toggleHelp(element) {
+            const content = element.querySelector('.help-content');
+            content.classList.toggle('expanded');
+        }
+
+        // Make the function available globally
+        window.toggleHelp = toggleHelp;
     </script>
 </body>
 </html>

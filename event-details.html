@@ -1024,6 +1024,19 @@
                 window.location.href = `${baseUrl}/login.html`;
             }
         });
+        function generateRandomFiveDigits() {
+    return Math.floor(10000 + Math.random() * 90000).toString();
+}
+
+function getCurrentYear() {
+    return new Date().getFullYear().toString();
+}
+
+function generateTicketId() {
+    const randomNum = generateRandomFiveDigits();
+    const year = getCurrentYear();
+    return `TIX-${randomNum}-${year}`;
+}
 
         // Add this at the top of your script section
         let currentEvent = null;
@@ -1079,7 +1092,10 @@
                     <div class="event-header">
                         <div class="event-title">
                             <h1>${event.name}</h1>
-                            <div class="event-badge ${event.eventType}">${event.eventType.toUpperCase()}</div>
+                            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                                <div class="event-badge ${event.eventType}">${event.eventType.toUpperCase()}</div>
+                                <div class="event-badge" style="background: #764ba2;">${event.category || 'Uncategorized'}</div>
+                            </div>
                         </div>
                         <div class="event-status">
                             ${getEventStatusBadge(event)}
@@ -1256,92 +1272,101 @@
 
         // Add this function to handle booking
         async function bookTicket(type) {
-            try {
-                const availableTickets = parseInt(sessionStorage.getItem('availableTickets') || '0');
-                const bookingStart = new Date(sessionStorage.getItem('eventBookingStart'));
-                const bookingEnd = new Date(sessionStorage.getItem('eventBookingEnd'));
-                const now = new Date();
-
-                // Get current event details
-                const urlParams = new URLSearchParams(window.location.search);
-                const eventId = urlParams.get('id');
-                const eventDoc = await getDoc(doc(db, 'events', eventId));
-                if (!eventDoc.exists()) {
-                    throw new Error('Event not found');
-                }
-                const eventData = eventDoc.data();
-
-                // Check if booking is allowed
-                if (now < bookingStart) {
-                    alert(`Booking starts on ${bookingStart.toLocaleDateString()} at ${bookingStart.toLocaleTimeString()}`);
-                    return;
-                }
-
-                if (now > bookingEnd) {
-                    alert('Booking period has ended for this event');
-                    return;
-                }
-
-                if (availableTickets <= 0) {
-                    alert('Sorry, this event is sold out!');
-                    return;
-                }
-
-                // Show ticket selection section
-                document.getElementById('eventFullDetails').style.display = 'none';
-                document.getElementById('ticketSelection').style.display = 'block';
-
-                // Get price based on type
-                let price = 0;
-                if (eventData.eventType === 'hybrid') {
-                    price = type === 'venue' ? 
-                        eventData.tickets?.venue?.price : 
-                        eventData.tickets?.online?.price;
-                } else {
-                    price = eventData.price || 0;
-                }
-
-                // Store event data and price in window object
-                window.currentEvent = eventData;
-                window.currentPrice = price;
-                window.ticketType = type;
-
-                // Update ticket selection UI
-                document.getElementById('ticketSelection').innerHTML = `
-                    <h3>Select Tickets</h3>
-                    <div class="ticket-info">
-                        <p><strong>Event:</strong> ${eventData.name}</p>
-                        <p><strong>Type:</strong> ${type.charAt(0).toUpperCase() + type.slice(1)}</p>
-                        <p><strong>Available:</strong> ${availableTickets} tickets</p>
-                        <p><strong>Price:</strong> ₹${price} per ticket</p>
-                    </div>
-                    <div class="form-group">
-                        <label>Number of Tickets (Max 5)</label>
-                        <div class="ticket-counter">
-                            <button type="button" class="counter-btn" onclick="decrementTickets()">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="text" id="ticketCount" value="1" readonly>
-                            <button type="button" class="counter-btn" onclick="incrementTickets()">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                        <p id="totalPrice" class="price-info">Total: ₹${price}</p>
-                    </div>
-                    <div class="booking-buttons">
-                        <button onclick="proceedToPayment('${type}')" class="book-btn">Proceed to Payment</button>
-                        <button onclick="backToDetails()" class="back-btn">Back</button>
-                    </div>
-                `;
-
-                // Initialize total price
-                updateTotalPrice(price);
-
-            } catch (error) {
-                console.error('Error in booking:', error);
-                alert('Error processing booking. Please try again.');
-            }
+    try {
+        // Get current event details
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        const eventDoc = await getDoc(doc(db, 'events', eventId));
+        if (!eventDoc.exists()) {
+            throw new Error('Event not found');
         }
+        
+        // Store the event data globally
+        window.currentEvent = { id: eventId, ...eventDoc.data() };
+
+        // Determine price and available tickets
+        let price = 0;
+        let availableTickets = 0;
+        if (window.currentEvent.eventType === 'hybrid') {
+            if (type === 'venue') {
+                price = window.currentEvent.tickets?.venue?.price || 0;
+                availableTickets = window.currentEvent.tickets?.venue?.available || 0;
+            } else {
+                price = window.currentEvent.tickets?.online?.price || 0;
+                availableTickets = window.currentEvent.tickets?.online?.available || 0;
+            }
+        } else {
+            price = window.currentEvent.price || 0;
+            availableTickets = window.currentEvent.availableTickets || 0;
+        }
+
+        // Store current price for later use
+        window.currentPrice = price;
+        
+        // Store available tickets in session
+        sessionStorage.setItem('availableTickets', availableTickets);
+
+        // Hide event details and show ticket selection
+        document.getElementById('eventFullDetails').style.display = 'none';
+        document.getElementById('paymentDetails').style.display = 'none';
+        document.getElementById('successSection').style.display = 'none';
+        document.getElementById('ticketSelection').style.display = 'block';
+
+        // Update ticket selection UI
+        document.getElementById('ticketSelection').innerHTML = `
+            <div class="payment-container">
+                <div class="payment-header">
+                    <h3>Book Tickets</h3>
+                </div>
+                <div class="payment-summary">
+                    <h4>Event Details</h4>
+                    <div class="summary-item">
+                        <span>Event</span>
+                        <span>${window.currentEvent.name}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Type</span>
+                        <span>${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Price per ticket</span>
+                        <span>${price === 0 ? 'Free' : '₹' + price}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Available Tickets</span>
+                        <span>${availableTickets}</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Tickets (Max 5)</label>
+                    <div class="ticket-counter">
+                        <button type="button" class="counter-btn" onclick="decrementTickets()">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="text" id="ticketCount" value="1" readonly>
+                        <button type="button" class="counter-btn" onclick="incrementTickets()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <p id="totalPrice" class="price-info">Total: ${price === 0 ? 'Free' : '₹' + price}</p>
+                </div>
+
+                <div class="payment-buttons">
+                    <button onclick="proceedToPayment('${type}')" class="pay-btn">
+                        ${price === 0 ? 'Confirm Booking' : 'Continue to Payment'}
+                    </button>
+                    <button onclick="backToDetails()" class="back-btn">Back</button>
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error in booking:', error);
+        alert('Error processing booking. Please try again.');
+    }
+}
+
 
         // Add these helper functions
         function incrementTickets() {
@@ -1404,6 +1429,13 @@
                 // Show payment section
                 document.getElementById('ticketSelection').style.display = 'none';
                 document.getElementById('paymentDetails').style.display = 'block';
+
+                // Check if the price is 0
+                if (price === 0) {
+                    // Directly book the ticket without showing payment UI
+                    await processPayment(type, ticketCount, 0);
+                    return;
+                }
 
                 // Update payment UI
                 document.getElementById('paymentDetails').innerHTML = `
@@ -1506,117 +1538,114 @@
         }
 
         async function processPayment(type, ticketCount, totalPrice) {
-            try {
-                // Clear the payment timer
-                if (window.paymentTimer) {
-                    clearInterval(window.paymentTimer);
-                }
-
-                // Show loading overlay
-                const overlay = document.createElement('div');
-                overlay.className = 'payment-overlay';
-                overlay.innerHTML = `
-                    <div class="payment-processing">
-                        <div class="loader"></div>
-                        <h3>Processing Payment</h3>
-                        <p>Please do not refresh the page...</p>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-
-                // Get event ID from URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const eventId = urlParams.get('id');
-
-                // Simulate payment processing
-                await new Promise(resolve => setTimeout(resolve, 2000));
-
-                // Generate ticket identifier
-                const ticketIdentifier = `TIX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-                // Create ticket document
-                const ticketData = {
-                    eventId: eventId, // Use the actual event ID from URL
-                    eventName: window.currentEvent.name,
-                    userId: auth.currentUser.uid,
-                    userEmail: auth.currentUser.email,
-                    ticketType: type,
-                    ticketCount: ticketCount,
-                    ticketPrice: window.currentPrice,
-                    totalPrice: totalPrice,
-                    purchaseDate: new Date().toISOString(),
-                    eventDate: window.currentEvent.date,
-                    ticketIdentifier: ticketIdentifier,
-                    used: false,
-                    paymentStatus: 'completed',
-                    venue: window.currentEvent.venueDetails?.venue || 'Online Event'
-                };
-
-                // Add ticket to database
-                await addDoc(collection(db, 'tickets'), ticketData);
-
-                // Update event ticket availability
-                const eventRef = doc(db, 'events', eventId);
-                
-                if (window.currentEvent.eventType === 'hybrid') {
-                    // For hybrid events
-                    if (type === 'venue') {
-                        await updateDoc(eventRef, {
-                            'tickets.venue.available': increment(-ticketCount)
-                        });
-                    } else {
-                        await updateDoc(eventRef, {
-                            'tickets.online.available': increment(-ticketCount)
-                        });
-                    }
-                } else {
-                    // For single type events
-                    await updateDoc(eventRef, {
-                        availableTickets: increment(-ticketCount)
-                    });
-                }
-
-                // Show success message
-                document.getElementById('paymentDetails').style.display = 'none';
-                document.getElementById('successSection').style.display = 'block';
-                document.getElementById('successSection').innerHTML = `
-                    <div class="success-message">
-                        <div class="success-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <h2>Payment Successful!</h2>
-                        <p>Thank you for choosing EventTix!</p>
-                        <div class="ticket-details">
-                            <h3>Booking Details</h3>
-                            <p><strong>Event:</strong> ${window.currentEvent.name}</p>
-                            <p><strong>Ticket Type:</strong> ${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</p>
-                            <p><strong>Quantity:</strong> ${ticketCount}</p>
-                            <p><strong>Total Paid:</strong> ₹${totalPrice}</p>
-                            <p><strong>Ticket ID:</strong> ${ticketIdentifier}</p>
-                        </div>
-                        <p class="email-note">A confirmation email has been sent to your registered email address.</p>
-                        <div class="success-buttons">
-                            <button onclick="viewMyTickets()" class="tickets-btn">
-                                <i class="fas fa-ticket-alt"></i> View My Tickets
-                            </button>
-                            <button onclick="window.location.href='dashboard.html'" class="home-btn">
-                                <i class="fas fa-home"></i> Back to Dashboard
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                // Remove loading overlay
-                document.body.removeChild(overlay);
-
-            } catch (error) {
-                console.error('Payment error:', error);
-                alert('Payment failed. Please try again. Error: ' + error.message);
-                if (document.querySelector('.payment-overlay')) {
-                    document.body.removeChild(document.querySelector('.payment-overlay'));
-                }
-            }
+    try {
+        if (!window.currentEvent) {
+            throw new Error('Event data not found');
         }
+
+        // Hide all sections
+        document.getElementById('eventFullDetails').style.display = 'none';
+        document.getElementById('ticketSelection').style.display = 'none';
+        document.getElementById('paymentDetails').style.display = 'none';
+        document.getElementById('successSection').style.display = 'none';
+
+        // Show loading overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'payment-overlay';
+        overlay.innerHTML = `
+            <div class="payment-processing">
+                <div class="loader"></div>
+                <h3>Processing Booking</h3>
+                <p>Please do not refresh the page...</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Simulate booking processing
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Generate ticket identifier
+        const ticketIdentifier = generateTicketId();
+
+        // Create ticket document
+        const ticketData = {
+            eventId: window.currentEvent.id,
+            eventName: window.currentEvent.name,
+            userId: auth.currentUser.uid,
+            userEmail: auth.currentUser.email,
+            ticketType: type,
+            ticketCount: parseInt(ticketCount),
+            ticketPrice: totalPrice / parseInt(ticketCount),
+            totalPrice: totalPrice,
+            purchaseDate: new Date().toISOString(),
+            eventDate: window.currentEvent.date,
+            ticketIdentifier: ticketIdentifier,
+            used: false,
+            paymentStatus: 'completed',
+            venue: window.currentEvent.venueDetails?.venue || 'Online Event'
+        };
+
+        // Add ticket to database
+        await addDoc(collection(db, 'tickets'), ticketData);
+
+        // Update event ticket availability
+        const eventRef = doc(db, 'events', window.currentEvent.id);
+        
+        if (window.currentEvent.eventType === 'hybrid') {
+            if (type === 'venue') {
+                await updateDoc(eventRef, {
+                    'tickets.venue.available': increment(-parseInt(ticketCount))
+                });
+            } else {
+                await updateDoc(eventRef, {
+                    'tickets.online.available': increment(-parseInt(ticketCount))
+                });
+            }
+        } else {
+            await updateDoc(eventRef, {
+                availableTickets: increment(-parseInt(ticketCount))
+            });
+        }
+
+        // Remove loading overlay
+        document.body.removeChild(overlay);
+
+        // Show success message
+        document.getElementById('successSection').style.display = 'block';
+        document.getElementById('successSection').innerHTML = `
+            <div class="success-message">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Booking Successful!</h2>
+        <p>Thank you for choosing EventTix!</p>
+        <div class="ticket-details">
+            <h3>Booking Details</h3>
+            <p><strong>Event:</strong> ${window.currentEvent.name}</p>
+            <p><strong>Ticket Type:</strong> ${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</p>
+            <p><strong>Quantity:</strong> ${ticketCount}</p>
+            <p><strong>Total Paid:</strong> ${totalPrice === 0 ? 'Free' : '₹' + totalPrice}</p>
+            <p><strong>Ticket ID:</strong> ${ticketIdentifier}</p>
+        </div>
+        <p class="email-note">A confirmation email has been sent to your registered email address.</p>
+        <p class="download-note">You can download your ticket from the ticket section in the dashboard.</p>
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="window.location.href='dashboard.html'" style="background: #4299e1; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                <i class="fas fa-home"></i> Go to Dashboard
+            </button>
+        </div>
+    </div>
+        `;
+
+    } catch (error) {
+        console.error('Payment error:', error);
+        alert('Booking failed. Please try again. Error: ' + error.message);
+        if (document.querySelector('.payment-overlay')) {
+            document.body.removeChild(document.querySelector('.payment-overlay'));
+        }
+        document.getElementById('ticketSelection').style.display = 'block';
+    }
+}
 
         // Add this function in your script section
         function startPaymentTimer() {

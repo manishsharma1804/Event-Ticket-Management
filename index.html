@@ -193,26 +193,32 @@
         .hero-buttons {
             display: flex;
             gap: 1rem;
-            justify-content: center;
-            margin-bottom: 3rem;
+            margin-top: 2rem;
         }
 
         .cta-btn {
             padding: 1rem 2rem;
-            border-radius: 5px;
-            font-weight: 500;
-            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .cta-btn.primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border: none;
         }
 
         .cta-btn.primary:hover {
-            background: #5a67d8;
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .cta-btn.secondary {
@@ -341,13 +347,81 @@
             background: white;
         }
 
+        /* Update the events grid styles */
         .events-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0;
+            padding: 0 1rem;
+        }
+
+        /* Add styles for single event */
+        .events-grid.single-event {
+            grid-template-columns: minmax(300px, 600px);
+            justify-content: center;
+        }
+
+        .event-card {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .event-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .event-info {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .event-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #1a202c;
+            line-height: 1.4;
+        }
+
+        .event-info p {
+            color: #4a5568;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-info i {
+            color: #3B82F6;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .events-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .event-pair {
@@ -1705,9 +1779,8 @@
             <a href="#" class="logo">EventTix</a>
             <div class="nav-links">
                 <a href="#features"><i class="fas fa-star"></i>Features</a>
-                <a href="#events"><i class="fas fa-calendar"></i>Events</a>
+                <a href="#upcoming"><i class="fas fa-calendar"></i>Events</a>
                 <a href="#about"><i class="fas fa-info-circle"></i>About</a>
-                <a href="#popular"><i class="fas fa-fire"></i>Popular</a>
                 <a href="#contact"><i class="fas fa-envelope"></i>Contact</a>
             </div>
             <div class="nav-actions">
@@ -1728,9 +1801,11 @@
         <div class="hero-content">
             <h1>India's Premier Event Ticketing Platform</h1>
             <p>From Bollywood concerts to cricket matches, cultural festivals to comedy shows - book your tickets instantly!</p>
-            <div class="hero-buttons">
-                <a href="#events" class="cta-btn primary">Explore Events</a>
-                <a href="#popular" class="cta-btn secondary">Trending Now</a>
+            <div class="hero-cta">
+                <button class="cta-btn primary" onclick="handleExploreEvents()">
+                    <i class="fas fa-compass"></i> Explore Events
+                </button>
+                <a href="#trending" class="cta-btn secondary">Trending Now</a>
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
@@ -1884,34 +1959,20 @@
     </section>
 
     <!-- Trending Events Section -->
-    <section class="trending-events" id="trending">
+    <section id="trending" class="trending-events">
         <div class="section-header">
             <h2>Trending Now</h2>
             <p>Hot events that everyone's talking about</p>
         </div>
-        <div class="events-grid" id="trendingContainer">
-            <!-- Trending events will be added here -->
-        </div>
+        <div id="trendingContainer" class="events-grid"></div>
     </section>
 
-    <section class="popular-events" id="popular">
-        <div class="section-header">
-            <h2>Popular Events</h2>
-            <p>Most booked events this month</p>
-        </div>
-        <div class="events-grid" id="popularContainer">
-            <!-- Popular events will be added here -->
-        </div>
-    </section>
-
-    <section class="upcoming-events" id="upcoming">
+    <section id="upcoming" class="upcoming-events">
         <div class="section-header">
             <h2>Upcoming Events</h2>
-            <p>Mark your calendar for these upcoming events</p>
+            <p>Mark your calendar for these exciting events</p>
         </div>
-        <div class="events-grid" id="upcomingContainer">
-            <!-- Upcoming events will be added here -->
-        </div>
+        <div id="upcomingContainer" class="events-grid"></div>
     </section>
 
     <!-- Contact Section -->
@@ -2281,6 +2342,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCg7vwuwfN8oWSMagExshHCtMHnxzc7pH0",
@@ -2295,6 +2357,10 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Make auth available globally
+        window.auth = auth;
 
         // Helper function to shuffle array
         function shuffleArray(array) {
@@ -2315,39 +2381,32 @@
 
             container.innerHTML = '';
             
-            // Create pairs
-            for (let i = 0; i < events.length; i += 2) {
-                const eventPair = document.createElement('div');
-                eventPair.className = 'event-pair';
+            // Add single-event class if there's only one event
+            if (events.length === 1) {
+                container.classList.add('single-event');
+            } else {
+                container.classList.remove('single-event');
+            }
+            
+            // Create cards for all events
+            events.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'event-card';
+                eventCard.onclick = () => handleEventClick(event.id);
                 
-                // First event
-                eventPair.innerHTML = `
-                    <div class="event-card" onclick="handleEventClick('${events[i].id}')">
-                        <img src="${events[i].images?.[0] || 'placeholder.jpg'}" alt="${events[i].name}">
-                        <div class="event-info">
-                            <h3>${events[i].name}</h3>
-                            <p><i class="fas fa-calendar"></i> ${new Date(events[i].date).toLocaleDateString()}</p>
-                            <p><i class="fas fa-map-marker-alt"></i> ${events[i].eventType === 'online' ? 'Online Event' : events[i].venueDetails?.venue || 'TBA'}</p>
+                eventCard.innerHTML = `
+                    <img src="${event.images?.[0] || 'placeholder.jpg'}" alt="${event.name}">
+                    <div class="event-info">
+                        <div>
+                            <h3>${event.name}</h3>
+                            <p><i class="fas fa-calendar"></i> ${new Date(event.date).toLocaleDateString()}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> ${event.eventType === 'online' ? 'Online Event' : event.venueDetails?.venue || 'TBA'}</p>
                         </div>
                     </div>
                 `;
-
-                // Second event (if exists)
-                if (events[i + 1]) {
-                    eventPair.innerHTML += `
-                        <div class="event-card" onclick="handleEventClick('${events[i + 1].id}')">
-                            <img src="${events[i + 1].images?.[0] || 'placeholder.jpg'}" alt="${events[i + 1].name}">
-                            <div class="event-info">
-                                <h3>${events[i + 1].name}</h3>
-                                <p><i class="fas fa-calendar"></i> ${new Date(events[i + 1].date).toLocaleDateString()}</p>
-                                <p><i class="fas fa-map-marker-alt"></i> ${events[i + 1].eventType === 'online' ? 'Online Event' : events[i + 1].venueDetails?.venue || 'TBA'}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                container.appendChild(eventPair);
-            }
+                
+                container.appendChild(eventCard);
+            });
             
             container.parentElement.style.display = 'block';
         }
@@ -2361,80 +2420,116 @@
 
                 querySnapshot.forEach((doc) => {
                     const event = { id: doc.id, ...doc.data() };
-                    allEvents.push(event);
+                    
+                    // Skip events without images
+                    if (!event.images || !Array.isArray(event.images) || event.images.length === 0) {
+                        console.log('Skipped - No images:', event.name);
+                        return;
+                    }
+
+                    // Skip if event date is not set
+                    if (!event.date) {
+                        console.log('Skipped - No event date:', event.name);
+                        return;
+                    }
+
+                    // Check scheduling rules
+                    if (event.scheduling) {
+                        const publishDate = event.scheduling.publishDate ? new Date(event.scheduling.publishDate) : null;
+                        
+                        // Skip if not yet published
+                        if (publishDate && now < publishDate) {
+                            console.log('Skipped - Not published yet:', event.name);
+                            return;
+                        }
+                        
+                        // Skip if past hide date
+                        if (event.scheduling.hideDate && now > new Date(event.scheduling.hideDate)) {
+                            console.log('Skipped - Past hide date:', event.name);
+                            return;
+                        }
+                    }
+
+                    const eventDate = new Date(event.date);
+                    const bookingStartDate = event.bookingStartDate ? new Date(event.bookingStartDate) : null;
+                    const bookingEndDate = event.bookingEndDate ? new Date(event.bookingEndDate) : null;
+
+                    // Skip past events
+                    if (eventDate <= now) {
+                        console.log('Skipped - Past event:', event.name);
+                        return;
+                    }
+
+                    // Categorize event
+                    if (bookingStartDate && bookingStartDate > now) {
+                        event.section = 'upcoming';
+                        allEvents.push(event);
+                        console.log('Added to Upcoming:', event.name, 'Booking starts:', bookingStartDate);
+                    } else if ((!bookingStartDate || bookingStartDate <= now) && 
+                              (!bookingEndDate || bookingEndDate > now)) {
+                        event.section = 'trending';
+                        allEvents.push(event);
+                        console.log('Added to Trending:', event.name, 'Booking period:', 
+                            bookingStartDate ? bookingStartDate : 'No start date', 
+                            'to', 
+                            bookingEndDate ? bookingEndDate : 'No end date');
+                    } else {
+                        console.log('Skipped - Not in any section:', event.name);
+                    }
                 });
 
-                if (allEvents.length === 0) {
-                    hideAllSections();
-                    return;
+                console.log('Final event counts:', {
+                    total: allEvents.length,
+                    trending: allEvents.filter(e => e.section === 'trending').length,
+                    upcoming: allEvents.filter(e => e.section === 'upcoming').length
+                });
+
+                // Filter and display events
+                const trendingEvents = shuffleArray(
+                    allEvents.filter(event => event.section === 'trending')
+                );
+
+                const upcomingEvents = allEvents
+                    .filter(event => event.section === 'upcoming')
+                    .sort((a, b) => new Date(a.bookingStartDate) - new Date(b.bookingStartDate));
+
+                // Always show both sections
+                document.getElementById('trending').style.display = 'block';
+                document.getElementById('upcoming').style.display = 'block';
+
+                // Display events
+                if (trendingEvents.length > 0) {
+                    createEventPairs(trendingEvents, 'trendingContainer');
+                } else {
+                    document.getElementById('trendingContainer').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; width: 100%;">
+                            <i class="fas fa-calendar-alt" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+                            <p style="color: #666;">No events currently booking. Check back soon!</p>
+                        </div>
+                    `;
                 }
 
-                // If we have at least 6 events, show 2 in each section
-                if (allEvents.length >= 6) {
-                    // Shuffle all events first
-                    const shuffledEvents = shuffleArray([...allEvents]);
-                    
-                    // Upcoming events (future dates)
-                    const upcomingEvents = shuffledEvents
-                        .filter(event => new Date(event.date) > now)
-                        .slice(0, 2);
-
-                    // Remove selected upcoming events from the pool
-                    const remainingEvents = shuffledEvents.filter(event => 
-                        !upcomingEvents.find(e => e.id === event.id)
-                    );
-
-                    // Trending events (most recent with high bookings)
-                    const trendingEvents = remainingEvents
-                        .sort((a, b) => (b.soldTickets || 0) - (a.soldTickets || 0))
-                        .slice(0, 2);
-
-                    // Remove selected trending events from the pool
-                    const finalEvents = remainingEvents.filter(event => 
-                        !trendingEvents.find(e => e.id === event.id)
-                    );
-
-                    // Popular events (different from trending)
-                    const popularEvents = shuffleArray(finalEvents)
-                        .slice(0, 2);
-
-                    // Create event pairs for each section
-                    if (upcomingEvents.length === 2) {
-                        createEventPairs(upcomingEvents, 'upcomingContainer');
-                        document.getElementById('upcoming').style.display = 'block';
-                    } else {
-                        document.getElementById('upcoming').style.display = 'none';
-                    }
-
-                    if (trendingEvents.length === 2) {
-                        createEventPairs(trendingEvents, 'trendingContainer');
-                        document.getElementById('trending').style.display = 'block';
-                    } else {
-                        document.getElementById('trending').style.display = 'none';
-                    }
-
-                    if (popularEvents.length === 2) {
-                        createEventPairs(popularEvents, 'popularContainer');
-                        document.getElementById('popular').style.display = 'block';
-                    } else {
-                        document.getElementById('popular').style.display = 'none';
-                    }
-
+                if (upcomingEvents.length > 0) {
+                    createEventPairs(upcomingEvents, 'upcomingContainer');
                 } else {
-                    // If less than 6 events, show all in one section
-                    const section = allEvents.length >= 2 ? 'popular' : null;
-                    hideAllSections();
-                    
-                    if (section) {
-                        createEventPairs(shuffleArray(allEvents), `${section}Container`);
-                        document.getElementById(section).style.display = 'block';
-                    }
+                    document.getElementById('upcomingContainer').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; width: 100%;">
+                            <i class="fas fa-clock" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+                            <p style="color: #666;">No upcoming events at the moment. Stay tuned!</p>
+                        </div>
+                    `;
                 }
 
             } catch (error) {
                 console.error("Error loading events:", error);
-                hideAllSections();
-                showErrorMessage();
+                const errorMessage = `
+                    <div style="text-align: center; padding: 2rem; width: 100%;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff6b6b; margin-bottom: 1rem;"></i>
+                        <p style="color: #666;">Error loading events. Please try again later.</p>
+                    </div>
+                `;
+                document.getElementById('trendingContainer').innerHTML = errorMessage;
+                document.getElementById('upcomingContainer').innerHTML = errorMessage;
             }
         }
 
@@ -2443,14 +2538,6 @@
             ['trending', 'popular', 'upcoming'].forEach(id => {
                 document.getElementById(id).style.display = 'none';
             });
-        }
-
-        // Helper function to show error message
-        function showErrorMessage() {
-            const popularSection = document.getElementById('popular');
-            popularSection.style.display = 'block';
-            document.getElementById('popularContainer').innerHTML = 
-                '<p style="text-align: center; grid-column: 1/-1;">Error loading events. Please try again later.</p>';
         }
 
         // Update the load event listener
@@ -2486,6 +2573,32 @@
         window.handleEventClick = handleEventClick;
         window.closeLoginModal = closeLoginModal;
         window.redirectToLogin = redirectToLogin;
+
+        // Add this after Firebase initialization
+        onAuthStateChanged(auth, (user) => {
+            // You can use this to update any UI elements based on auth state
+            console.log('Auth state changed:', user ? 'User logged in' : 'User not logged in');
+        });
+
+        // Update the handleExploreEvents function to use the observer
+        function handleExploreEvents() {
+            const user = auth.currentUser;
+            if (user) {
+                window.location.replace('dashboard.html');
+            } else {
+                window.location.replace('login.html');
+            }
+        }
+
+        // Make handleExploreEvents available globally
+        window.handleExploreEvents = handleExploreEvents;
+
+        // Add auth state change listener
+        onAuthStateChanged(auth, (user) => {
+            if (!user && window.location.pathname.includes('dashboard.html')) {
+                window.location.replace('login.html');
+            }
+        });
     </script>
     <!-- Add this right before closing body tag -->
     <nav class="bottom-nav">
@@ -2497,7 +2610,7 @@
             <i class="fas fa-star"></i>
             <span>Features</span>
         </a>
-        <a href="#events">
+        <a href="#upcoming">
             <i class="fas fa-calendar"></i>
             <span>Events</span>
         </a>
@@ -2649,6 +2762,23 @@
             bottomNavEventLink.addEventListener('click', redirectToRandomEventSection);
         }
     });
+    </script>
+
+    <!-- Add this function to handle explore events button click -->
+    <script>
+    function handleExploreEvents() {
+        // Get current user
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (user) {
+            // User is signed in, redirect to dashboard
+            window.location.replace('dashboard.html');
+        } else {
+            // No user is signed in, redirect to login
+            window.location.replace('login.html');
+        }
+    }
     </script>
 </body>
 </html>

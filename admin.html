@@ -9,404 +9,138 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
-    /* Scheduler Styles */
+    <!-- Add Swiper CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Add this CSS style block in the head section -->
     <style>
-        /* Update Scheduler Styles */
-        .scheduling-section {
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            border: 1px solid #e2e8f0;
-        }
-
-        .schedule-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-        }
-
-        .schedule-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #667eea;
-            border-radius: 4px;
-            cursor: pointer;
-            accent-color: #667eea;
-        }
-
-        .schedule-checkbox label {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .schedule-details {
-            margin-left: 1.5rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
-
-        .schedule-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        .schedule-input:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .helper-text {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-top: 0.25rem;
-        }
-
-        /* Animation for showing/hiding schedule sections */
-        .schedule-details {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .schedule-details[style*="block"] {
-            max-height: 200px;
-            opacity: 1;
-        }
-    </style>
-    <style>
-        /* Event Type Dropdown Styles */
-        .event-type-select {
-            position: relative;
-            width: 100%;
-        }
-
-        select#eventType {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background-color: white;
-            font-size: 1rem;
-            color: #1a202c;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            padding-right: 40px;
-        }
-
-        select#eventType:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            outline: none;
-        }
-
-        .event-type-select::after {
-            content: '\f107';
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #4a5568;
-            pointer-events: none;
-            transition: transform 0.2s ease;
-        }
-
-        .event-type-select:hover::after {
-            transform: translateY(-50%) rotate(180deg);
-        }
-
-        select#eventType option {
-            padding: 12px;
-            background-color: white;
-            color: #1a202c;
-        }
-
-        select#eventType option:hover {
-            background-color: #f7fafc;
-        }
-
-        /* Style for disabled state */
-        select#eventType:disabled {
-            background-color: #f7fafc;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        /* Style for different event types */
-        select#eventType option[value="venue"] {
-            color: #2f855a;
-        }
-
-        select#eventType option[value="online"] {
-            color: #2b6cb0;
-        }
-
-        select#eventType option[value="hybrid"] {
-            color: #6b46c1;
-        }
-
-        /* Add focus styles for better accessibility */
-        select#eventType:focus-visible {
-            outline: 2px solid #667eea;
-            outline-offset: 2px;
-        }
-
-        /* Style for the select when opened */
-        select#eventType:active {
-            background-color: #f7fafc;
-        }
-
-  </style>
-
-    <style>
-        /* Mobile Bottom Navigation */
-        .mobile-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            padding: 10px 0;
-            z-index: 1000;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .mobile-nav-items {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            padding: 0 10px;
-        }
-
-        .mobile-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 4px;
-            color: #64748b;
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .mobile-nav-item i {
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-        }
-
-        .mobile-nav-item.active {
-            color: #667eea;
-        }
-
-        .mobile-nav-item span {
-            font-size: 0.7rem;
-            text-align: center;
-        }
-
-        /* Update Sidebar and Main Content Styles */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none !important;
-            }
-
-            .mobile-nav {
-                display: block !important;
-            }
-
-            .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
-                padding-bottom: 80px !important; /* Space for mobile nav */
-            }
-
-            .container {
-                padding: 10px;
-                margin-left: 0 !important;
-            }
-
-            /* Adjust stats grid for mobile */
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 15px;
-            }
-
-            /* Adjust event cards for mobile */
-            .event-card {
-                margin-bottom: 15px;
-            }
-
-            /* Adjust form groups for mobile */
-            .form-group {
-                margin-bottom: 15px;
-            }
-
-            /* Adjust modal content for mobile */
-            .modal-content {
-                width: 95%;
-                margin: 10px;
-                padding: 15px;
-            }
-        }
-    </style>
-
-    <style>
-        /* Mobile Top Navigation */
-        .mobile-top-nav {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
-            color: white;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .mobile-top-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .mobile-logout-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .mobile-logout-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .mobile-logout-btn i {
-            font-size: 1.2rem;
-        }
-
-        /* Update media queries */
-        @media (max-width: 768px) {
-            .mobile-top-nav {
-                display: flex;
-            }
-
-            .main-content {
-                margin-top: 60px !important; /* Space for top nav */
-                width: 100vw !important; /* Full viewport width */
-                padding: 0 !important;
-            }
-
-            .sidebar {
-                display: none !important;
-            }
-
-            .mobile-nav {
-                display: block !important;
-                width: 100% !important;
-            }
-
-            .container {
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                max-width: 100vw !important;
-            }
-
-            /* Adjust content sections */
+        @media screen and (max-width: 768px) {
             .content-section {
-                padding: 10px !important;
-                width: 100% !important;
+                padding-bottom: 80px; /* Add padding at bottom of each section */
+                margin-bottom: 20px; /* Additional margin for visual separation */
             }
 
-            /* Adjust stats grid for mobile */
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
+            /* Ensure the last element in each section has proper spacing */
+            .content-section > *:last-child {
+                margin-bottom: 60px;
+            }
+
+            /* Additional spacing for specific sections that might need more room */
+            #verification, #generateTicket, #passes {
+                padding-bottom: 100px; /* Extra padding for sections with more interactive elements */
+            }
+
+            /* Ensure bottom elements don't get cut off by the mobile nav */
+            .button-group, .admin-ticket-actions, .generate-btn {
+                margin-bottom: 80px;
+            }
+
+            /* Additional spacing for create event form */
+            #createEventSection {
+                padding-bottom: 120px; /* Extra padding for the create event form */
+            }
+
+            /* Ensure form buttons are visible */
+            .form-group:last-child {
+                margin-bottom: 100px; /* Space for form buttons */
+            }
+
+            /* Additional space for buttons when editing */
+            .create-btn, .cancel-btn {
+                margin-bottom: 20px;
+            }
+
+            /* Container for form buttons */
+            .form-group[style*="display: flex"] {
+                margin-bottom: 120px; /* Extra space for button container */
+                padding-bottom: 20px;
+            }
+
+            /* Hide event gallery on mobile */
+            .event-images {
+                display: none;
+            }
+
+            /* Optional: Add a message indicating gallery is hidden on mobile */
+            .event-images::before {
+                content: 'Gallery available on desktop view';
+                display: block;
+                text-align: center;
+                color: #666;
                 padding: 10px;
-                width: 100%;
+                font-size: 0.9em;
+                font-style: italic;
             }
 
-            .stat-card {
-                padding: 15px;
-            }
-
-            /* Adjust event cards for mobile */
-            .event-card {
-                margin: 10px 0;
-                width: 100%;
-            }
-
-            /* Adjust form groups for mobile */
-            .form-group {
-                margin-bottom: 15px;
-                width: 100%;
-            }
-
-            /* Adjust modal content for mobile */
-            .modal-content {
-                width: 95%;
-                margin: 10px auto;
-                padding: 15px;
-            }
-
-            /* Hide desktop user info */
-            .user-info {
+            /* Hide event gallery on mobile - using more specific selector */
+            .event-card .event-images,
+            .event-card-content .event-images,
+            .event-section .event-images {
                 display: none !important;
             }
 
-            /* Remove any fixed widths */
-            .events-grid,
-            .tickets-grid,
-            .form-container,
-            .event-form {
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 10px !important;
+            /* Optional: Add a message indicating gallery is hidden on mobile */
+            .event-card .event-images::before,
+            .event-card-content .event-images::before,
+            .event-section .event-images::before {
+                content: 'Gallery available on desktop view';
+                display: block;
+                text-align: center;
+                color: #666;
+                padding: 10px;
+                font-size: 0.9em;
+                font-style: italic;
+            }
+
+            /* Hide event gallery on mobile - using all possible combinations */
+            .event-images,
+            div.event-images,
+            .event-card .event-images,
+            .event-card-content .event-images,
+            .event-section .event-images,
+            [class*="event"] .event-images {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+
+            /* Optional: Add a message indicating gallery is hidden on mobile */
+            .event-images::before,
+            div.event-images::before {
+                content: 'Gallery available on desktop view';
+                display: block;
+                text-align: center;
+                color: #666;
+                padding: 10px;
+                font-size: 0.9em;
+                font-style: italic;
+            }
+
+            /* Hide event gallery on mobile */
+            .events-carousel-section {
+                display: none !important;
+            }
+
+            /* Optional: Add a message indicating gallery is hidden on mobile */
+            .events-carousel-section::before {
+                content: 'Gallery available on desktop view';
+                display: block;
+                text-align: center;
+                color: #666;
+                padding: 10px;
+                font-size: 0.9em;
+                font-style: italic;
             }
         }
     </style>
-
-
-
-
-
-    
+    <!-- Add this near the top with other script imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Initialize jsPDF globally
+        window.jsPDF = window.jspdf.jsPDF;
+        console.log('jsPDF initialized:', !!window.jsPDF);
+    </script>
 </head>
 <body>
     <!-- Mobile Top Navbar -->
@@ -508,18 +242,6 @@
                         <div class="number" id="ticketsScanned">0</div>
                     </div>
                 </div>
-
-                <div class="recent-sections">
-                    <div class="recent-section">
-                        <h3>Recent Events</h3>
-                        <div id="recentEventsList" class="recent-list"></div>
-                    </div>
-                    
-                    <div class="recent-section">
-                        <h3>Recent Tickets</h3>
-                        <div id="recentTicketsList" class="recent-list"></div>
-                    </div>
-                </div>
             </div>
 
             <!-- Events Section -->
@@ -539,14 +261,46 @@
                 <!-- Create Event Form (Initially Hidden) -->
                 <div id="createEventSection" class="event-section" style="display: none;">
                     <div class="event-form">
+                        <input type="hidden" id="editingEventId">
                         <div class="form-group">
                             <label>Event Name</label>
                             <input type="text" id="eventName" required>
                         </div>
                         <div class="form-group">
-                            <label for="eventDescription" class="required">Event Description</label>
-                            <textarea id="eventDescription" name="eventDescription" class="tinymce-editor"></textarea>
-                            <div class="helper-text">Use the editor to format your event description</div>
+                            <label>Event Category</label>
+                            <select id="eventCategory" onchange="handleEventCategoryChange()" required>
+                                <option value="">Select Category</option>
+                                <option value="corporate">Corporate Events</option>
+                                <option value="social">Social Events</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="sports">Sports & Fitness</option>
+                                <option value="educational">Educational</option>
+                                <option value="community">Community Events</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="otherCategoryGroup" style="display: none;">
+                            <label>Custom Category Name</label>
+                            <input type="text" id="otherCategoryName" placeholder="Enter category name">
+                        </div>
+                        <div class="form-group">
+                            <label>Event Pricing Type</label>
+                            <select id="eventPricingType" onchange="handlePricingTypeChange()" required>
+                                <option value="">Select Pricing Type</option>
+                                <option value="paid">Paid Event</option>
+                                <option value="free">Free Event</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventDescription">Event Description</label>
+                            <textarea 
+                                id="eventDescription" 
+                                name="eventDescription" 
+                                class="form-textarea" 
+                                rows="6" 
+                                placeholder="Enter event description" 
+                                required></textarea>
+                            <div class="helper-text">Enter a detailed description of your event</div>
                         </div>
                         <div class="form-group">
                             <label>Event Date</label>
@@ -582,8 +336,13 @@
                             <input type="datetime-local" id="bookingDeadline" required>
                         </div>
                         <div class="form-group">
-                            <label>Price ()</label>
-                            <input type="number" id="eventPrice" step="0.01" required>
+                            <label>Price (₹)</label>
+                            <input type="number" 
+                                   id="eventPrice" 
+                                   min="0" 
+                                   step="0.01" 
+                                   value="0"
+                                   required>
                         </div>
                         <div class="form-group">
                             <label class="required">Event Type</label>
@@ -654,18 +413,28 @@
                                     <input type="number" id="venueTickets" min="0" required>
                                     <div class="helper-text">Number of tickets available for physical attendance</div>
                                     <div class="form-group">
-                                        <label class="required">Venue Ticket Price ()</label>
-                                        <input type="number" id="venueTicketPrice" min="0" step="0.01" required>
+                                        <label class="required">Venue Ticket Price (₹)</label>
+                                        <input type="number" 
+                                               id="venueTicketPrice" 
+                                               min="0" 
+                                               step="0.01" 
+                                               value="0"
+                                               required>
                                     </div>
                                 </div>
 
                                 <div class="form-group" id="onlineTicketsSection">
                                     <label class="required">Online Tickets</label>
-                                    <input type="number" id="onlineTickets" min="0" required>
+                                    <input type="number" id="onlineTickets" min="0" step="0.01" required>
                                     <div class="helper-text">Number of tickets available for online attendance</div>
                                     <div class="form-group">
                                         <label class="required">Online Ticket Price (₹)</label>
-                                        <input type="number" id="onlineTicketPrice" min="0" step="0.01" required>
+                                        <input type="number" 
+                                               id="onlineTicketPrice" 
+                                               min="0" 
+                                               step="0.01" 
+                                               value="0"
+                                               required>
                                     </div>
                                 </div>
                             </div>
@@ -673,14 +442,14 @@
                         <!-- Add this after the event description field in your form -->
                         <div class="form-group">
                             <label>Rules (if applicable)</label>
-                            <textarea id="eventRules" name="eventRules" class="tinymce-editor"></textarea>
+                            <div 
+                                id="eventRules" 
+                                name="eventRules" 
+                                class="form-textarea" 
+                                contenteditable="true" 
+                                style="border: 1px solid #ccc; padding: 10px; min-height: 120px;">
+                            </div>
                             <div class="helper-text">Add any rules or guidelines for the event</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Limitations (if applicable)</label>
-                            <textarea id="eventLimitations" name="eventLimitations" class="tinymce-editor"></textarea>
-                            <div class="helper-text">Add any limitations or restrictions for the event</div>
                         </div>
                         <div class="form-group" style="display: flex; gap: 10px;">
                             <button type="button" onclick="handleCreateEvent()" class="create-btn">Create Event</button>
@@ -737,12 +506,12 @@
                             <p id="adminAvailableTickets">0</p>
                         </div>
                         <div class="stat-item">
-                            <h4>Tickets Used</h4>
-                            <p id="adminUsedTickets">0</p>
-                        </div>
+            <h4>Tickets Used</h4>
+            <p id="selectedEventUsedTickets">0</p>
+        </div>
                         <div class="stat-item">
                             <h4>Total Revenue</h4>
-                            <p id="adminTotalRevenue">₹0</p>
+                            <p id="selectedEventTotalRevenue">₹0</p>
                         </div>
                     </div>
                 </div>
@@ -802,49 +571,78 @@
 </div>
 <!-- Add this new section after your other content sections -->
 <div id="passes" class="content-section">
-    <div class="passes-stats">
-        <div class="stat-box">
-            <h3>Total Passes</h3>
-            <p id="totalPasses">0</p>
-        </div>
-        <div class="stat-box">
-            <h3>Used Passes</h3>
-            <p id="usedPasses">0</p>
-        </div>
-        <div class="stat-box">
-            <h3>Unused Passes</h3>
-            <p id="unusedPasses">0</p>
+    <h2>Pass Management</h2>
+    
+    <!-- Stats Section -->
+    <div class="stats-card">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h4>Total Passes</h4>
+                <p id="totalPasses">0</p>
+            </div>
+            <div class="stat-item">
+                <h4>Used Passes</h4>
+                <p id="usedPasses">0</p>
+            </div>
+            <div class="stat-item">
+                <h4>Unused Passes</h4>
+                <p id="unusedPasses">0</p>
+            </div>
         </div>
     </div>
 
+    <!-- Toggle Buttons -->
     <div class="passes-toggle">
-        <button class="toggle-btn active" onclick="togglePassesView('view')">View Passes</button>
-        <button class="toggle-btn" onclick="togglePassesView('generate')">Generate Passes</button>
+        <button class="toggle-btn active" onclick="togglePassesView('generate')">
+            Generate Passes
+        </button>
+        <button class="toggle-btn" onclick="togglePassesView('view')">
+            View Passes
+        </button>
     </div>
 
-    <div id="generatePassesSection" class="passes-section" style="display: none;">
-        <select id="eventSelectorForPasses" required>
-            <option value="">Select Event</option>
-        </select>
-        <select id="roleSelector" onchange="handleRoleChange()" required>
-            <option value="">Select Role</option>
-            <option value="staff">Staff</option>
-            <option value="vip">VIP</option>
-            <option value="media">Media</option>
-            <option value="other">Other</option>
-        </select>
-        <div id="otherRoleInput" style="display: none;">
-            <label for="customRole">Custom Role:</label>
+    <!-- Generate Passes Section -->
+    <div id="generatePassesSection" class="passes-section">
+        <div class="form-group">
+            <label>Select Event</label>
+            <select id="eventSelectorForPasses" required>
+                <option value="">Select an Event</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Role</label>
+            <select id="roleSelector" required>
+                <option value="">Select Role</option>
+                <option value="staff">Staff</option>
+                <option value="vip">VIP</option>
+                <option value="media">Media</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="otherRoleInput" style="display: none;">
+            <label>Custom Role</label>
             <input type="text" id="customRole" placeholder="Enter custom role">
         </div>
-        <input type="number" id="numberOfPasses" min="1" placeholder="Number of passes">
-        <button onclick="generatePasses()">Generate Passes</button>
-        <div id="generatedPassesList"></div>
+
+        <div class="form-group">
+            <label>Number of Passes</label>
+            <input type="number" id="numberOfPasses" min="1" value="1" required>
+        </div>
+
+        <button onclick="generatePasses()" class="generate-btn">Generate Passes</button>
+
+        <div id="generatedPassesList" class="generated-passes">
+            <!-- Generated passes will appear here -->
+        </div>
     </div>
 
-    <div id="viewPassesSection" class="passes-section" style="display: block;">
-
-        <div id="viewPassesList"></div>
+    <!-- View Passes Section -->
+    <div id="viewPassesSection" class="passes-section" style="display: none;">
+        <div id="viewPassesList">
+            <!-- Existing passes will be listed here -->
+        </div>
     </div>
 </div>
 <!-- Generate Ticket Section -->
@@ -854,16 +652,19 @@
     <div class="ticket-generation-form">
         <div class="form-group">
             <label>Select Event</label>
-            <select id="ticketEventSelector" required onchange="updateTicketTypeOptions()">
+            <select id="ticketEventSelector">
                 <option value="">Select an Event</option>
             </select>
         </div>
         
         <div class="form-group">
             <label>Ticket Type</label>
-            <select id="ticketTypeSelector" required>
-                <option value="">Select Ticket Type</option>
-            </select>
+            <select id="ticketTypeSelector">
+    <option value="">Select Ticket Type</option>
+</select>
+<small class="helper-text" style="color: #666; font-size: 0.8em; margin-top: 4px; display: block;">
+    Ticket types will only appear if tickets are available for the selected event
+</small>
         </div>
         
         <div class="form-group">
@@ -881,6 +682,7 @@
                 <option value="">Select Payment Mode</option>
                 <option value="cash">Cash</option>
                 <option value="card">Card</option>
+                <option value="free" style="display: none;">Free</option>
             </select>
         </div>
         
@@ -994,234 +796,248 @@
     
         // Update the edit button click handler
         function openEditModal(eventId, eventData) {
-            try {
-                console.log("Opening edit modal for event:", eventId);
-                console.log("Event data received:", eventData);
-    
-                isEditing = true;
-                currentEditingEventId = eventId;
-                
-                const cancelBtn = document.querySelector('.cancel-btn');
-                if (cancelBtn) {
-                    cancelBtn.style.display = 'block';
-                }
-                
-                const createBtn = document.querySelector('.create-btn');
-                if (createBtn) {
-                    createBtn.textContent = 'Update Event';
-                }
-                
-                const nameInput = document.getElementById('eventName');
-                const descInput = document.getElementById('eventDescription');
-                const dateInput = document.getElementById('eventDate');
-                const startInput = document.getElementById('bookingStartDate');
-                const deadlineInput = document.getElementById('bookingDeadline');
-                const priceInput = document.getElementById('eventPrice');
-                const ticketsInput = document.getElementById('eventTickets');
-                const eventTypeSelect = document.getElementById('eventType');
-    
-                nameInput.value = eventData.name || '';
-                dateInput.value = new Date(eventData.date).toISOString().slice(0, 16);
-                startInput.value = new Date(eventData.bookingStartDate).toISOString().slice(0, 16);
-                deadlineInput.value = new Date(eventData.bookingDeadline).toISOString().slice(0, 16);
-                priceInput.value = eventData.price || '';
-                ticketsInput.value = eventData.totalTickets || '';
-                eventTypeSelect.value = eventData.eventType || '';
-    
-                handleEventTypeChange();
-                
-                if (eventData.eventType === 'hybrid') {
-                    document.getElementById('venueTickets').value = eventData.tickets?.venue?.total || '';
-                    document.getElementById('onlineTickets').value = eventData.tickets?.online?.total || '';
-                    document.getElementById('venueTicketPrice').value = eventData.tickets?.venue?.price || '';
-                    document.getElementById('onlineTicketPrice').value = eventData.tickets?.online?.price || '';
-                }
-    
-                if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
-                    document.getElementById('meetingPlatform').value = eventData.onlineDetails?.platform || '';
-                    document.getElementById('meetingLink').value = eventData.onlineDetails?.meetingLink || '';
-                    document.getElementById('meetingId').value = eventData.onlineDetails?.meetingId || '';
-                    document.getElementById('meetingPassword').value = eventData.onlineDetails?.meetingPassword || '';
-                }
-    
-                if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
-                    document.getElementById('eventPlace').value = eventData.venueDetails?.place || '';
-                    document.getElementById('eventVenue').value = eventData.venueDetails?.venue || '';
-                }
-    
-                const imageContainer = document.getElementById('imageUrlsContainer');
-                imageContainer.innerHTML = '';
-                
-                if (eventData.images && Array.isArray(eventData.images)) {
-                    eventData.images.forEach((imageUrl, index) => {
-                        const div = document.createElement('div');
-                        div.className = 'form-group image-input';
-                        div.innerHTML = `
-                            <label>Image URL #${index + 1}</label>
-                            <input type="text" class="eventImage" value="${imageUrl}" placeholder="Enter image URL">
-                            ${index === 0 ? 
-                                `<button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>` : 
-                                `<button type="button" onclick="removeImageField(this)" class="remove-image-btn">Remove</button>`
-                            }
-                        `;
-                        imageContainer.appendChild(div);
-                    });
-                    imageFieldCount = eventData.images.length;
-                } else {
-                    const div = document.createElement('div');
-                    div.className = 'form-group image-input';
-                    div.innerHTML = `
-                        <label>Image URL #1</label>
-                        <input type="text" class="eventImage" placeholder="Enter image URL">
-                        <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
-                    `;
-                    imageContainer.appendChild(div);
-                    imageFieldCount = 1;
-                }
-    
-                const descriptionEditor = tinymce.get('eventDescription');
-                const rulesEditor = tinymce.get('eventRules');
-                const limitationsEditor = tinymce.get('eventLimitations');
-    
-                if (descriptionEditor) {
-                    descriptionEditor.setContent(eventData.description || '');
-                }
-                if (rulesEditor) {
-                    rulesEditor.setContent(eventData.rules || '');
-                }
-                if (limitationsEditor) {
-                    limitationsEditor.setContent(eventData.limitations || '');
-                }
-    
-                document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
-    
-            } catch (error) {
-                console.error("Detailed error opening edit modal:", error);
-                alert('Error loading event data for editing: ' + error.message);
+    document.getElementById('editingEventId').value = eventId;
+    try {
+        console.log("Opening edit modal for event:", eventId);
+        console.log("Event data received:", eventData);
+
+        isEditing = true;
+        currentEditingEventId = eventId;
+        
+        // Update buttons
+        const cancelBtn = document.querySelector('.cancel-btn');
+        const createBtn = document.querySelector('.create-btn');
+        if (cancelBtn) cancelBtn.style.display = 'block';
+        if (createBtn) createBtn.textContent = 'Update Event';
+        
+        // Basic event details
+        document.getElementById('eventName').value = eventData.name || '';
+        document.getElementById('eventCategory').value = eventData.category || '';
+        document.getElementById('eventPricingType').value = eventData.pricingType || 'paid';
+        
+        // Handle pricing type change first
+        handlePricingTypeChange();
+        
+        // Handle custom category
+        const otherCategoryGroup = document.getElementById('otherCategoryGroup');
+        const otherCategoryInput = document.getElementById('otherCategoryName');
+        if (eventData.category === 'other') {
+            otherCategoryGroup.style.display = 'block';
+            otherCategoryInput.value = eventData.customCategory || '';
+        } else {
+            otherCategoryGroup.style.display = 'none';
+            otherCategoryInput.value = '';
+        }
+
+        // Dates
+        document.getElementById('eventDate').value = new Date(eventData.date).toISOString().slice(0, 16);
+        document.getElementById('bookingStartDate').value = new Date(eventData.bookingStartDate).toISOString().slice(0, 16);
+        document.getElementById('bookingDeadline').value = new Date(eventData.bookingDeadline).toISOString().slice(0, 16);
+        
+        // Event type and related fields
+        const eventTypeSelect = document.getElementById('eventType');
+        eventTypeSelect.value = eventData.eventType || '';
+        handleEventTypeChange();
+        
+        // Handle pricing based on event type
+        if (eventData.eventType === 'hybrid') {
+            document.getElementById('venueTickets').value = eventData.tickets?.venue?.total || '';
+            document.getElementById('onlineTickets').value = eventData.tickets?.online?.total || '';
+            document.getElementById('venueTicketPrice').value = eventData.tickets?.venue?.price || '0';
+            document.getElementById('onlineTicketPrice').value = eventData.tickets?.online?.price || '0';
+        } else {
+            document.getElementById('eventPrice').value = eventData.price || '0';
+            document.getElementById('eventTickets').value = eventData.totalTickets || '';
+        }
+
+        // Handle online/hybrid event details
+        if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
+            document.getElementById('meetingPlatform').value = eventData.onlineDetails?.platform || '';
+            document.getElementById('meetingLink').value = eventData.onlineDetails?.meetingLink || '';
+            document.getElementById('meetingId').value = eventData.onlineDetails?.meetingId || '';
+            document.getElementById('meetingPassword').value = eventData.onlineDetails?.meetingPassword || '';
+        }
+
+        // Handle venue details
+        if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
+            document.getElementById('eventPlace').value = eventData.venueDetails?.place || '';
+            document.getElementById('eventVenue').value = eventData.venueDetails?.venue || '';
+        }
+
+        // Handle scheduling data
+        if (eventData.scheduling) {
+            const publishSchedule = document.getElementById('enablePublishSchedule');
+            const hideSchedule = document.getElementById('enableHideSchedule');
+            
+            if (eventData.scheduling.publishDate) {
+                publishSchedule.checked = true;
+                document.getElementById('publishScheduleSection').style.display = 'block';
+                document.getElementById('publishDate').value = new Date(eventData.scheduling.publishDate).toISOString().slice(0, 16);
+            }
+            
+            if (eventData.scheduling.hideDate) {
+                hideSchedule.checked = true;
+                document.getElementById('hideScheduleSection').style.display = 'block';
+                document.getElementById('hideDate').value = new Date(eventData.scheduling.hideDate).toISOString().slice(0, 16);
             }
         }
+
+        // Handle images
+        const imageContainer = document.getElementById('imageUrlsContainer');
+        imageContainer.innerHTML = '';
+        
+        if (eventData.images && Array.isArray(eventData.images)) {
+            eventData.images.forEach((imageUrl, index) => {
+                const div = document.createElement('div');
+                div.className = 'form-group image-input';
+                div.innerHTML = `
+                    <label>Image URL #${index + 1}</label>
+                    <input type="text" class="eventImage" value="${imageUrl}" placeholder="Enter image URL">
+                    ${index === 0 ? 
+                        `<button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>` : 
+                        `<button type="button" onclick="removeImageField(this)" class="remove-image-btn">Remove</button>`
+                    }
+                `;
+                imageContainer.appendChild(div);
+            });
+            imageFieldCount = eventData.images.length;
+        } else {
+            const div = document.createElement('div');
+            div.className = 'form-group image-input';
+            div.innerHTML = `
+                <label>Image URL #1</label>
+                <input type="text" class="eventImage" placeholder="Enter image URL">
+                <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
+            `;
+            imageContainer.appendChild(div);
+            imageFieldCount = 1;
+        }
+
+        // Handle description and rules directly
+        document.getElementById('eventDescription').value = eventData.description || '';
+        document.getElementById('eventRules').innerHTML = eventData.rules || '';
+
+        // Scroll form into view
+        document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error("Detailed error opening edit modal:", error);
+        alert('Error loading event data for editing: ' + error.message);
+    }
+}
     
         // Update the handleCreateEvent function to handle both create and update
         async function handleCreateEvent() {
-            try {
-                if (!validateEventDates() || !validateTickets()) {
-                    return;
+    try {
+        if (!validateEventDates()) {
+            return;
+        }
+
+        const editingEventId = document.getElementById('editingEventId')?.value;
+        const isEditing = !!editingEventId;
+
+        const eventData = {
+            name: document.getElementById('eventName').value.trim(),
+            description: document.getElementById('eventDescription').value.trim(),
+            category: document.getElementById('eventCategory').value,
+            pricingType: document.getElementById('eventPricingType').value,
+            date: new Date(document.getElementById('eventDate').value).toISOString(),
+            bookingStartDate: new Date(document.getElementById('bookingStartDate').value).toISOString(),
+            bookingDeadline: new Date(document.getElementById('bookingDeadline').value).toISOString(),
+            eventType: document.getElementById('eventType').value,
+            price: parseFloat(document.getElementById('eventPrice').value) || 0,
+            rules: document.getElementById('eventRules').innerHTML.trim(),
+            updatedAt: serverTimestamp(),
+            
+            // Add scheduling if enabled
+            scheduling: {
+                publishDate: document.getElementById('enablePublishSchedule').checked ? 
+                    new Date(document.getElementById('publishDate').value).toISOString() : null,
+                hideDate: document.getElementById('enableHideSchedule').checked ? 
+                    new Date(document.getElementById('hideDate').value).toISOString() : null
+            },
+
+            // Add images
+            images: Array.from(document.getElementsByClassName('eventImage'))
+                .map(input => input.value.trim())
+                .filter(url => url !== '')
+        };
+
+        // Only add these fields for new events
+        if (!isEditing) {
+            eventData.eventId = generateEventId();
+            eventData.createdAt = serverTimestamp();
+        }
+
+        // Handle custom category
+        if (eventData.category === 'other') {
+            eventData.customCategory = document.getElementById('otherCategoryName').value.trim();
+        }
+
+        // Handle event type specific details
+        if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
+            eventData.onlineDetails = {
+                platform: document.getElementById('meetingPlatform').value,
+                meetingLink: document.getElementById('meetingLink').value.trim(),
+                meetingId: document.getElementById('meetingId').value.trim(),
+                meetingPassword: document.getElementById('meetingPassword').value.trim()
+            };
+        }
+
+        if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
+            eventData.venueDetails = {
+                place: document.getElementById('eventPlace').value.trim(),
+                venue: document.getElementById('eventVenue').value.trim()
+            };
+        }
+
+        // Handle ticket configuration
+        if (eventData.eventType === 'hybrid') {
+            eventData.tickets = {
+                venue: {
+                    total: parseInt(document.getElementById('venueTickets').value) || 0,
+                    available: parseInt(document.getElementById('venueTickets').value) || 0,
+                    price: parseFloat(document.getElementById('venueTicketPrice').value) || 0
+                },
+                online: {
+                    total: parseInt(document.getElementById('onlineTickets').value) || 0,
+                    available: parseInt(document.getElementById('onlineTickets').value) || 0,
+                    price: parseFloat(document.getElementById('onlineTicketPrice').value) || 0
                 }
-    
-                const descriptionEditor = tinymce.get('eventDescription');
-                const rulesEditor = tinymce.get('eventRules');
-                const limitationsEditor = tinymce.get('eventLimitations');
-    
-                if (!descriptionEditor) {
-                    throw new Error('Description editor not initialized');
-                }
-    
-                const description = descriptionEditor.getContent();
-                const rules = rulesEditor ? rulesEditor.getContent() : '';
-                const limitations = limitationsEditor ? limitationsEditor.getContent() : '';
-    
-                const eventType = document.getElementById('eventType').value;
-                
-                const eventData = {
-                    name: document.getElementById('eventName').value.trim(),
-                    description: description,
-                    rules: rules,
-                    limitations: limitations,
-                    date: new Date(document.getElementById('eventDate').value).toISOString(),
-                    bookingStartDate: new Date(document.getElementById('bookingStartDate').value).toISOString(),
-                    bookingDeadline: new Date(document.getElementById('bookingDeadline').value).toISOString(),
-                    eventType: eventType,
-                    scheduling: {
-                        publishDate: document.getElementById('enablePublishSchedule').checked ? 
-                            new Date(document.getElementById('publishDate').value).toISOString() : null,
-                        hideDate: document.getElementById('enableHideSchedule').checked ? 
-                            new Date(document.getElementById('hideDate').value).toISOString() : null
-                    },
-                    images: Array.from(document.querySelectorAll('.eventImage'))
-                        .map(input => input.value.trim())
-                        .filter(url => url !== ''),
-                    updatedAt: serverTimestamp()
-                };
-    
-                // Only generate new eventId if creating a new event
-                if (!isEditing) {
-                    eventData.eventId = generateEventId();
-                }
-    
-                if (eventType === 'hybrid') {
-                    const venueTickets = parseInt(document.getElementById('venueTickets').value);
-                    const onlineTickets = parseInt(document.getElementById('onlineTickets').value);
-                    const venuePrice = parseFloat(document.getElementById('venueTicketPrice').value);
-                    const onlinePrice = parseFloat(document.getElementById('onlineTicketPrice').value);
-    
-                    eventData.tickets = {
-                        venue: {
-                            total: venueTickets,
-                            available: venueTickets,
-                            price: venuePrice
-                        },
-                        online: {
-                            total: onlineTickets,
-                            available: onlineTickets,
-                            price: onlinePrice
-                        }
-                    };
-                    eventData.totalTickets = venueTickets + onlineTickets;
-                    eventData.availableTickets = eventData.totalTickets;
-                } else {
-                    const totalTickets = parseInt(document.getElementById('eventTickets').value);
-                    const price = parseFloat(document.getElementById('eventPrice').value);
-                    eventData.totalTickets = totalTickets;
-                    eventData.availableTickets = totalTickets;
-                    eventData.price = price;
-                }
-    
-                if (eventType === 'online' || eventType === 'hybrid') {
-                    eventData.onlineDetails = {
-                        platform: document.getElementById('meetingPlatform').value,
-                        meetingLink: document.getElementById('meetingLink').value,
-                        meetingId: document.getElementById('meetingId').value,
-                        meetingPassword: document.getElementById('meetingPassword').value
-                    };
-                }
-    
-                if (eventType === 'venue' || eventType === 'hybrid') {
-                    eventData.venueDetails = {
-                        place: document.getElementById('eventPlace').value.trim(),
-                        venue: document.getElementById('eventVenue').value.trim()
-                    };
-                }
-    
-                if (isEditing && currentEditingEventId) {
-                    // Update existing event
-                    const eventRef = doc(db, 'events', currentEditingEventId);
-                    await updateDoc(eventRef, eventData);
-                    alert('Event updated successfully!');
-                } else {
-                    // Create new event
-                    eventData.createdAt = serverTimestamp();
-                    const eventsRef = collection(db, 'events');
-                    await addDoc(eventsRef, eventData);
-                    alert('Event created successfully!');
-                }
-    
-                clearEventForm();
-                isEditing = false;
-                currentEditingEventId = null;
-                
-                // Switch back to view mode and refresh events list
-                toggleEventsView('view');
-                loadEvents();
-    
-            } catch (error) {
-                console.error('Error handling event:', error);
-                alert(error.message || 'Error handling event. Please try again.');
-            } finally {
-                const createBtn = document.querySelector('.create-btn');
-                createBtn.disabled = false;
-                createBtn.textContent = isEditing ? 'Update Event' : 'Create Event';
+            };
+        } else {
+            eventData.totalTickets = parseInt(document.getElementById('eventTickets').value) || 0;
+            eventData.availableTickets = parseInt(document.getElementById('eventTickets').value) || 0;
+        }
+
+        // Handle free events
+        if (eventData.pricingType === 'free') {
+            eventData.price = 0;
+            if (eventData.eventType === 'hybrid') {
+                eventData.tickets.venue.price = 0;
+                eventData.tickets.online.price = 0;
             }
         }
+
+        // Update or create event in Firebase
+        if (isEditing) {
+            await updateDoc(doc(db, 'events', editingEventId), eventData);
+            alert('Event updated successfully!');
+        } else {
+            await addDoc(collection(db, 'events'), eventData);
+            alert('Event created successfully!');
+        }
+
+        // Reset form and view
+        clearEventForm();
+        toggleEventsView('view');
+        loadEvents();
+
+    } catch (error) {
+        console.error('Error handling event:', error);
+        alert(`Error ${isEditing ? 'updating' : 'creating'} event: ${error.message}`);
+    }
+}
         
         // Update clearEventForm to reset editing state
         function clearEventForm() {
@@ -1253,24 +1069,15 @@
                 createBtn.textContent = 'Create Event';
             }
             
-            const editor = tinymce.get('eventDescription');
-            if (editor) {
-                editor.setContent('');
-            }
+            // Clear description and rules directly
+            document.getElementById('eventDescription').value = '';
+            document.getElementById('eventRules').innerHTML = '';
             
             const eventTypeSelect = document.getElementById('eventType');
             eventTypeSelect.value = '';
             handleEventTypeChange();
             
             document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
-            
-            const editors = ['eventDescription', 'eventRules', 'eventLimitations'];
-            editors.forEach(editorId => {
-                const editor = tinymce.get(editorId);
-                if (editor) {
-                    editor.setContent('');
-                }
-            });
         }
     
         async function loadEvents() {
@@ -1698,221 +1505,267 @@
     
         // Tickets function
         async function loadTickets() {
-            try {
-                const ticketList = document.getElementById('adminTicketList');
-                const eventSelector = document.getElementById('adminEventSelector');
-                
-                // First get all active events
-                const eventsSnapshot = await getDocs(collection(db, 'events'));
-                const activeEvents = {};
-                
-                // Create a map of active events
-                eventsSnapshot.forEach(doc => {
-                    const event = doc.data();
-                    activeEvents[doc.id] = event;
-                });
-                
-                // Populate event selector with only active events
-                eventSelector.innerHTML = '<option value="">All Events</option>';
-                Object.entries(activeEvents).forEach(([eventId, event]) => {
-                    eventSelector.innerHTML += `
-                        <option value="${eventId}">${event.name} (${event.eventId || eventId})</option>
-                    `;
-                });
-
-                // Get tickets only for active events
-                const ticketsRef = collection(db, 'tickets');
-                const ticketsSnapshot = await getDocs(ticketsRef);
-                
-                let totalTickets = 0;
-                let totalSold = 0;
-                let totalRevenue = 0;
-                let totalUsed = 0; // Make sure this is initialized
-                
-                // Filter tickets to only include those from active events
-                const validTickets = ticketsSnapshot.docs.filter(doc => {
-                    const ticket = doc.data();
-                    return activeEvents[ticket.eventId]; // Only include if event exists
-                });
-
-                validTickets.forEach(doc => {
-                    const ticket = doc.data();
-                    const event = activeEvents[ticket.eventId];
-                    
-                    if (event) {
-                        const ticketCount = ticket.ticketCount || 1;
-                        totalTickets += event.totalTickets || 0;
-                        
-                        if (ticket.paymentStatus === 'completed') {
-                            totalSold += ticketCount;
-                            totalRevenue += Number(ticket.totalPrice) || 0;
-                        }
-                        
-                        // Check specifically for the used property
-                        if (ticket.used === true) { // Changed this line to explicitly check for true
-                            totalUsed += ticketCount;
-                        }
-                    }
-                });
-
-                // Make sure to pass totalUsed to updateTicketStats
-                updateTicketStats(totalTickets, totalSold, totalRevenue, totalUsed);
-
-                // Add event listeners for filtering
-                document.getElementById('adminTicketSearch').addEventListener('input', async (e) => {
-                    await filterTickets(e.target.value, activeEvents);
-                });
-
-                eventSelector.addEventListener('change', async (e) => {
-                    await filterTickets('', activeEvents, e.target.value);
-                });
-
-            } catch (error) {
-                console.error("Error loading tickets:", error);
-                alert("Error loading tickets: " + error.message);
+    try {
+        // Get event selector element
+        const eventSelector = document.getElementById('adminEventSelector');
+        
+        // Get all active events
+        const eventsRef = collection(db, 'events');
+        const eventsSnapshot = await getDocs(eventsRef);
+        const activeEvents = {};
+        
+        // Clear existing options
+        eventSelector.innerHTML = '<option value="">All Events</option>';
+        
+        // Populate events dropdown and activeEvents object
+        eventsSnapshot.forEach(doc => {
+            const event = doc.data();
+            if (!event.deleted && event.status !== 'deleted') {
+                activeEvents[doc.id] = event;
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = event.name;
+                eventSelector.appendChild(option);
             }
-        }
+        });
+
+        // Initial load of all tickets with empty filters
+        await filterTickets('', activeEvents, '');
+
+        // Add event listeners for filtering
+        document.getElementById('adminTicketSearch').addEventListener('input', async (e) => {
+            await filterTickets(e.target.value, activeEvents, eventSelector.value);
+        });
+
+        eventSelector.addEventListener('change', async (e) => {
+            await filterTickets(
+                document.getElementById('adminTicketSearch').value,
+                activeEvents,
+                e.target.value
+            );
+        });
+
+    } catch (error) {
+        console.error("Error loading tickets:", error);
+        alert("Error loading tickets: " + error.message);
+    }
+}
     
         // Add function to update stats display
-        function updateTicketStats(total, sold, revenue, used) {
-            document.getElementById('adminTotalTickets').textContent = total;
-            document.getElementById('adminSoldTickets').textContent = sold;
-            document.getElementById('adminAvailableTickets').textContent = total - sold;
-            document.getElementById('adminTotalRevenue').textContent = `₹${revenue.toFixed(2)}`;
-            document.getElementById('adminUsedTickets').textContent = used; // Add this line
-        }
+        function updateTicketStats(totalTickets, totalSold, totalRevenue, totalUsed, availableTickets) {
+    document.getElementById('adminTotalTickets').textContent = totalTickets;
+    document.getElementById('adminSoldTickets').textContent = totalSold;
+    document.getElementById('adminAvailableTickets').textContent = availableTickets;
+    document.getElementById('adminUsedTickets').textContent = totalUsed;
+    document.getElementById('adminTotalRevenue').textContent = formatCurrency(totalRevenue);
+}
     
         // Add function to filter tickets
         async function filterTickets(searchTerm = '', activeEvents = {}, eventId = '') {
-            try {
-                const ticketList = document.getElementById('adminTicketList');
-                const ticketsRef = collection(db, 'tickets');
-                
-                let ticketsQuery;
-                if (eventId) {
-                    ticketsQuery = query(ticketsRef, where('eventId', '==', eventId));
+    try {
+        const ticketsRef = collection(db, 'tickets');
+        const ticketsSnapshot = await getDocs(ticketsRef);
+        let filteredTickets = [];
+        let totalTickets = 0;      // Will store total tickets from events
+        let totalSold = 0;         // Will store total tickets sold
+        let totalRevenue = 0;
+        let totalUsed = 0;
+
+        // First, calculate total tickets from events
+        if (eventId) {
+            // If specific event is selected
+            const event = activeEvents[eventId];
+            if (event) {
+                if (event.eventType === 'hybrid') {
+                    totalTickets = (event.tickets?.venue?.total || 0) + (event.tickets?.online?.total || 0);
                 } else {
-                    ticketsQuery = query(ticketsRef);
+                    totalTickets = event.totalTickets || 0;
                 }
+            }
+        } else {
+            // If no specific event is selected, sum up all events
+            Object.values(activeEvents).forEach(event => {
+                if (event.eventType === 'hybrid') {
+                    totalTickets += (event.tickets?.venue?.total || 0) + (event.tickets?.online?.total || 0);
+                } else {
+                    totalTickets += event.totalTickets || 0;
+                }
+            });
+        }
+
+        // Process tickets for sold and used counts
+        ticketsSnapshot.forEach(doc => {
+            const ticket = doc.data();
+            const event = activeEvents[ticket.eventId];
+            
+            if (event) {
+                const searchString = `
+                    ${event.name || ''} 
+                    ${ticket.eventId || ''} 
+                    ${ticket.userEmail || ''} 
+                    ${ticket.ticketIdentifier || ''}
+                `.toLowerCase();
                 
-                const ticketsSnapshot = await getDocs(ticketsQuery);
-                let filteredTickets = [];
-                let totalSold = 0;
-                let totalRevenue = 0;
-                let totalUsed = 0; // Make sure this is initialized
+                const matchesSearch = !searchTerm || searchString.includes(searchTerm.toLowerCase());
+                const matchesEvent = !eventId || ticket.eventId === eventId;
                 
-                ticketsSnapshot.forEach(doc => {
-                    const ticket = doc.data();
-                    const event = activeEvents[ticket.eventId];
+                if (matchesSearch && matchesEvent) {
+                    filteredTickets.push({
+                        id: doc.id,
+                        ...ticket,
+                        eventName: event.name
+                    });
                     
-                    // Only process tickets if the event exists
-                    if (event) {
-                        const searchString = `
-                            ${event.name || ''} 
-                            ${ticket.eventId || ''} 
-                            ${ticket.userEmail || ''} 
-                            ${ticket.ticketIdentifier || ''}
-                        `.toLowerCase();
+                    if (ticket.paymentStatus === 'completed') {
+                        const ticketCount = Number(ticket.ticketCount) || 1;
+                        totalSold += ticketCount;
+                        totalRevenue += Number(ticket.totalPrice) || 0;
                         
-                        if (!searchTerm || searchString.includes(searchTerm.toLowerCase())) {
-                            filteredTickets.push({
-                                id: doc.id,
-                                ...ticket,
-                                eventName: event.name || 'Unknown Event'
-                            });
-                            
-                            const ticketCount = ticket.ticketCount || 1;
-                            
-                            if (ticket.paymentStatus === 'completed') {
-                                totalSold += ticketCount;
-                                totalRevenue += Number(ticket.totalPrice) || 0;
-                            }
-                            
-                            // Check specifically for the used property
-                            if (ticket.used === true) { // Changed this line to explicitly check for true
-                                totalUsed += ticketCount;
-                            }
+                        if (ticket.used) {
+                            totalUsed += ticketCount;
                         }
                     }
-                });
+                }
+            }
+        });
 
-                // Calculate total tickets based on selected event or all active events
-                const totalTickets = eventId ? 
-                    (activeEvents[eventId]?.totalTickets || 0) : 
-                    Object.values(activeEvents).reduce((sum, event) => sum + (event.totalTickets || 0), 0);
-                
-                // Make sure to pass totalUsed to updateTicketStats
-                updateTicketStats(totalTickets, totalSold, totalRevenue, totalUsed);
-                displayTickets(filteredTickets);
+        // Calculate available tickets
+        const availableTickets = totalTickets - totalSold;
 
-            } catch (error) {
-                console.error("Error filtering tickets:", error);
-                alert("Error filtering tickets: " + error.message);
+        // Update stats display
+        const statsElements = {
+            totalTickets: document.getElementById('adminTotalTickets'),
+            soldTickets: document.getElementById('adminSoldTickets'),
+            availableTickets: document.getElementById('adminAvailableTickets'),
+            usedTickets: document.getElementById('selectedEventUsedTickets'),
+            revenue: document.getElementById('selectedEventTotalRevenue')
+        };
+
+        // Only update if elements exist
+        if (statsElements.totalTickets) statsElements.totalTickets.textContent = totalTickets;
+        if (statsElements.soldTickets) statsElements.soldTickets.textContent = totalSold;
+        if (statsElements.availableTickets) statsElements.availableTickets.textContent = availableTickets;
+        if (statsElements.usedTickets) statsElements.usedTickets.textContent = totalUsed;
+        if (statsElements.revenue) statsElements.revenue.textContent = formatCurrency(totalRevenue);
+
+
+        // Display filtered tickets
+        const ticketList = document.getElementById('adminTicketList');
+        if (ticketList) {
+            if (filteredTickets.length === 0) {
+                ticketList.innerHTML = '<p class="no-tickets">No tickets found</p>';
+            } else {
+                // Inside filterTickets function, update the ticket list HTML generation:
+ticketList.innerHTML = filteredTickets.map(ticket => `
+    <div class="admin-ticket-card">
+        <div class="admin-ticket-info">
+            <h3>${ticket.eventName}</h3>
+            <p>Ticket ID: ${ticket.ticketIdentifier}</p>
+            <p>User: ${ticket.userEmail}</p>
+            <p>Quantity: ${ticket.ticketCount || 1}</p>
+            <p>Status: ${ticket.used ? 'Used' : 'Not Used'}</p>
+            <p>Payment: ${ticket.paymentStatus}</p>
+            <p>Price: ${formatCurrency(ticket.totalPrice || 0)}</p>
+        </div>
+        <div class="admin-ticket-actions">
+            <button onclick="showTicketDetails('${ticket.id}')" class="admin-view-btn">
+                <i class="fas fa-eye"></i> View Details
+            </button>
+        </div>
+    </div>
+`).join('');
             }
         }
+
+    } catch (error) {
+        console.error("Error filtering tickets:", error);
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const eventSelector = document.getElementById('adminEventSelector');
+    const searchInput = document.getElementById('adminTicketSearch');
+
+    if (eventSelector) {
+        eventSelector.addEventListener('change', () => {
+            const searchTerm = searchInput?.value || '';
+            filterTickets(searchTerm, window.activeEvents || {}, eventSelector.value);
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const eventId = eventSelector?.value || '';
+            filterTickets(searchInput.value, window.activeEvents || {}, eventId);
+        });
+    }
+});
     
         // Add function to display tickets
         function displayTickets(tickets) {
-            const ticketList = document.getElementById('adminTicketList');
-            
-            if (tickets.length === 0) {
-                ticketList.innerHTML = '<p class="no-tickets">No tickets found</p>';
-                return;
-            }
+    const ticketList = document.getElementById('adminTicketList');
     
-            let html = '';
-            tickets.forEach(ticket => {
-                const status = getTicketStatus(ticket);
-                html += `
-                    <div class="admin-ticket-card">
-                        <div class="admin-ticket-info">
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">Ticket ID</span>
-                                <span class="admin-ticket-value">${ticket.ticketIdentifier || ticketIdentifier}</span>
-                            </div>
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">Event</span>
-                                <span class="admin-ticket-value">${ticket.eventName}</span>
-                            </div>
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">User</span>
-                                <span class="admin-ticket-value">${ticket.userEmail || 'N/A'}</span>
-                            </div>
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">Purchase Date</span>
-                                <span class="admin-ticket-value">${new Date(ticket.purchaseDate).toLocaleString()}</span>
-                            </div>
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">Quantity</span>
-                                <span class="admin-ticket-value">
-                                    <span class="admin-ticket-quantity">
-                                        <i class="fas fa-ticket-alt"></i> ${ticket.ticketCount || 1}
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">Price</span>
-                                <span class="admin-ticket-value">
-                                    ₹${ticket.totalPrice || 0}
-                                    <span class="admin-ticket-unit-price">(₹${(ticket.totalPrice || 0) / (ticket.ticketCount || 1).toFixed(2)} × ${ticket.ticketCount || 1})</span>
-                                </span>
-                            </div>
-                            <div class="admin-ticket-detail">
-                                <span class="admin-ticket-label">Status</span>
-                                <span class="admin-status-badge admin-status-${status.toLowerCase()}">${status}</span>
-                            </div>
-                        </div>
-                        <div class="admin-ticket-actions">
-                            <button onclick="showTicketDetails('${ticket.id}')" class="admin-view-btn">
-                                View Details
-                            </button>
-                        </div>
+    if (!ticketList) {
+        console.error('Ticket list container not found');
+        return;
+    }
+
+    if (tickets.length === 0) {
+        ticketList.innerHTML = '<p class="no-tickets">No tickets found</p>';
+        return;
+    }
+
+    let html = '';
+    tickets.forEach(ticket => {
+        const status = getTicketStatus(ticket);
+        html += `
+            <div class="admin-ticket-card">
+                <div class="admin-ticket-info">
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">Ticket ID</span>
+                        <span class="admin-ticket-value">${ticket.ticketIdentifier}</span>
                     </div>
-                `;
-            });
-    
-            ticketList.innerHTML = html;
-        }
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">Event</span>
+                        <span class="admin-ticket-value">${ticket.eventName}</span>
+                    </div>
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">User</span>
+                        <span class="admin-ticket-value">${ticket.userEmail || 'N/A'}</span>
+                    </div>
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">Purchase Date</span>
+                        <span class="admin-ticket-value">${new Date(ticket.purchaseDate).toLocaleString()}</span>
+                    </div>
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">Quantity</span>
+                        <span class="admin-ticket-value">
+                            <span class="admin-ticket-quantity">
+                                <i class="fas fa-ticket-alt"></i> ${ticket.ticketCount || 1}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">Price</span>
+                        <span class="admin-ticket-value">
+                            ₹${ticket.totalPrice || 0}
+                        </span>
+                    </div>
+                    <div class="admin-ticket-detail">
+                        <span class="admin-ticket-label">Status</span>
+                        <span class="admin-status-badge admin-status-${status.toLowerCase()}">${status}</span>
+                    </div>
+                </div>
+                <div class="admin-ticket-actions">
+                    <button onclick="showTicketDetails('${ticket.id}')" class="admin-view-btn">
+                        View Details
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    ticketList.innerHTML = html;
+}
     
         // Add function to get ticket status
         function getTicketStatus(ticket) {
@@ -2172,18 +2025,24 @@
         });
     
         // Add real-time updates for dashboard
-        function initializeDashboardListeners() {
-            const ticketsRef = collection(db, 'tickets');
-            const eventsRef = collection(db, 'events');
-    
-            onSnapshot(ticketsRef, () => {
-                loadDashboard();
-            });
-    
-            onSnapshot(eventsRef, () => {
-                loadDashboard();
-            });
+            // Get references to Firebase collections
+    const eventsRef = collection(db, 'events');
+    const ticketsRef = collection(db, 'tickets');
+
+    // Listen for ticket changes
+    onSnapshot(ticketsRef, async (snapshot) => {
+        if (document.getElementById('dashboard').style.display === 'block') {
+            await loadDashboard();
         }
+    });
+
+    // Listen for event changes
+    onSnapshot(eventsRef, async (snapshot) => {
+        if (document.getElementById('dashboard').style.display === 'block') {
+            await loadDashboard();
+        }
+    });
+
     
         // Make functions globally available
         window.loadDashboard = loadDashboard;
@@ -2909,12 +2768,11 @@
     window.loadRecentEvents = loadRecentEvents;
     window.getEventStatus = getEventStatus;
     </script>
-<script src="https://cdn.tiny.cloud/1/kuqaqcrna7vnwk3m4fc5ywh1s57yqy0z5uqrbbq19hw1inzi/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -3249,3 +3107,163 @@
     </div>
 </div>
 
+<script>
+    // Functions for handling event category and pricing type
+    function handleEventCategoryChange() {
+        const categorySelect = document.getElementById('eventCategory');
+        const otherCategoryGroup = document.getElementById('otherCategoryGroup');
+        const otherCategoryInput = document.getElementById('otherCategoryName');
+        
+        if (categorySelect.value === 'other') {
+            otherCategoryGroup.style.display = 'block';
+            otherCategoryInput.required = true;
+        } else {
+            otherCategoryGroup.style.display = 'none';
+            otherCategoryInput.required = false;
+            otherCategoryInput.value = '';
+        }
+    }
+
+    function handlePricingTypeChange() {
+    const pricingType = document.getElementById('eventPricingType').value;
+    const priceInputs = [
+        document.getElementById('eventPrice'),
+        document.getElementById('venueTicketPrice'),
+        document.getElementById('onlineTicketPrice')
+    ];
+    
+    priceInputs.forEach(input => {
+        if (input) {
+            if (pricingType === 'free') {
+                input.value = '0';
+                input.readOnly = true;
+            } else {
+                input.value = '';
+                input.readOnly = false;
+            }
+        }
+    });
+}
+
+    // Update openEditModal to handle category and pricing type
+    const originalOpenEditModal = window.openEditModal;
+    window.openEditModal = function(eventId, eventData) {
+        try {
+            if (originalOpenEditModal) {
+                originalOpenEditModal(eventId, eventData);
+            }
+
+            // Set category
+            const categorySelect = document.getElementById('eventCategory');
+            if (categorySelect) {
+                if (eventData.category === 'other') {
+                    categorySelect.value = 'other';
+                    document.getElementById('otherCategoryName').value = eventData.customCategory || '';
+                    document.getElementById('otherCategoryGroup').style.display = 'block';
+                } else {
+                    categorySelect.value = eventData.category || '';
+                }
+            }
+
+            // Set pricing type
+            const pricingTypeSelect = document.getElementById('eventPricingType');
+            if (pricingTypeSelect) {
+                pricingTypeSelect.value = eventData.pricingType || 'paid';
+                handlePricingTypeChange();
+            }
+
+        } catch (error) {
+            console.error("Error in enhanced openEditModal:", error);
+        }
+    };
+
+    // Update clearEventForm to reset new fields
+    const originalClearEventForm = window.clearEventForm;
+    window.clearEventForm = function() {
+        if (originalClearEventForm) {
+            originalClearEventForm();
+        }
+
+        // Reset category fields
+        const categorySelect = document.getElementById('eventCategory');
+        const otherCategoryGroup = document.getElementById('otherCategoryGroup');
+        const otherCategoryInput = document.getElementById('otherCategoryName');
+        
+        if (categorySelect) categorySelect.value = '';
+        if (otherCategoryGroup) otherCategoryGroup.style.display = 'none';
+        if (otherCategoryInput) otherCategoryInput.value = '';
+
+        // Reset pricing type
+        const pricingTypeSelect = document.getElementById('eventPricingType');
+        if (pricingTypeSelect) {
+            pricingTypeSelect.value = '';
+            handlePricingTypeChange();
+        }
+    };
+
+    // Make functions globally available
+    window.handleEventCategoryChange = handleEventCategoryChange;
+    window.handlePricingTypeChange = handlePricingTypeChange;
+</script>
+
+<script>
+    // Function to generate random 5-digit number
+    function generateRandomFiveDigits() {
+        return Math.floor(10000 + Math.random() * 90000).toString();
+    }
+
+    // Function to get current year
+    function getCurrentYear() {
+        return new Date().getFullYear().toString();
+    }
+
+    // Update event ID generation
+    function generateEventId() {
+        const randomNum = generateRandomFiveDigits();
+        const year = getCurrentYear();
+        return `EVT-${randomNum}-${year}`;
+    }
+
+    // Update ticket ID generation
+    function generateTicketId() {
+        const randomNum = generateRandomFiveDigits();
+        const year = getCurrentYear();
+        return `TIX-${randomNum}-${year}`;
+    }
+
+    // Update pass ID generation
+    function generatePassId() {
+        const randomNum = generateRandomFiveDigits();
+        const year = getCurrentYear();
+        return `PASS-${randomNum}-${year}`;
+    }
+
+    // Make functions globally available
+    window.generateEventId = generateEventId;
+    window.generateTicketId = generateTicketId;
+    window.generatePassId = generatePassId;
+</script>
+
+
+
+<script>
+
+
+    // Update the showSection function to load active events when switching to generate ticket section
+    const originalShowSection = window.showSection;
+    window.showSection = function(sectionId) {
+        if (originalShowSection) {
+            originalShowSection(sectionId);
+        }
+        
+        if (sectionId === 'generateTicket') {
+            loadActiveEvents();
+        }
+    };
+
+    // Make the function globally available
+    window.loadActiveEvents = loadActiveEvents;
+</script>
+
+</body>
+</html>
