@@ -1762,6 +1762,55 @@
                 padding-bottom: 45px; /* Reduced from 55px */
             }
         }
+
+        /* Add these new styles */
+        .profile-icon-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-icon-wrapper::after {
+            content: 'Login or Signup';
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .profile-icon-wrapper:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Add these styles to your existing styles */
+        .app-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .app-btn {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            display: inline-block;
+        }
+
+        .app-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .app-btn img {
+            filter: brightness(1.1);
+        }
     </style>
 </head>
 <body>
@@ -1785,9 +1834,9 @@
                 <a href="#contact"><i class="fas fa-envelope"></i>Contact</a>
             </div>
             <div class="nav-actions">
-                <a href="#" class="profile-icon" id="accountLink">
-                    <i class="fas fa-user-circle"></i>
-                </a>
+                <div class="profile-icon-wrapper" id="accountLink">
+                    <i class="fas fa-user-circle" style="font-size: 24px; color: white;"></i>
+                </div>
                 <button class="menu-btn">
                     <div class="bar"></div>
                     <div class="bar"></div>
@@ -2033,11 +2082,15 @@
                     <h3>EventTix</h3>
                     <p>India's leading platform for booking event tickets. Download our app for the best experience.</p>
                     <div class="app-buttons">
-                        <a href="#" class="app-btn">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play">
+                        <a href="#" class="app-btn app-download-link">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
+                                 alt="Get it on Google Play"
+                                 style="height: 40px; width: auto;">
                         </a>
-                        <a href="#" class="app-btn">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on App Store">
+                        <a href="#" class="app-btn app-download-link">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" 
+                                 alt="Download on App Store"
+                                 style="height: 40px; width: auto;">
                         </a>
                     </div>
                 </div>
@@ -2073,23 +2126,16 @@
                         <input type="email" placeholder="Enter your email" required>
                         <button type="submit">Subscribe</button>
                     </form>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                    </div>
                 </div>
             </div>
 
             <div class="footer-bottom">
                 <div class="footer-links">
-                    <a href="#">About Us</a>
-                    <a href="#">Terms & Conditions</a>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Refund Policy</a>
-                    <a href="#">FAQ</a>
+                    <a href="about.html">About Us</a>
+                    <a href="terms.html">Terms & Conditions</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="refund.html">Refund Policy</a>
+                    <a href="faq.html">FAQ</a>
                 </div>
                 <div class="payment-methods">
                     <i class="fab fa-cc-visa"></i>
@@ -2142,7 +2188,7 @@
 
          // Account link functionality
     document.addEventListener('DOMContentLoaded', function() {
-        const accountLink = document.getElementById('accountLink');
+        const accountLink = document.querySelector('.profile-icon-wrapper');
         
         // Define the click handler function
         function handleAccountClick(e) {
@@ -2163,24 +2209,8 @@
             }
         }
         
-        // Check if user is logged in
-        function checkUserStatus() {
-            // Force fresh check of localStorage
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            const userRole = localStorage.getItem('userRole');
-            
-            // Remove existing click listener if any
-            accountLink.removeEventListener('click', handleAccountClick);
-            
-            // Add fresh click listener
-            accountLink.addEventListener('click', handleAccountClick);
-        }
-
-        // Check user status when page loads
-        checkUserStatus();
-
-        // Add event listener for storage changes
-        window.addEventListener('storage', checkUserStatus);
+        // Add click event listener to the profile icon wrapper
+        accountLink.addEventListener('click', handleAccountClick);
     });
         // Loader functionality
         window.addEventListener('load', function() {

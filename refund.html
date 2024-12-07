@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Policy - EventTix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            text-decoration: none;
+        }
+
+        .content-wrapper {
+            max-width: 1000px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        .refund-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .refund-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .refund-header h1 {
+            font-size: 2.5rem;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .refund-header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .policy-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .policy-card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .policy-card h3 i {
+            color: #667eea;
+        }
+
+        .policy-card p {
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
+        .timeline-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-left: 20px;
+            border-left: 2px solid #667eea;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-content {
+            margin-left: 15px;
+        }
+
+        .timeline-content h4 {
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .important-note {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .refund-steps {
+            margin: 30px 0;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .step-item:hover {
+            transform: translateX(10px);
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .contact-support {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .contact-support h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .contact-support p {
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .support-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .support-button:hover {
+            background: #5a67d8;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .content-wrapper {
+                margin-top: 80px;
+                padding: 0 15px;
+            }
+
+            .refund-section {
+                padding: 20px;
+            }
+
+            .refund-header h1 {
+                font-size: 2rem;
+            }
+
+            .step-item {
+                flex-direction: column;
+            }
+
+            .step-number {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="nav-brand">
+            <a href="index.html" class="brand-text">EventTix</a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="refund-section">
+            <div class="refund-header">
+                <h1>Refund Policy</h1>
+                <p>Last updated: Dec 2024</p>
+            </div>
+
+            <div class="policy-card">
+                <h3><i class="fas fa-info-circle"></i> General Policy</h3>
+                <p>EventTix strives to ensure fair and transparent refund processes for all our users. Our refund policy varies based on the event type and timing of the refund request.</p>
+            </div>
+
+            <div class="timeline-container">
+                <h3>Refund Eligibility Timeline</h3>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>7+ Days Before Event</h4>
+                        <p>Full refund available, minus processing fees</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>3-7 Days Before Event</h4>
+                        <p>50% refund available, minus processing fees</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>Less than 72 Hours</h4>
+                        <p>No refund available except in special circumstances</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="important-note">
+                <strong>Important:</strong> Some events may have their own specific refund policies. Please check the event details page for event-specific policies.
+            </div>
+
+            <div class="refund-steps">
+                <h3>How to Request a Refund</h3>
+                
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Log into Your Account</h4>
+                        <p>Access your EventTix account and navigate to your tickets.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Select the Ticket</h4>
+                        <p>Choose the ticket you wish to refund from your purchases.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Submit Request</h4>
+                        <p>Fill out the refund request form with required details.</p>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Wait for Confirmation</h4>
+                        <p>We'll process your request within 3-5 business days.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-support">
+                <h3>Need Help with a Refund?</h3>
+                <p>Our support team is here to assist you with any questions about refunds.</p>
+                <a href="mailto:support@eventtix.com" class="support-button">
+                    Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 EventTix. All rights reserved.</p>
+    </footer>
+</body>
+</html> 

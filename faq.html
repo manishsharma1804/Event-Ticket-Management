@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - EventTix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            text-decoration: none;
+        }
+
+        .content-wrapper {
+            max-width: 1000px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        .faq-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .faq-header h1 {
+            font-size: 2.5rem;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .faq-header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .faq-categories {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .accordion {
+            margin-top: 30px;
+        }
+
+        .accordion-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            padding: 20px;
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .accordion-header:hover {
+            background: #edf2f7;
+        }
+
+        .accordion-header h3 {
+            font-size: 1.1rem;
+            color: #2d3748;
+            margin: 0;
+            padding-right: 40px;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+
+        .accordion-content-inner {
+            padding: 20px;
+            color: #718096;
+        }
+
+        .accordion-icon {
+            font-size: 1.2rem;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 500px;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            padding-left: 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        .contact-support {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .contact-support h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .contact-support p {
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .support-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .support-button:hover {
+            background: #5a67d8;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .content-wrapper {
+                margin-top: 80px;
+                padding: 0 15px;
+            }
+
+            .faq-section {
+                padding: 20px;
+            }
+
+            .faq-header h1 {
+                font-size: 2rem;
+            }
+
+            .category-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="nav-brand">
+            <a href="index.html" class="brand-text">EventTix</a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="faq-section">
+            <div class="faq-header">
+                <h1>Frequently Asked Questions</h1>
+                <p>Find answers to common questions about EventTix</p>
+            </div>
+
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search for questions..." id="faqSearch">
+            </div>
+
+            <div class="faq-categories">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="tickets">Tickets</button>
+                <button class="category-btn" data-category="account">Account</button>
+                <button class="category-btn" data-category="payment">Payment</button>
+                <button class="category-btn" data-category="events">Events</button>
+            </div>
+
+            <div class="accordion">
+                <!-- Tickets Section -->
+                <div class="accordion-item" data-category="tickets">
+                    <div class="accordion-header">
+                        <h3>How do I get my tickets after purchase?</h3>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            After successful purchase, your tickets will be:
+                            <ul>
+                                <li>Immediately available in your EventTix account</li>
+                                <li>Sent to your registered email address</li>
+                                <li>Accessible through the mobile app</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="tickets">
+                    <div class="accordion-header">
+                        <h3>Can I transfer my tickets to someone else?</h3>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            Yes, you can transfer tickets through your account dashboard. However, some events may have restrictions on ticket transfers. Check the specific event's terms for details.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Section -->
+                <div class="accordion-item" data-category="account">
+                    <div class="accordion-header">
+                        <h3>How do I reset my password?</h3>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            To reset your password:
+                            <ol>
+                                <li>Click "Forgot Password" on the login page</li>
+                                <li>Enter your registered email address</li>
+                                <li>Follow the instructions in the reset email</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="accordion-item" data-category="payment">
+                    <div class="accordion-header">
+                        <h3>What payment methods do you accept?</h3>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            We accept various payment methods including:
+                            <ul>
+                                <li>Credit/Debit Cards</li>
+                                <li>UPI</li>
+                                <li>Net Banking</li>
+                                <li>Digital Wallets</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events Section -->
+                <div class="accordion-item" data-category="events">
+                    <div class="accordion-header">
+                        <h3>What happens if an event is cancelled?</h3>
+                        <i class="fas fa-chevron-down accordion-icon"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            If an event is cancelled:
+                            <ul>
+                                <li>You will be notified via email</li>
+                                <li>Full refund will be processed automatically</li>
+                                <li>Refund will be credited within 5-7 business days</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-support">
+                <h3>Couldn't Find Your Answer?</h3>
+                <p>Our support team is here to help you with any questions.</p>
+                <a href="mailto:support@eventtix.com" class="support-button">
+                    Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 EventTix. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Accordion functionality
+        document.querySelectorAll('.accordion-header').forEach(button => {
+            button.addEventListener('click', () => {
+                const accordionItem = button.parentElement;
+                accordionItem.classList.toggle('active');
+            });
+        });
+
+        // Category filtering
+        document.querySelectorAll('.category-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                const category = button.dataset.category;
+                
+                // Show/hide accordion items based on category
+                document.querySelectorAll('.accordion-item').forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Search functionality
+        document.getElementById('faqSearch').addEventListener('input', (e) => {
+            const searchText = e.target.value.toLowerCase();
+            
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                const question = item.querySelector('h3').textContent.toLowerCase();
+                const answer = item.querySelector('.accordion-content-inner').textContent.toLowerCase();
+                
+                if (question.includes(searchText) || answer.includes(searchText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

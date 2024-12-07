@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - EventTix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Content styles */
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        .about-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .about-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .about-header h1 {
+            font-size: 2.5rem;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .about-header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .about-card {
+            padding: 25px;
+            border-radius: 8px;
+            background: #f8fafc;
+            transition: transform 0.3s ease;
+        }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .about-card i {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .about-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .about-card p {
+            color: #718096;
+        }
+
+        .team-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .team-section h2 {
+            font-size: 2rem;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .team-member {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+
+        .team-member h3 {
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .team-member p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* Footer styles */
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .content-wrapper {
+                margin-top: 80px;
+                padding: 0 15px;
+            }
+
+            .about-section {
+                padding: 20px;
+            }
+
+            .about-header h1 {
+                font-size: 2rem;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="nav-brand">
+            <a href="index.html" class="brand-text">EventTix</a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="about-section">
+            <div class="about-header">
+                <h1>About EventTix</h1>
+                <p>Your trusted partner in event ticketing solutions</p>
+            </div>
+
+            <div class="about-content">
+                <div class="about-card">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h3>Our Mission</h3>
+                    <p>To provide seamless and secure ticketing solutions that connect event organizers with their audience, making event experiences more accessible and enjoyable for everyone.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Who We Are</h3>
+                    <p>We're a team of passionate individuals dedicated to revolutionizing the event ticketing industry through innovative technology and exceptional service.</p>
+                </div>
+
+                <div class="about-card">
+                    <i class="fas fa-star"></i>
+                    <h3>What We Do</h3>
+                    <p>We provide a comprehensive ticketing platform that helps event organizers manage their events efficiently while offering attendees a hassle-free booking experience.</p>
+                </div>
+            </div>
+
+            <div class="team-section">
+                <h2>Our Leadership Team</h2>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <img src="https://via.placeholder.com/150" alt="Team Member">
+                        <h3>John Doe</h3>
+                        <p>Founder & CEO</p>
+                    </div>
+                    <div class="team-member">
+                        <img src="https://via.placeholder.com/150" alt="Team Member">
+                        <h3>Jane Smith</h3>
+                        <p>Chief Technology Officer</p>
+                    </div>
+                    <div class="team-member">
+                        <img src="https://via.placeholder.com/150" alt="Team Member">
+                        <h3>Mike Johnson</h3>
+                        <p>Head of Operations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 EventTix. All rights reserved.</p>
+    </footer>
+</body>
+</html> 
