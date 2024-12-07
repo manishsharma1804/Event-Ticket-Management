@@ -804,55 +804,47 @@
         isEditing = true;
         currentEditingEventId = eventId;
         
-        // Update buttons
-        const cancelBtn = document.querySelector('.cancel-btn');
-        const createBtn = document.querySelector('.create-btn');
-        if (cancelBtn) cancelBtn.style.display = 'block';
-        if (createBtn) createBtn.textContent = 'Update Event';
-        
-        // Basic event details
+        // Basic fields
         document.getElementById('eventName').value = eventData.name || '';
         document.getElementById('eventCategory').value = eventData.category || '';
         document.getElementById('eventPricingType').value = eventData.pricingType || 'paid';
         
-        // Handle pricing type change first
-        handlePricingTypeChange();
+        // Clear and set description content
+        const descriptionEditor = document.getElementById('eventDescription');
+        descriptionEditor.innerHTML = ''; // Clear first
+        descriptionEditor.innerHTML = eventData.description || '';
         
-        
-        // Handle custom category
-        const otherCategoryGroup = document.getElementById('otherCategoryGroup');
-        const otherCategoryInput = document.getElementById('otherCategoryName');
-        if (eventData.category === 'other') {
-            otherCategoryGroup.style.display = 'block';
-            otherCategoryInput.value = eventData.customCategory || '';
-        } else {
-            otherCategoryGroup.style.display = 'none';
-            otherCategoryInput.value = '';
+        // Clear and set rules content
+        const rulesEditor = document.getElementById('eventRules');
+        if (rulesEditor) {
+            rulesEditor.innerHTML = ''; // Clear first
+            rulesEditor.innerHTML = eventData.rules || '';
         }
-        
 
         // Dates
-        document.getElementById('eventDate').value = new Date(eventData.date).toISOString().slice(0, 16);
-        document.getElementById('bookingStartDate').value = new Date(eventData.bookingStartDate).toISOString().slice(0, 16);
-        document.getElementById('bookingDeadline').value = new Date(eventData.bookingDeadline).toISOString().slice(0, 16);
+        document.getElementById('eventDate').value = eventData.date ? new Date(eventData.date).toISOString().slice(0, 16) : '';
+        document.getElementById('bookingStartDate').value = eventData.bookingStartDate ? new Date(eventData.bookingStartDate).toISOString().slice(0, 16) : '';
+        document.getElementById('bookingDeadline').value = eventData.bookingDeadline ? new Date(eventData.bookingDeadline).toISOString().slice(0, 16) : '';
         
-        // Event type and related fields
+        // Event type and pricing
         const eventTypeSelect = document.getElementById('eventType');
         eventTypeSelect.value = eventData.eventType || '';
-        handleEventTypeChange();
+        handleEventTypeChange(); // This will show/hide relevant sections
         
         // Handle pricing based on event type
         if (eventData.eventType === 'hybrid') {
+            // Set hybrid event prices and tickets
             document.getElementById('venueTickets').value = eventData.tickets?.venue?.total || '';
             document.getElementById('onlineTickets').value = eventData.tickets?.online?.total || '';
             document.getElementById('venueTicketPrice').value = eventData.tickets?.venue?.price || '0';
             document.getElementById('onlineTicketPrice').value = eventData.tickets?.online?.price || '0';
         } else {
+            // Set standard event price and tickets
             document.getElementById('eventPrice').value = eventData.price || '0';
             document.getElementById('eventTickets').value = eventData.totalTickets || '';
         }
 
-        // Handle online/hybrid event details
+        // Handle online event details
         if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
             document.getElementById('meetingPlatform').value = eventData.onlineDetails?.platform || '';
             document.getElementById('meetingLink').value = eventData.onlineDetails?.meetingLink || '';
@@ -903,27 +895,19 @@
                 imageContainer.appendChild(div);
             });
             imageFieldCount = eventData.images.length;
-        } else {
-            const div = document.createElement('div');
-            div.className = 'form-group image-input';
-            div.innerHTML = `
-                <label>Image URL #1</label>
-                <input type="text" class="eventImage" placeholder="Enter image URL">
-                <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
-            `;
-            imageContainer.appendChild(div);
-            imageFieldCount = 1;
         }
 
-        // Handle description and rules directly
-        document.getElementById('eventDescription').value = eventData.description || '';
-        document.getElementById('eventRules').innerHTML = eventData.rules || '';
+        // Update form buttons
+        const cancelBtn = document.querySelector('.cancel-btn');
+        const createBtn = document.querySelector('.create-btn');
+        if (cancelBtn) cancelBtn.style.display = 'block';
+        if (createBtn) createBtn.textContent = 'Update Event';
 
         // Scroll form into view
         document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
 
     } catch (error) {
-        console.error("Detailed error opening edit modal:", error);
+        console.error("Error in openEditModal:", error);
         alert('Error loading event data for editing: ' + error.message);
     }
 }
@@ -938,9 +922,14 @@
         const editingEventId = document.getElementById('editingEventId')?.value;
         const isEditing = !!editingEventId;
 
+        // Get description content with HTML formatting
+        const descriptionContent = document.getElementById('eventDescription').innerHTML;
+        const rulesContent = document.getElementById('eventRules')?.innerHTML || '';
+
         const eventData = {
             name: document.getElementById('eventName').value.trim(),
-            description: document.getElementById('eventDescription').value.trim(),
+            description: descriptionContent, // Store HTML content
+            rules: rulesContent, // Store HTML content
             category: document.getElementById('eventCategory').value,
             pricingType: document.getElementById('eventPricingType').value,
             date: new Date(document.getElementById('eventDate').value).toISOString(),
@@ -948,7 +937,6 @@
             bookingDeadline: new Date(document.getElementById('bookingDeadline').value).toISOString(),
             eventType: document.getElementById('eventType').value,
             price: parseFloat(document.getElementById('eventPrice').value) || 0,
-            rules: document.getElementById('eventRules').innerHTML.trim(),
             updatedAt: serverTimestamp(),
             
             // Add scheduling if enabled
@@ -1043,44 +1031,67 @@
         
         // Update clearEventForm to reset editing state
         function clearEventForm() {
-            document.getElementById('eventName').value = '';
-            document.getElementById('eventDescription').value = '';
-            document.getElementById('eventDate').value = '';
-            document.getElementById('bookingStartDate').value = '';
-            document.getElementById('bookingDeadline').value = '';
-            document.getElementById('eventPrice').value = '';
-            document.getElementById('eventTickets').value = '';
-            
-            const imageContainer = document.getElementById('imageUrlsContainer');
-            imageContainer.innerHTML = `
-                <div class="form-group image-input">
-                    <label>Image URL #1</label>
-                    <input type="text" class="eventImage" placeholder="Enter image URL">
-                    <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
-                </div>
-            `;
-            imageFieldCount = 1;
-    
-            const cancelBtn = document.querySelector('.cancel-btn');
-            if (cancelBtn) {
-                cancelBtn.style.display = 'none';
-            }
-            
-            const createBtn = document.querySelector('.create-btn');
-            if (createBtn) {
-                createBtn.textContent = 'Create Event';
-            }
-            
-            // Clear description and rules directly
-            document.getElementById('eventDescription').value = '';
-            document.getElementById('eventRules').innerHTML = '';
-            
-            const eventTypeSelect = document.getElementById('eventType');
-            eventTypeSelect.value = '';
-            handleEventTypeChange();
-            
-            document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
-        }
+    try {
+        // Clear basic fields
+        document.getElementById('eventName').value = '';
+        document.getElementById('eventCategory').value = '';
+        document.getElementById('eventPricingType').value = '';
+        
+        // Clear rich text editors
+        const descriptionEditor = document.getElementById('eventDescription');
+        const rulesEditor = document.getElementById('eventRules');
+        if (descriptionEditor) descriptionEditor.innerHTML = '';
+        if (rulesEditor) rulesEditor.innerHTML = '';
+        
+        // Clear dates
+        document.getElementById('eventDate').value = '';
+        document.getElementById('bookingStartDate').value = '';
+        document.getElementById('bookingDeadline').value = '';
+        
+        // Clear prices and tickets
+        document.getElementById('eventPrice').value = '';
+        document.getElementById('eventTickets').value = '';
+        document.getElementById('venueTickets').value = '';
+        document.getElementById('onlineTickets').value = '';
+        document.getElementById('venueTicketPrice').value = '';
+        document.getElementById('onlineTicketPrice').value = '';
+        
+        // Clear event type and related fields
+        const eventTypeSelect = document.getElementById('eventType');
+        eventTypeSelect.value = '';
+        handleEventTypeChange();
+        
+        // Clear scheduling
+        document.getElementById('enablePublishSchedule').checked = false;
+        document.getElementById('enableHideSchedule').checked = false;
+        document.getElementById('publishScheduleSection').style.display = 'none';
+        document.getElementById('hideScheduleSection').style.display = 'none';
+        
+        // Reset image container
+        const imageContainer = document.getElementById('imageUrlsContainer');
+        imageContainer.innerHTML = `
+            <div class="form-group image-input">
+                <label>Image URL #1</label>
+                <input type="text" class="eventImage" placeholder="Enter image URL">
+                <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
+            </div>
+        `;
+        imageFieldCount = 1;
+
+        // Reset buttons
+        const cancelBtn = document.querySelector('.cancel-btn');
+        const createBtn = document.querySelector('.create-btn');
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        if (createBtn) createBtn.textContent = 'Create Event';
+
+        // Reset editing state
+        isEditing = false;
+        currentEditingEventId = null;
+
+    } catch (error) {
+        console.error("Error in clearEventForm:", error);
+    }
+}
     
         async function loadEvents() {
             try {

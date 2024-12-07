@@ -1158,10 +1158,13 @@ async function updateTicketStats(selectedEventId = null) {
             if (eventDoc.exists()) {
                 const eventData = eventDoc.data();
                 if (eventData.eventType === 'hybrid') {
-                    eventCapacity = (parseInt(eventData.tickets?.venue?.total) || 0) + 
-                                  (parseInt(eventData.tickets?.online?.total) || 0);
+                    document.getElementById('venueTickets').value = eventData.tickets?.venue?.total || '';
+                    document.getElementById('onlineTickets').value = eventData.tickets?.online?.total || '';
+                    document.getElementById('venueTicketPrice').value = eventData.tickets?.venue?.price || '0';
+                    document.getElementById('onlineTicketPrice').value = eventData.tickets?.online?.price || '0';
                 } else {
-                    eventCapacity = parseInt(eventData.totalTickets) || 0;
+                    document.getElementById('eventPrice').value = eventData.price || '0';
+                    document.getElementById('eventTickets').value = eventData.totalTickets || '';
                 }
             }
         } else {
@@ -2337,48 +2340,55 @@ document.addEventListener('DOMContentLoaded', () => {
         this.selectionStart = this.selectionEnd = start + text.length;
     });
 
-function openEditModal(eventId, eventData) {
-    document.getElementById('editingEventId').value = eventId;
-    try {
-        console.log("Opening edit modal for event:", eventId);
-        console.log("Event data received:", eventData);
-
-        isEditing = true;
-        currentEditingEventId = eventId;
-        
-        // Basic fields
-        document.getElementById('eventName').value = eventData.name || '';
-        document.getElementById('eventDate').value = eventData.date ? new Date(eventData.date).toISOString().slice(0, 16) : '';
-        document.getElementById('eventPrice').value = eventData.price || 0;
-        document.getElementById('eventType').value = eventData.eventType || '';
-        document.getElementById('eventDescription').value = eventData.description || '';
-        
-        if (document.getElementById('eventRules')) {
-            document.getElementById('eventRules').value = eventData.rules || '';
+    function openEditModal(eventId, eventData) {
+        document.getElementById('editingEventId').value = eventId;
+        try {
+            console.log("Opening edit modal for event:", eventId);
+            console.log("Event data received:", eventData);
+    
+            isEditing = true;
+            currentEditingEventId = eventId;
+            
+            // Basic fields
+            document.getElementById('eventName').value = eventData.name || '';
+            
+            // Handle description - clear existing content first
+            const descriptionEditor = document.getElementById('eventDescription');
+            descriptionEditor.innerHTML = eventData.description || '';
+            
+            // Handle rules - clear existing content first
+            const rulesEditor = document.getElementById('eventRules');
+            if (rulesEditor) {
+                rulesEditor.innerHTML = eventData.rules || '';
+            }
+    
+            // Rest of your existing code...
+            document.getElementById('eventDate').value = eventData.date ? new Date(eventData.date).toISOString().slice(0, 16) : '';
+            document.getElementById('eventPrice').value = eventData.price || 0;
+            document.getElementById('eventType').value = eventData.eventType || '';
+            
+            // Handle event type specific fields
+            handleEventTypeChange();
+            
+            if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
+                document.getElementById('meetingPlatform').value = eventData.onlineDetails?.platform || '';
+document.getElementById('meetingLink').value = eventData.onlineDetails?.meetingLink || '';
+                document.getElementById('meetingId').value = eventData.meetingId || '';
+                document.getElementById('meetingPassword').value = eventData.meetingPassword || '';
+            }
+    
+            if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
+                document.getElementById('eventPlace').value = eventData.venueDetails?.place || '';
+                document.getElementById('eventVenue').value = eventData.venueDetails?.venue || '';
+            }
+    
+            document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
+    
+        } catch (error) {
+            console.error("Detailed error opening edit modal:", error);
+            alert('Error loading event data for editing');
         }
-
-        // Handle event type specific fields
-        handleEventTypeChange();
-        
-        if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
-            document.getElementById('meetingPlatform').value = eventData.meetingPlatform || '';
-            document.getElementById('meetingLink').value = eventData.meetingLink || '';
-            document.getElementById('meetingId').value = eventData.meetingId || '';
-            document.getElementById('meetingPassword').value = eventData.meetingPassword || '';
-        }
-
-        if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
-            document.getElementById('eventPlace').value = eventData.place || '';
-            document.getElementById('eventVenue').value = eventData.venue || '';
-        }
-
-        document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
-
-    } catch (error) {
-        console.error("Detailed error opening edit modal:", error);
-        alert('Error loading event data for editing');
     }
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     const eventDescription = document.getElementById('eventDescription');
@@ -2393,7 +2403,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// Add this function to initialize rich text formatting toolbar
+function initializeRichTextEditor(editorId) {
+    const editor = document.getElementById(editorId);
+    if (!editor) return;
 
+    // Create toolbar
+    const toolbar = document.createElement('div');
+    toolbar.className = 'editor-toolbar';
+    toolbar.innerHTML = `
+        <button type="button" onclick="formatDoc('bold')" title="Bold">
+            <i class="fas fa-bold"></i>
+        </button>
+        <button type="button" onclick="formatDoc('italic')" title="Italic">
+            <i class="fas fa-italic"></i>
+        </button>
+        <button type="button" onclick="formatDoc('underline')" title="Underline">
+            <i class="fas fa-underline"></i>
+        </button>
+        <button type="button" onclick="formatDoc('insertunorderedlist')" title="Bullet List">
+            <i class="fas fa-list-ul"></i>
+        </button>
+    `;
+
+    // Insert toolbar before editor
+    editor.parentNode.insertBefore(toolbar, editor);
+
+    // Add paste event handler
+    editor.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+        document.execCommand('insertHTML', false, text);
+    });
+}
+
+// Add this function to handle formatting
+function formatDoc(command) {
+    document.execCommand(command, false, null);
+}
 // Add this function to handle paste events in contenteditable fields
 function handleContentEditablePaste(e) {
     e.preventDefault();
