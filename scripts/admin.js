@@ -586,20 +586,13 @@ async function generatePasses() {
         const generatedPasses = [];
 
         for (let i = 0; i < numberOfPasses; i++) {
-            const passIdentifier = `PASS-${generateRandomFiveDigits()}-${getCurrentYear()}`;
-            
             const passData = {
                 eventId,
                 role: finalRole,
-                passIdentifier,
+                passIdentifier: generatePassIdentifier(),
                 createdAt: serverTimestamp(),
-                used: false,
-                issuedBy: auth.currentUser.email,
-                issuedAt: new Date().toISOString(),
-                version: '1.0'  // Add version for future compatibility
+                used: false
             };
-
-            console.log('Creating pass with data:', passData);
 
             const newPassRef = doc(passesRef);
             batch.set(newPassRef, passData);
@@ -1005,7 +998,6 @@ async function updateTicketTypeOptions() {
     const eventId = document.getElementById('ticketEventSelector').value;
     const typeSelector = document.getElementById('ticketTypeSelector');
     const paymentModeSection = document.getElementById('paymentMode')?.parentElement;
-    const paymentMode = document.getElementById('paymentMode');
     
     if (!eventId || !typeSelector) return;
     
@@ -1018,14 +1010,10 @@ async function updateTicketTypeOptions() {
         
         const isFreeEvent = event.pricingType === 'free' || event.price === 0;
         
-        if (paymentModeSection && paymentMode) {
+        if (paymentModeSection) {
             paymentModeSection.style.display = isFreeEvent ? 'none' : 'block';
             if (isFreeEvent) {
-                paymentMode.value = 'free';
-                paymentMode.removeAttribute('required'); // Remove required attribute for free events
-            } else {
-                paymentMode.value = ''; // Reset payment mode
-                paymentMode.setAttribute('required', 'required'); // Make required for paid events
+                document.getElementById('paymentMode').value = 'free';
             }
         }
 
@@ -1125,7 +1113,13 @@ async function generateTicketForUser() {
             return;
         }
 
-        // Get event details to check if it's a free event
+        // Check real-time availability
+        const availability = await getRealTimeAvailability(eventId, ticketType);
+        if (quantity > availability.available) {
+            throw new Error(`Only ${availability.available} tickets available`);
+        }
+
+        // Get event details
         const eventDoc = await getDoc(doc(db, 'events', eventId));
         if (!eventDoc.exists()) {
             throw new Error('Event not found');
@@ -1134,76 +1128,18 @@ async function generateTicketForUser() {
         const event = eventDoc.data();
         const isFreeEvent = event.pricingType === 'free' || event.price === 0;
 
-        // Validate payment mode for paid events
-        if (!isFreeEvent && !paymentMode) {
-            alert('Please select a payment mode');
-            return;
-        }
-
-        // Check real-time availability
-        const availability = await getRealTimeAvailability(eventId, ticketType);
-        if (quantity > availability.available) {
-            throw new Error(`Only ${availability.available} tickets available`);
-        }
-
         // For paid events, handle payment
         if (!isFreeEvent && paymentMode === 'card') {
             showCardDetailsModal();
             return;
         }
 
-        // Show loader for cash/free payments
-        const generateBtn = document.querySelector('#generateTicket button[onclick="generateTicketForUser()"]');
-        const originalBtnText = generateBtn.innerHTML;
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = `
-            <span class="spinner"></span>
-            Generating ticket...
-        `;
-
-        // Add loader styles if not already present
-        if (!document.getElementById('loaderStyles')) {
-            const style = document.createElement('style');
-            style.id = 'loaderStyles';
-            style.textContent = `
-                .spinner {
-                    display: inline-block;
-                    width: 16px;
-                    height: 16px;
-                    border: 2px solid #ffffff;
-                    border-top: 2px solid transparent;
-                    border-radius: 50%;
-                    margin-right: 8px;
-                    animation: spin 1s linear infinite;
-                }
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        try {
-            // Process ticket generation
-            await processTicketGeneration(false);
-            alert('Ticket generated successfully!');
-        } finally {
-            // Reset button state
-            generateBtn.disabled = false;
-            generateBtn.innerHTML = originalBtnText;
-        }
+        // Process ticket generation
+        await processTicketGeneration(false);
 
     } catch (error) {
         console.error("Error generating ticket:", error);
         alert('Error generating ticket: ' + error.message);
-        
-        // Reset button if error occurs
-        const generateBtn = document.querySelector('#generateTicket button[onclick="generateTicketForUser()"]');
-        if (generateBtn) {
-            generateBtn.disabled = false;
-            generateBtn.innerHTML = 'Generate Ticket';
-        }
     }
 }
 
@@ -1565,222 +1501,113 @@ async function loadAllPasses(roleFilter = 'all', eventFilter = 'all') {
     }
 }
 
-// Function to download a single pass
+// Function to download pass
 async function downloadPass(passId) {
     const downloadBtn = document.querySelector(`button[onclick="downloadPass('${passId}')"]`);
-    if (!downloadBtn) return;
+    const originalText = downloadBtn.innerHTML;
 
     try {
-        // Update button state
-        downloadBtn.disabled = true;
         downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        downloadBtn.disabled = true;
 
         // Get pass data
         const passDoc = await getDoc(doc(db, 'passes', passId));
-        if (!passDoc.exists()) throw new Error('Pass not found');
+        if (!passDoc.exists()) {
+            throw new Error('Pass not found');
+        }
         const pass = passDoc.data();
 
-        // Get event data
-        const eventDoc = await getDoc(doc(db, 'events', pass.eventId));
-        if (!eventDoc.exists()) throw new Error('Event not found');
-        const eventName = eventDoc.data().name;
+        // Create new jsPDF instance
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [210, 297] // A4 size
+        });
 
-        // Create a temporary div for QR code
-        const qrContainer = document.createElement('div');
-        document.body.appendChild(qrContainer);
+        // Rest of your PDF generation code remains the same...
+        pdf.setFont('helvetica');
+        pdf.setFontSize(24);
+        pdf.setTextColor(51, 51, 51);
+
+        // Add header
+        pdf.text('Event Tix', 105, 30, { align: 'center' });
+        
+        // Add role badge
+        pdf.setFillColor(102, 126, 234);
+        pdf.roundedRect(65, 40, 80, 10, 3, 3, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(12);
+        pdf.text(pass.role.toUpperCase(), 105, 46, { align: 'center' });
 
         // Generate QR code
-        const qr = new QRCode(qrContainer, {
+        const qrContainer = document.createElement('div');
+        qrContainer.style.display = 'none';
+        document.body.appendChild(qrContainer);
+        
+        new QRCode(qrContainer, {
             text: pass.passIdentifier,
             width: 128,
             height: 128
         });
 
-        // Wait for QR code to generate
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // Get QR code as image
-        const qrImage = qrContainer.querySelector('img');
-        const qrData = qrImage.src;
-
-        // Create PDF
-        const PDF = window.jspdf.jsPDF;
-        const pdf = new PDF();
-        
-        // Add content to PDF
-        pdf.setFontSize(20);
-        pdf.text('EventTix Pass', 105, 20, { align: 'center' });
-        
-        pdf.setFontSize(16);
-        pdf.text(pass.role.toUpperCase(), 105, 40, { align: 'center' });
-        
-        pdf.setFontSize(12);
-        pdf.text([
-            `Pass ID: ${pass.passIdentifier}`,
-            `Event: ${eventName}`,
-            `Role: ${pass.role}`,
-            `Created: ${new Date(pass.createdAt.toDate()).toLocaleDateString()}`
-        ], 20, 60);
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         // Add QR code to PDF
-        pdf.addImage(qrData, 'PNG', 70, 100, 70, 70);
-
-        // Add footer
-        pdf.setFontSize(10);
-        pdf.setTextColor(220, 53, 69); // Red color
-        pdf.text('AUTHORIZED ACCESS ONLY', 105, 200, { align: 'center' });
-
-        // Save the PDF
-        pdf.save(`Pass-${pass.passIdentifier}.pdf`);
-
-        // Cleanup
+        const qrImage = qrContainer.querySelector('canvas').toDataURL();
+        pdf.addImage(qrImage, 'PNG', 70, 60, 70, 70);
         document.body.removeChild(qrContainer);
 
-    } catch (error) {
-        console.error('Error in downloadPass:', error);
-        alert('Failed to generate pass: ' + error.message);
-    } finally {
+        // Add pass details
+        pdf.setTextColor(51, 51, 51);
+        pdf.setFontSize(12);
+        pdf.text(`Pass ID: ${pass.passIdentifier}`, 105, 150, { align: 'center' });
+        pdf.text(`Access Level: ${pass.role.toUpperCase()}`, 105, 160, { align: 'center' });
+        pdf.text(`Issued Date: ${new Date(pass.createdAt.toDate()).toLocaleDateString()}`, 105, 170, { align: 'center' });
+
+        // Add footer
+        pdf.setTextColor(220, 53, 69);
+        pdf.setFontSize(14);
+        pdf.text('AUTHORIZED ACCESS ONLY', 105, 200, { align: 'center' });
+
+        // Save PDF
+        pdf.save(`EventTix-Pass-${pass.passIdentifier}.pdf`);
+
         // Reset button state
-        if (downloadBtn) {
-            downloadBtn.disabled = false;
-            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download';
-        }
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+
+    } catch (error) {
+        console.error('Error generating pass:', error);
+        alert('Failed to generate pass: ' + error.message);
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
     }
 }
 
-// Update downloadCanvas function with better error handling
-async function downloadCanvas(canvas, filename) {
-    return new Promise((resolve, reject) => {
-        try {
-            canvas.toBlob(blob => {
-                if (!blob) {
-                    reject(new Error('Failed to create image blob'));
-                    return;
-                }
-                
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                
-                // Trigger download
-                link.click();
-                
-                // Cleanup
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                    resolve();
-                }, 100);
-                
-            }, 'image/png', 1.0);
-        } catch (error) {
-            reject(error);
-        }
-    });
-}
+// Make function available globally
+window.jsPDF = window.jspdf.jsPDF;
+window.downloadPass = downloadPass;
 
-// Update createPassTemplate function to ensure all elements are properly styled
-function createPassTemplate(pass, eventName) {
-    const div = document.createElement('div');
-    div.style.cssText = `
-        width: 500px;
-        padding: 40px;
-        background: white;
-        font-family: Arial, sans-serif;
-        position: fixed;
-        left: -9999px;
-        top: -9999px;
-        z-index: -1;
-        border: 1px solid #ddd;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    `;
-    
-    div.innerHTML = `
-        <div style="text-align: center; background: white;">
-            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">EventTix Pass</h2>
-            <div style="background: #4a90e2; color: white; padding: 10px; margin: 20px 0; font-size: 18px;">
-                ${pass.role.toUpperCase()}
-            </div>
-            <div class="qr-container" style="margin: 20px auto; width: 150px; height: 150px; background: white;"></div>
-            <div style="text-align: left; margin: 20px 0;">
-                <p style="margin: 10px 0; font-size: 14px;"><strong>Pass ID:</strong> ${pass.passIdentifier}</p>
-                <p style="margin: 10px 0; font-size: 14px;"><strong>Event:</strong> ${eventName}</p>
-                <p style="margin: 10px 0; font-size: 14px;"><strong>Role:</strong> ${pass.role}</p>
-                <p style="margin: 10px 0; font-size: 14px;"><strong>Created:</strong> ${new Date(pass.createdAt.toDate()).toLocaleDateString()}</p>
-            </div>
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                <p style="color: #dc3545; font-weight: bold; font-size: 16px;">AUTHORIZED ACCESS ONLY</p>
-            </div>
-        </div>
-    `;
-    
-    return div;
-}
-
-async function generateQRCode(text, container) {
-    return new Promise((resolve, reject) => {
-        try {
-            new QRCode(container, {
-                text: text,
-                width: 150,
-                height: 150,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            setTimeout(resolve, 1000); // Wait for render
-        } catch (error) {
-            reject(error);
-        }
-    });
-}
-
-function cleanupElements(elements) {
-    Object.values(elements).forEach(element => {
-        if (element && document.body.contains(element)) {
-            document.body.removeChild(element);
-        }
-    });
-}
-
-// Function to download multiple passes
+// Add function to download selected passes
 async function downloadSelectedPasses() {
-    const selectedCheckboxes = document.querySelectorAll('.pass-select:checked');
-    
-    if (selectedCheckboxes.length === 0) {
+    const selectedPasses = document.querySelectorAll('.pass-select:checked');
+    if (selectedPasses.length === 0) {
         alert('Please select at least one pass to download');
         return;
     }
 
-    let downloaded = 0;
-    let failed = 0;
-
-    for (const checkbox of selectedCheckboxes) {
-        try {
-            await downloadPass(checkbox.dataset.passId);
-            downloaded++;
-            // Add delay between downloads
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-            console.error('Error downloading pass:', error);
-            failed++;
+    try {
+        for (const checkbox of selectedPasses) {
+            const passId = checkbox.dataset.passId;
+            await downloadPass(passId);
+            // Add small delay between downloads to prevent browser issues
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
-    }
-
-    // Show summary
-    if (failed > 0) {
-        alert(`Downloaded ${downloaded} passes. Failed to download ${failed} passes.`);
-    } else {
-        alert(`Successfully downloaded ${downloaded} passes!`);
+    } catch (error) {
+        console.error("Error downloading passes:", error);
+        alert('Error downloading passes: ' + error.message);
     }
 }
-
-// Make functions available globally
-window.downloadPass = downloadPass;
-window.downloadSelectedPasses = downloadSelectedPasses;
-
 // Add function to delete selected passes
 async function deleteSelectedPasses() {
     const selectedPasses = document.querySelectorAll('.pass-select:checked');
@@ -1836,6 +1663,8 @@ function setupPassSearch() {
 }
 
 // Make sure to export all necessary functions
+window.downloadPass = downloadPass;
+window.downloadSelectedPasses = downloadSelectedPasses;
 window.deletePass = deletePass;
 window.deleteSelectedPasses = deleteSelectedPasses;
 window.toggleAllPasses = toggleAllPasses;
@@ -2012,8 +1841,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.updateTicketTypeOptions = updateTicketTypeOptions;
 window.updateTicketPrice = updateTicketPrice;
-
-
 
 
 
@@ -2374,6 +2201,97 @@ function initializeTicketListeners() {
             }
         });
     });
+}
+
+    // Also listen for event changes
+    const eventsRef = collection(db, 'events');
+    onSnapshot(eventsRef, (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "modified") {
+                const eventData = change.doc.data();
+                const currentEventId = document.getElementById('ticketEventSelector')?.value;
+                
+                if (currentEventId === change.doc.id) {
+                    console.log('Updating generate ticket section due to event change');
+                    await updateTicketTypeOptions();
+                    await updateTicketStats(currentEventId);
+                }
+            }
+        });
+    });
+
+// Make functions globally available
+window.getRealTimeAvailability = getRealTimeAvailability;
+window.updateTicketTypeOptions = updateTicketTypeOptions;
+window.processTicketGeneration = processTicketGeneration;
+
+// Initialize when document loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeTicketListeners();
+});
+
+// Function to clear ticket form
+function clearTicketForm() {
+    const elements = {
+        ticketEventSelector: document.getElementById('ticketEventSelector'),
+        ticketTypeSelector: document.getElementById('ticketTypeSelector'),
+        ticketQuantity: document.getElementById('ticketQuantity'),
+        ticketUserEmail: document.getElementById('ticketUserEmail'),
+        paymentMode: document.getElementById('paymentMode'),
+        pricePerTicket: document.getElementById('pricePerTicket'),
+        totalTicketPrice: document.getElementById('totalTicketPrice')
+    };
+
+    // Clear form values
+    if (elements.ticketEventSelector) elements.ticketEventSelector.value = '';
+    if (elements.ticketTypeSelector) elements.ticketTypeSelector.value = '';
+    if (elements.ticketQuantity) elements.ticketQuantity.value = '1';
+    if (elements.ticketUserEmail) elements.ticketUserEmail.value = '';
+    if (elements.paymentMode) elements.paymentMode.value = '';
+    
+    // Reset price displays
+    if (elements.pricePerTicket) elements.pricePerTicket.textContent = '₹0';
+    if (elements.totalTicketPrice) elements.totalTicketPrice.textContent = '₹0';
+}
+
+// Add these utility functions near the top of admin.js, after the imports
+function generateRandomFiveDigits() {
+    return Math.floor(10000 + Math.random() * 90000).toString();
+}
+
+function getCurrentYear() {
+    return new Date().getFullYear().toString();
+}
+
+function generateTicketId() {
+    const randomNum = generateRandomFiveDigits();
+    const year = getCurrentYear();
+    return `TIX-${randomNum}-${year}`;
+}
+
+
+window.generateTicketId = generateTicketId;
+
+// Add this function to handle real-time updates for generate ticket section
+function initializeGenerateTicketListeners() {
+    const ticketsRef = collection(db, 'tickets');
+    
+    // Listen for any ticket changes
+    onSnapshot(ticketsRef, (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "added" || change.type === "modified") {
+                const ticketData = change.doc.data();
+                // Get current selected event in generate ticket section
+                const currentEventId = document.getElementById('ticketEventSelector')?.value;
+                
+                if (currentEventId === ticketData.eventId) {
+                    console.log('Updating generate ticket section due to ticket change');
+                    await updateTicketTypeOptions();
+                    await updateTicketStats(currentEventId);
+                }
+            }
+        });
+    });
 
     // Also listen for event changes
     const eventsRef = collection(db, 'events');
@@ -2393,187 +2311,88 @@ function initializeTicketListeners() {
     });
 }
 
-    // Make functions globally available
-    window.getRealTimeAvailability = getRealTimeAvailability;
-    window.updateTicketTypeOptions = updateTicketTypeOptions;
-    window.processTicketGeneration = processTicketGeneration;
+// Update the DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing initialization code ...
 
-    // Initialize when document loads
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeTicketListeners();
+    // Initialize generate ticket listeners if we're on that section
+    if (document.getElementById('generateTicket')?.style.display !== 'none') {
+        initializeGenerateTicketListeners();
+    }
+});
+
+    // Add an event listener to sanitize pasted content
+    document.getElementById('eventDescription').addEventListener('paste', function (event) {
+        event.preventDefault(); // Prevent the default paste action
+        
+        // Get plain text from the clipboard
+        const text = (event.clipboardData || window.clipboardData).getData('text');
+
+        // Insert the plain text into the textarea
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        this.value = this.value.substring(0, start) + text + this.value.substring(end);
+        
+        // Place the cursor after the inserted text
+        this.selectionStart = this.selectionEnd = start + text.length;
     });
 
-    // Function to clear ticket form
-    function clearTicketForm() {
-        const elements = {
-            ticketEventSelector: document.getElementById('ticketEventSelector'),
-            ticketTypeSelector: document.getElementById('ticketTypeSelector'),
-            ticketQuantity: document.getElementById('ticketQuantity'),
-            ticketUserEmail: document.getElementById('ticketUserEmail'),
-            paymentMode: document.getElementById('paymentMode'),
-            pricePerTicket: document.getElementById('pricePerTicket'),
-            totalTicketPrice: document.getElementById('totalTicketPrice')
-        };
-
-        // Clear form values
-        if (elements.ticketEventSelector) elements.ticketEventSelector.value = '';
-        if (elements.ticketTypeSelector) elements.ticketTypeSelector.value = '';
-        if (elements.ticketQuantity) elements.ticketQuantity.value = '1';
-        if (elements.ticketUserEmail) elements.ticketUserEmail.value = '';
-        if (elements.paymentMode) elements.paymentMode.value = '';
-        
-        // Reset price displays
-        if (elements.pricePerTicket) elements.pricePerTicket.textContent = '₹0';
-        if (elements.totalTicketPrice) elements.totalTicketPrice.textContent = '₹0';
-    }
-
-    // Add these utility functions near the top of admin.js, after the imports
-    function generateRandomFiveDigits() {
-        return Math.floor(10000 + Math.random() * 90000).toString();
-    }
-
-    function getCurrentYear() {
-        return new Date().getFullYear().toString();
-    }
-
-    function generateTicketId() {
-        const randomNum = generateRandomFiveDigits();
-        const year = getCurrentYear();
-        return `TIX-${randomNum}-${year}`;
-    }
-
-
-    window.generateTicketId = generateTicketId;
-
-    // Add this function to handle real-time updates for generate ticket section
-    function initializeGenerateTicketListeners() {
-        const ticketsRef = collection(db, 'tickets');
-        
-        // Listen for any ticket changes
-        onSnapshot(ticketsRef, (snapshot) => {
-            snapshot.docChanges().forEach(async (change) => {
-                if (change.type === "added" || change.type === "modified") {
-                    const ticketData = change.doc.data();
-                    // Get current selected event in generate ticket section
-                    const currentEventId = document.getElementById('ticketEventSelector')?.value;
-                    
-                    if (currentEventId === ticketData.eventId) {
-                        console.log('Updating generate ticket section due to ticket change');
-                        await updateTicketTypeOptions();
-                        await updateTicketStats(currentEventId);
-                    }
-                }
-            });
-        });
-
-        // Also listen for event changes
-        const eventsRef = collection(db, 'events');
-        onSnapshot(eventsRef, (snapshot) => {
-            snapshot.docChanges().forEach(async (change) => {
-                if (change.type === "modified") {
-                    const eventData = change.doc.data();
-                    const currentEventId = document.getElementById('ticketEventSelector')?.value;
-                    
-                    if (currentEventId === change.doc.id) {
-                        console.log('Updating generate ticket section due to event change');
-                        await updateTicketTypeOptions();
-                        await updateTicketStats(currentEventId);
-                    }
-                }
-            });
-        });
-    }
-
-    // Update the DOMContentLoaded event listener
-    document.addEventListener('DOMContentLoaded', () => {
-        // ... existing initialization code ...
-
-        // Initialize generate ticket listeners if we're on that section
-        if (document.getElementById('generateTicket')?.style.display !== 'none') {
-            initializeGenerateTicketListeners();
-        }
-    });
-
-        // Add an event listener to sanitize pasted content
-        document.getElementById('eventDescription').addEventListener('paste', function (event) {
-            event.preventDefault(); // Prevent the default paste action
-            
-            // Get plain text from the clipboard
-            const text = (event.clipboardData || window.clipboardData).getData('text');
-
-            // Insert the plain text into the textarea
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            this.value = this.value.substring(0, start) + text + this.value.substring(end);
-            
-            // Place the cursor after the inserted text
-            this.selectionStart = this.selectionEnd = start + text.length;
-        });
-
-function cancelEdit() {
+function openEditModal(eventId, eventData) {
+    document.getElementById('editingEventId').value = eventId;
     try {
-        // Reset editing state
-        isEditing = false;
-        currentEditingEventId = null;
-        document.getElementById('editingEventId').value = '';
+        console.log("Opening edit modal for event:", eventId);
+        console.log("Event data received:", eventData);
 
-        // Reset form fields
-        document.getElementById('eventName').value = '';
-        document.getElementById('eventCategory').value = '';
-        document.getElementById('eventPricingType').value = '';
-        document.getElementById('eventDescription').value = '';
-        document.getElementById('eventDate').value = '';
-        document.getElementById('bookingStartDate').value = '';
-        document.getElementById('bookingDeadline').value = '';
-        document.getElementById('eventPrice').value = '';
-        document.getElementById('eventTickets').value = '';
-        document.getElementById('eventType').value = '';
-        document.getElementById('eventRules').innerHTML = '';
-
-        // Reset custom category
-        const otherCategoryGroup = document.getElementById('otherCategoryGroup');
-        const otherCategoryInput = document.getElementById('otherCategoryName');
-        if (otherCategoryGroup) otherCategoryGroup.style.display = 'none';
-        if (otherCategoryInput) otherCategoryInput.value = '';
-
-        // Reset scheduling
-        const publishSchedule = document.getElementById('enablePublishSchedule');
-        const hideSchedule = document.getElementById('enableHideSchedule');
-        if (publishSchedule) publishSchedule.checked = false;
-        if (hideSchedule) hideSchedule.checked = false;
-        document.getElementById('publishScheduleSection').style.display = 'none';
-        document.getElementById('hideScheduleSection').style.display = 'none';
-
-        // Reset images
-        const imageContainer = document.getElementById('imageUrlsContainer');
-        if (imageContainer) {
-            imageContainer.innerHTML = `
-                <div class="form-group image-input">
-                    <label>Image URL #1</label>
-                    <input type="text" class="eventImage" placeholder="Enter image URL">
-                    <button type="button" onclick="addImageField()" class="add-image-btn">+ Add Another Image</button>
-                </div>
-            `;
+        isEditing = true;
+        currentEditingEventId = eventId;
+        
+        // Basic fields
+        document.getElementById('eventName').value = eventData.name || '';
+        document.getElementById('eventDate').value = eventData.date ? new Date(eventData.date).toISOString().slice(0, 16) : '';
+        document.getElementById('eventPrice').value = eventData.price || 0;
+        document.getElementById('eventType').value = eventData.eventType || '';
+        document.getElementById('eventDescription').value = eventData.description || '';
+        
+        if (document.getElementById('eventRules')) {
+            document.getElementById('eventRules').value = eventData.rules || '';
         }
-        imageFieldCount = 1;
 
-        // Reset buttons
-        const cancelBtn = document.querySelector('.cancel-btn');
-        const createBtn = document.querySelector('.create-btn');
-        if (cancelBtn) cancelBtn.style.display = 'none';
-        if (createBtn) createBtn.textContent = 'Create Event';
+        // Handle event type specific fields
+        handleEventTypeChange();
+        
+        if (eventData.eventType === 'online' || eventData.eventType === 'hybrid') {
+            document.getElementById('meetingPlatform').value = eventData.meetingPlatform || '';
+            document.getElementById('meetingLink').value = eventData.meetingLink || '';
+            document.getElementById('meetingId').value = eventData.meetingId || '';
+            document.getElementById('meetingPassword').value = eventData.meetingPassword || '';
+        }
 
-        // Switch back to view mode
-        toggleEventsView('view');
+        if (eventData.eventType === 'venue' || eventData.eventType === 'hybrid') {
+            document.getElementById('eventPlace').value = eventData.place || '';
+            document.getElementById('eventVenue').value = eventData.venue || '';
+        }
+
+        document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
 
     } catch (error) {
-        console.error("Error canceling edit:", error);
-        alert("Error canceling edit. Please try again.");
+        console.error("Detailed error opening edit modal:", error);
+        alert('Error loading event data for editing');
     }
 }
 
-// Make function globally available
-window.cancelEdit = cancelEdit;
+document.addEventListener('DOMContentLoaded', () => {
+    const eventDescription = document.getElementById('eventDescription');
+    if (eventDescription) {
+        eventDescription.addEventListener('paste', function (event) {
+            event.preventDefault();
+            const text = (event.clipboardData || window.clipboardData).getData('text');
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + text + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + text.length;
+        });
+    }
+});
 
 
 
