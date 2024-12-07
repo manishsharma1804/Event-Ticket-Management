@@ -293,13 +293,13 @@
                         </div>
                         <div class="form-group">
                             <label for="eventDescription">Event Description</label>
-                            <textarea 
+                            <div 
                                 id="eventDescription" 
                                 name="eventDescription" 
                                 class="form-textarea" 
-                                rows="6" 
-                                placeholder="Enter event description" 
-                                required></textarea>
+                                contenteditable="true" 
+                                style="border: 1px solid #ccc; padding: 10px; min-height: 120px;">
+                            </div>
                             <div class="helper-text">Enter a detailed description of your event</div>
                         </div>
                         <div class="form-group">
@@ -818,6 +818,7 @@
         // Handle pricing type change first
         handlePricingTypeChange();
         
+        
         // Handle custom category
         const otherCategoryGroup = document.getElementById('otherCategoryGroup');
         const otherCategoryInput = document.getElementById('otherCategoryName');
@@ -828,6 +829,7 @@
             otherCategoryGroup.style.display = 'none';
             otherCategoryInput.value = '';
         }
+        
 
         // Dates
         document.getElementById('eventDate').value = new Date(eventData.date).toISOString().slice(0, 16);
@@ -2317,27 +2319,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         function cancelEdit() {
-            try {
-                clearEventForm();
-                
-                toggleEventsView('view');
-                
-                isEditing = false;
-                currentEditingEventId = null;
-                
-                const editors = ['eventDescription', 'eventRules', 'eventLimitations'];
-                editors.forEach(editorId => {
-                    const editor = tinymce.get(editorId);
-                    if (editor) {
-                        editor.setContent('');
-                    }
-                });
-                
-            } catch (error) {
-                console.error("Error canceling edit:", error);
-                alert("Error canceling edit. Please try again.");
+    try {
+        // Clear the form
+        clearEventForm();
+        
+        // Switch back to view mode
+        toggleEventsView('view');
+        
+        // Reset editing state
+        isEditing = false;
+        currentEditingEventId = null;
+        
+        // Clear rich text editors
+        const editors = ['eventDescription', 'eventRules'];
+        editors.forEach(editorId => {
+            const editor = document.getElementById(editorId);
+            if (editor) {
+                editor.innerHTML = '';
             }
+        });
+        
+        // Hide cancel button
+        const cancelBtn = document.querySelector('.cancel-btn');
+        if (cancelBtn) {
+            cancelBtn.style.display = 'none';
         }
+        
+        // Reset create button text
+        const createBtn = document.querySelector('.create-btn');
+        if (createBtn) {
+            createBtn.textContent = 'Create Event';
+        }
+        
+    } catch (error) {
+        console.error("Error in cancel edit:", error);
+    }
+}
     
         // Add to your existing global assignments
         window.cancelEdit = cancelEdit;

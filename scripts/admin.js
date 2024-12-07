@@ -2394,5 +2394,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Add this function to handle paste events in contenteditable fields
+function handleContentEditablePaste(e) {
+    e.preventDefault();
+    
+    // Get plain text from clipboard
+    let text = '';
+    if (e.clipboardData || window.clipboardData) {
+        // Get HTML content if available
+        text = (e.clipboardData || window.clipboardData).getData('text/html') || 
+               (e.clipboardData || window.clipboardData).getData('text/plain');
+    }
+
+    // Insert at cursor position
+    const selection = window.getSelection();
+    if (selection.getRangeAt && selection.rangeCount) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        // Create wrapper div to handle HTML content
+        const div = document.createElement('div');
+        div.innerHTML = text;
+
+        // Insert each child node
+        const fragment = document.createDocumentFragment();
+        let child;
+        while (child = div.firstChild) {
+            fragment.appendChild(child);
+        }
+        range.insertNode(fragment);
+
+        // Move cursor to end
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+
+// Add this to your DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    const descriptionField = document.getElementById('eventDescription');
+    if (descriptionField) {
+        // Add paste event listener
+        descriptionField.addEventListener('paste', handleContentEditablePaste);
+
+        // Add keyboard shortcuts for formatting
+        descriptionField.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'b':
+                        e.preventDefault();
+                        document.execCommand('bold', false, null);
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        document.execCommand('italic', false, null);
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        document.execCommand('underline', false, null);
+                        break;
+                }
+            }
+        });
+    }
+});
 
 
