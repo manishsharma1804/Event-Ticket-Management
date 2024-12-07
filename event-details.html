@@ -1483,7 +1483,8 @@ function generateTicketId() {
                                 <label>Card Number</label>
                                 <div class="input-icon">
                                     <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
-                                           pattern="\d*" inputmode="numeric" autocomplete="cc-number">
+                                           pattern="\d*" inputmode="numeric" autocomplete="cc-number"
+                                           required minlength="19" maxlength="19">
                                     <i class="fas fa-credit-card"></i>
                                 </div>
                             </div>
@@ -1492,13 +1493,15 @@ function generateTicketId() {
                                 <div class="form-group">
                                     <label>Expiry Date</label>
                                     <input type="text" id="expiryDate" placeholder="MM/YY" 
-                                           pattern="\d{2}/\d{2}" inputmode="numeric" autocomplete="cc-exp">
+                                           pattern="\d{2}/\d{2}" inputmode="numeric" autocomplete="cc-exp"
+                                           required minlength="5" maxlength="5">
                                 </div>
                                 <div class="form-group">
                                     <label>CVV</label>
                                     <div class="input-icon">
                                         <input type="password" id="cvv" placeholder="123" 
-                                               pattern="\d{3}" inputmode="numeric" autocomplete="cc-csc">
+                                               pattern="\d{3}" inputmode="numeric" autocomplete="cc-csc"
+                                               required minlength="3" maxlength="3">
                                         <i class="fas fa-question-circle" title="3-digit security code"></i>
                                     </div>
                                 </div>
@@ -1506,7 +1509,8 @@ function generateTicketId() {
 
                             <div class="form-group">
                                 <label>Name on Card</label>
-                                <input type="text" id="cardName" placeholder="Enter name as on card">
+                                <input type="text" id="cardName" placeholder="Enter name as on card"
+                                       required minlength="3">
                             </div>
 
                             <div class="payment-buttons">
@@ -1539,6 +1543,46 @@ function generateTicketId() {
 
         async function processPayment(type, ticketCount, totalPrice) {
     try {
+        // Skip validation for free tickets
+        if (totalPrice > 0) {
+            // Get all form inputs
+            const cardNumber = document.getElementById('cardNumber')?.value.replace(/\s/g, '') || '';
+            const expiryDate = document.getElementById('expiryDate')?.value || '';
+            const cvv = document.getElementById('cvv')?.value || '';
+            const cardName = document.getElementById('cardName')?.value || '';
+
+            // Validate all fields are filled
+            if (!cardNumber || !expiryDate || !cvv || !cardName) {
+                alert('Please fill in all required payment fields');
+                return;
+            }
+
+            // Validate card number length
+            if (cardNumber.length !== 16) {
+                alert('Please enter a valid 16-digit card number');
+                return;
+            }
+
+            // Validate expiry date format
+            if (!expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
+                alert('Please enter a valid expiry date (MM/YY)');
+                return;
+            }
+
+            // Validate CVV
+            if (!cvv.match(/^\d{3}$/)) {
+                alert('Please enter a valid 3-digit CVV');
+                return;
+            }
+
+            // Validate name length
+            if (cardName.length < 3) {
+                alert('Please enter a valid name (minimum 3 characters)');
+                return;
+            }
+        }
+
+        // Continue with existing payment processing code...
         if (!window.currentEvent) {
             throw new Error('Event data not found');
         }

@@ -4376,22 +4376,30 @@
                             <span class="info-label">
                                 <i class="fas fa-rupee-sign"></i> Amount Paid
                             </span>
-                            <span class="info-value highlight">��${ticket.totalPrice}</span>
+                             <span class="info-value highlight">₹ ${ticket.totalPrice}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">
                                 <i class="fas fa-tag"></i> Price
                             </span>
-                            ${priceDisplay}
+                            <span class="info-value">
+                                ${ticket.totalPrice === 0 ? 'Free' : 
+                                  ticket.ticketCount > 1 ? `₹ ${ticket.totalPrice/ticket.ticketCount} per ticket` : 
+                                  `₹ ${ticket.totalPrice}`}
+                            </span>
                         </div>
                     </div>
                     <div class="ticket-actions">
-                        <button onclick="downloadTicket('${ticketId}')" class="download-btn" title="Download Ticket">
-                            <i class="fas fa-download"></i>
+                        <button class="download-btn" title="Download Ticket">
+                           <i class="fas fa-download"></i>
                         </button>
                     </div>
                 </div>
             `;
+            
+            // Add event listener after creating the element
+            const downloadBtn = card.querySelector('.download-btn');
+            downloadBtn.addEventListener('click', () => downloadTicket(ticketId));
             
             return card;
         }
@@ -4445,7 +4453,6 @@
         // Add download ticket function
         async function downloadTicket(ticketId) {
             try {
-                // Get ticket data
                 const ticketDoc = await getDoc(doc(db, 'tickets', ticketId));
                 if (!ticketDoc.exists()) {
                     alert('Ticket not found');
@@ -4453,43 +4460,125 @@
                 }
 
                 const ticket = ticketDoc.data();
+                // Fetch event details to get rules
+                const eventDoc = await getDoc(doc(db, 'events', ticket.eventId));
+                const eventRules = eventDoc.exists() ? eventDoc.data().rules : null;
 
-                // Create ticket HTML
-                const ticketHTML = `
-                    <div class="ticket-download">
-                        <div class="ticket-header">
-                            <h2>EventTix</h2>
-                            <p class="ticket-id">ID: ${ticket.ticketIdentifier}</p>
-                        </div>
-                        <div class="ticket-body">
-                            <h3>${ticket.eventName}</h3>
-                            <div class="ticket-info">
-                                <p><strong>Date:</strong> ${new Date(ticket.eventDate).toLocaleDateString()}</p>
-                                <p><strong>Tickets:</strong> ${ticket.ticketCount}</p>
-                                <p><strong>Amount Paid:</strong> ₹${ticket.totalPrice}</p>
-                                <p><strong>Status:</strong> ${ticket.used ? 'Used' : 'Valid'}</p>
+                const ticketTemplate = document.createElement('div');
+                ticketTemplate.innerHTML = `
+                    <div style="width: 800px; background: white; font-family: Arial, sans-serif;">
+                        <!-- Header Section -->
+                        <div style="background: #6366f1; color: white; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px;">${ticket.ticketIdentifier}</span>
+                                <div style="text-align: center;">
+                                    <span style="color: #ff4444; font-size: 32px; font-weight: bold;">Event</span>
+                                    <span style="color: white; font-size: 32px; font-weight: bold;">Tix</span>
+                                    <p style="margin: 5px 0 0 0; font-size: 14px;">Official Digital Event Ticket</p>
+                                </div>
+                                <span style="width: 100px;"></span>
                             </div>
                         </div>
-                        <div class="ticket-footer">
-                            <p>This is an electronically generated ticket.</p>
+
+                        <!-- Event Title -->
+                        <div style="text-align: center; padding: 20px; border-bottom: 1px solid #eee;">
+                            <h2 style="margin: 0; font-size: 24px;"> ${ticket.eventName}</h2>
+                        </div>
+
+                        <!-- Ticket Details -->
+                        <div style="display: flex; padding: 20px;">
+                            <div style="flex: 2; padding-right: 40px;">
+                                <div style="margin-bottom: 20px;">
+                                    <p style="color: #666; margin: 0 0 5px 0;">Event Date:</p>
+                                    <p style="margin: 0; font-size: 16px;">
+                                        ${new Date(ticket.eventDate).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                            hour12: true
+                                        })}
+                                    </p>
+                                </div>
+                                <div style="margin-bottom: 20px;">
+                                    <p style="color: #666; margin: 0 0 5px 0;">Venue:</p>
+                                    <p style="margin: 0; font-size: 16px;">${ticket.venue || 'Online Event'}</p>
+                                </div>
+                                <div style="margin-bottom: 20px;">
+                                    <p style="color: #666; margin: 0 0 5px 0;">Ticket Type:</p>
+                                    <p style="margin: 0; font-size: 16px;">${ticket.type || 'Standard'}</p>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="margin-bottom: 20px;">
+                                    <p style="color: #666; margin: 0 0 5px 0;">Quantity:</p>
+                                    <p style="margin: 0; font-size: 20px; color: #2196f3;">${ticket.ticketCount} tickets</p>
+                                </div>
+                                <div style="margin-bottom: 20px;">
+                                    <p style="color: #666; margin: 0 0 5px 0;">Amount Paid:</p>
+                                    <p style="margin: 0; font-size: 16px;">₹ ${ticket.totalPrice}</p>
+                                </div>
+                                <div>
+                                    <p style="color: #666; margin: 0 0 5px 0;">Booked By:</p>
+                                    <p style="margin: 0; font-size: 16px;">${ticket.userEmail}</p>
+                                </div>
+                            </div>
+                            <div style="flex: 1; text-align: center;">
+                                <div id="qrcode-${ticket.ticketIdentifier}" style="margin-bottom: 10px;"></div>
+                                <p style="color: #4CAF50; margin: 0;">Thank you for choosing EventTix!</p>
+                                <p style="color: #666; font-size: 12px; margin: 5px 0 0 0;">Scan QR code at venue for entry</p>
+                            </div>
+                        </div>
+
+                        <!-- Terms Section -->
+                        <div style="padding: 20px; background: #f9fafb;">
+                            <h3 style="margin: 0 0 10px 0; color: #4a5568;">Terms and Conditions</h3>
+                            ${eventRules ? 
+                                (typeof eventRules === 'string' ? 
+                                    `<ul style="margin: 0; padding-left: 20px; color: #718096; font-size: 12px;">${eventRules}</ul>` :
+                                    `<ul style="margin: 0; padding-left: 20px; color: #718096; font-size: 12px;">
+                                        ${eventRules.map(rule => `<li>${rule}</li>`).join('')}
+                                    </ul>`
+                                ) : 
+                                `<ul style="margin: 0; padding-left: 20px; color: #718096; font-size: 12px;">
+                                    <li>Please follow venue guidelines and event rules.</li>
+                                </ul>`
+                            }
+                        </div>
+
+                        <!-- Footer -->
+                        <div style="text-align: right; padding: 10px 20px; background: #f3f4f6;">
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">This is an official digital ticket.</p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">Valid only with matching ID proof.</p>
                         </div>
                     </div>
                 `;
 
-                // Create a temporary container
-                const container = document.createElement('div');
-                container.innerHTML = ticketHTML;
-                document.body.appendChild(container);
+                // Add QR code after template is added to document
+                document.body.appendChild(ticketTemplate);
+                new QRCode(document.getElementById(`qrcode-${ticket.ticketIdentifier}`), {
+                    text: ticket.ticketIdentifier,
+                    width: 128,
+                    height: 128
+                });
 
-                // Use html2canvas to create image
-                const canvas = await html2canvas(container.firstChild);
-                document.body.removeChild(container);
+                // Convert to image with better options
+                const canvas = await html2canvas(ticketTemplate.firstElementChild, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    allowTaint: true,
+                    useCORS: true
+                });
 
-                // Convert to image and download
-                const image = canvas.toDataURL('image/png');
+                // Remove template
+                document.body.removeChild(ticketTemplate);
+
+                // Download image
                 const link = document.createElement('a');
                 link.download = `EventTix-${ticket.ticketIdentifier}.png`;
-                link.href = image;
+                link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
 
             } catch (error) {
