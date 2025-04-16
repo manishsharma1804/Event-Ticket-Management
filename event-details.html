@@ -1543,57 +1543,48 @@ function generateTicketId() {
 
         async function processPayment(type, ticketCount, totalPrice) {
     try {
-        // Skip validation for free tickets
+        // Validate payment fields if it's a paid ticket
         if (totalPrice > 0) {
-            // Get all form inputs
             const cardNumber = document.getElementById('cardNumber')?.value.replace(/\s/g, '') || '';
             const expiryDate = document.getElementById('expiryDate')?.value || '';
             const cvv = document.getElementById('cvv')?.value || '';
             const cardName = document.getElementById('cardName')?.value || '';
 
-            // Validate all fields are filled
             if (!cardNumber || !expiryDate || !cvv || !cardName) {
                 alert('Please fill in all required payment fields');
                 return;
             }
 
-            // Validate card number length
             if (cardNumber.length !== 16) {
                 alert('Please enter a valid 16-digit card number');
                 return;
             }
 
-            // Validate expiry date format
             if (!expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
                 alert('Please enter a valid expiry date (MM/YY)');
                 return;
             }
 
-            // Validate CVV
             if (!cvv.match(/^\d{3}$/)) {
                 alert('Please enter a valid 3-digit CVV');
                 return;
             }
 
-            // Validate name length
             if (cardName.length < 3) {
                 alert('Please enter a valid name (minimum 3 characters)');
                 return;
             }
         }
 
-        // Continue with existing payment processing code...
         if (!window.currentEvent) {
             throw new Error('Event data not found');
         }
 
-        // Hide all sections
         document.getElementById('eventFullDetails').style.display = 'none';
         document.getElementById('ticketSelection').style.display = 'none';
         document.getElementById('paymentDetails').style.display = 'none';
         document.getElementById('successSection').style.display = 'none';
 
-        // Show loading overlay
         const overlay = document.createElement('div');
         overlay.className = 'payment-overlay';
         overlay.innerHTML = `
@@ -1605,13 +1596,10 @@ function generateTicketId() {
         `;
         document.body.appendChild(overlay);
 
-        // Simulate booking processing
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Generate ticket identifier
         const ticketIdentifier = generateTicketId();
 
-        // Create ticket document
         const ticketData = {
             eventId: window.currentEvent.id,
             eventName: window.currentEvent.name,
@@ -1629,12 +1617,9 @@ function generateTicketId() {
             venue: window.currentEvent.venueDetails?.venue || 'Online Event'
         };
 
-        // Add ticket to database
         await addDoc(collection(db, 'tickets'), ticketData);
 
-        // Update event ticket availability
         const eventRef = doc(db, 'events', window.currentEvent.id);
-        
         if (window.currentEvent.eventType === 'hybrid') {
             if (type === 'venue') {
                 await updateDoc(eventRef, {
@@ -1651,35 +1636,63 @@ function generateTicketId() {
             });
         }
 
-        // Remove loading overlay
         document.body.removeChild(overlay);
 
-        // Show success message
         document.getElementById('successSection').style.display = 'block';
         document.getElementById('successSection').innerHTML = `
             <div class="success-message">
-        <div class="success-icon">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <h2>Booking Successful!</h2>
-        <p>Thank you for choosing EventTix!</p>
-        <div class="ticket-details">
-            <h3>Booking Details</h3>
-            <p><strong>Event:</strong> ${window.currentEvent.name}</p>
-            <p><strong>Ticket Type:</strong> ${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</p>
-            <p><strong>Quantity:</strong> ${ticketCount}</p>
-            <p><strong>Total Paid:</strong> ${totalPrice === 0 ? 'Free' : '₹' + totalPrice}</p>
-            <p><strong>Ticket ID:</strong> ${ticketIdentifier}</p>
-        </div>
-        <p class="email-note">A confirmation email has been sent to your registered email address.</p>
-        <p class="download-note">You can download your ticket from the ticket section in the dashboard.</p>
-        <div style="margin-top: 20px; text-align: center;">
-            <button onclick="window.location.href='dashboard.html'" style="background: #4299e1; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                <i class="fas fa-home"></i> Go to Dashboard
-            </button>
-        </div>
-    </div>
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Booking Successful!</h2>
+                <p>Thank you for choosing EventTix!</p>
+                <div class="ticket-details">
+                    <h3>Booking Details</h3>
+                    <p><strong>Event:</strong> ${window.currentEvent.name}</p>
+                    <p><strong>Ticket Type:</strong> ${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</p>
+                    <p><strong>Quantity:</strong> ${ticketCount}</p>
+                    <p><strong>Total Paid:</strong> ${totalPrice === 0 ? 'Free' : '₹' + totalPrice}</p>
+                    <p><strong>Ticket ID:</strong> ${ticketIdentifier}</p>
+                </div>
+                <p class="email-note">A confirmation email has been sent to your registered email address.</p>
+                <p class="download-note">You can download your ticket from the ticket section in the dashboard.</p>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="window.location.href='dashboard.html'" style="background: #4299e1; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                        <i class="fas fa-home"></i> Go to Dashboard
+                    </button>
+                </div>
+            </div>
         `;
+
+        // Prepare online details data
+        const hasOnlineDetails = window.currentEvent.onlineDetails && window.currentEvent.onlineDetails.meetingLink;
+        const platform = window.currentEvent.onlineDetails?.platform || '';
+        const meetingLink = window.currentEvent.onlineDetails?.meetingLink || '';
+        const meetingId = window.currentEvent.onlineDetails?.meetingId || '';
+        const meetingPassword = window.currentEvent.onlineDetails?.meetingPassword || '';
+
+        // Format price display
+        const displayPrice = totalPrice === 0 ? 'Free' : totalPrice.toString();
+        
+        // ✅ EmailJS Integration - FIXED
+        emailjs.send("service_eventtix1804", "template_tfaqdjd", {
+    to_email: auth.currentUser.email,
+    event_name: window.currentEvent.name || "NA",
+    event_date: new Date(window.currentEvent.date).toLocaleDateString() || "NA",
+    event_time: new Date(window.currentEvent.date).toLocaleTimeString() || "NA",
+    venue: window.currentEvent.venueDetails?.venue || "Online Event",
+    ticket_type: type === "venue" ? "Venue Ticket" : "Online Access",
+    ticket_count: ticketCount || "NA",
+    total_price: displayPrice || "NA",
+    ticket_id: ticketIdentifier || "NA",
+    purchase_date: new Date().toLocaleString() || "NA",
+    qr_code: `https://api.qrserver.com/v1/create-qr-code/?data=${ticketIdentifier}&size=200x200`,
+    platform: platform || "NA",
+    meeting_link: meetingLink || "NA",
+    meeting_id: meetingId || "NA",
+    meeting_password: meetingPassword || "NA"
+});
+
 
     } catch (error) {
         console.error('Payment error:', error);
@@ -1690,113 +1703,18 @@ function generateTicketId() {
         document.getElementById('ticketSelection').style.display = 'block';
     }
 }
-
-        // Add this function in your script section
-        function startPaymentTimer() {
-            let timeLeft = 120; // 2 minutes in seconds
-            const timerDisplay = document.getElementById('paymentTimer');
-            
-            const timer = setInterval(() => {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                
-                // Format the time display
-                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    alert('Payment session expired. You will be redirected to the event details.');
-                    window.location.reload(); // This will reload the page and show event details
-                }
-                
-                // Change color to red when less than 30 seconds remaining
-                if (timeLeft <= 30) {
-                    timerDisplay.style.color = '#dc2626';
-                }
-                
-                timeLeft--;
-            }, 1000);
-
-            // Store timer in window object so we can clear it if payment is successful
-            window.paymentTimer = timer;
-        }
-
-        // Add these functions after your existing code
-        function setupPaymentFormValidation() {
-            // Card number formatting and validation
-            const cardInput = document.getElementById('cardNumber');
-            cardInput.addEventListener('input', function(e) {
-                // Remove any non-digit characters
-                let value = e.target.value.replace(/\D/g, '');
-                
-                // Limit to 16 digits
-                if (value.length > 16) {
-                    value = value.slice(0, 16);
-                }
-                
-                // Add spaces after every 4 digits
-                let formattedValue = '';
-                for (let i = 0; i < value.length; i++) {
-                    if (i > 0 && i % 4 === 0) {
-                        formattedValue += ' ';
-                    }
-                    formattedValue += value[i];
-                }
-                
-                e.target.value = formattedValue;
-            });
-
-            // Expiry date formatting and validation
-            const expiryInput = document.getElementById('expiryDate');
-            expiryInput.addEventListener('input', function(e) {
-                // Remove any non-digit characters
-                let value = e.target.value.replace(/\D/g, '');
-                
-                // Add slash after month
-                if (value.length >= 2) {
-                    // Validate month (01-12)
-                    let month = parseInt(value.slice(0, 2));
-                    if (month > 12) {
-                        month = 12;
-                        value = '12' + value.slice(2);
-                    } else if (month < 1) {
-                        month = '01';
-                        value = '01' + value.slice(2);
-                    } else if (month < 10 && value.length >= 2) {
-                        value = '0' + month + value.slice(2);
-                    }
-                    
-                    value = value.slice(0, 2) + '/' + value.slice(2);
-                }
-                
-                // Limit to MM/YY format
-                if (value.length > 5) {
-                    value = value.slice(0, 5);
-                }
-                
-                e.target.value = value;
-            });
-
-            // CVV validation
-            const cvvInput = document.getElementById('cvv');
-            cvvInput.addEventListener('input', function(e) {
-                // Remove any non-digit characters
-                let value = e.target.value.replace(/\D/g, '');
-                
-                // Limit to 3 digits
-                if (value.length > 3) {
-                    value = value.slice(0, 3);
-                }
-                
-                e.target.value = value;
-            });
-        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            emailjs.init("GitPDbi46YAzKWVXd");
+        });
     </script>
 
 
     <footer class="footer">
         <div class="footer-bottom">
-            <p>&copy; 2024 EventTix. All rights reserved.</p>
+            <p>&copy; 2024-2025 EventTix. All rights reserved.</p>
         </div>
     </footer>
 </body>
