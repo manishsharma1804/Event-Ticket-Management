@@ -1405,135 +1405,161 @@ function generateTicketId() {
         }
 
         // Function to proceed to payment
-        async function proceedToPayment(type) {
-            try {
-                // Get and validate ticket count
-                const ticketCount = parseInt(document.getElementById('ticketCount').value);
-                const availableTickets = parseInt(sessionStorage.getItem('availableTickets') || '0');
+// Define this helper function before using it
+function setupPaymentFormValidation() {
+    const cardInput = document.getElementById("cardNumber");
+    cardInput?.addEventListener("input", (e) => {
+        e.target.value = e.target.value
+            .replace(/\D/g, "")
+            .replace(/(.{4})/g, "$1 ")
+            .trim()
+            .substr(0, 19);
+    });
 
-                // Validate ticket count
-                if (!ticketCount || ticketCount < 1 || ticketCount > 5) {
-                    alert('Please select between 1 to 5 tickets');
-                    return;
-                }
+    const expiryInput = document.getElementById("expiryDate");
+    expiryInput?.addEventListener("input", (e) => {
+        let val = e.target.value.replace(/\D/g, "");
+        if (val.length >= 2) val = val.substring(0, 2) + "/" + val.substring(2, 4);
+        e.target.value = val.substring(0, 5);
+    });
+}
 
-                // Check availability again
-                if (ticketCount > availableTickets) {
-                    alert(`Sorry, only ${availableTickets} tickets available`);
-                    return;
-                }
+function startPaymentTimer() {
+    let secondsLeft = 120;
+    const timerDisplay = document.getElementById('paymentTimer');
+    const interval = setInterval(() => {
+        const mins = Math.floor(secondsLeft / 60);
+        const secs = secondsLeft % 60;
+        timerDisplay.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        if (--secondsLeft < 0) {
+            clearInterval(interval);
+            alert('Payment session expired. Please try again.');
+            backToTicketSelection();
+        }
+    }, 1000);
+}
 
-                const price = window.currentPrice;
-                const totalPrice = price * ticketCount;
+async function proceedToPayment(type) {
+    try {
+        const ticketCount = parseInt(document.getElementById('ticketCount').value);
+        const availableTickets = parseInt(sessionStorage.getItem('availableTickets') || '0');
 
-                // Show payment section
-                document.getElementById('ticketSelection').style.display = 'none';
-                document.getElementById('paymentDetails').style.display = 'block';
+        if (!ticketCount || ticketCount < 1 || ticketCount > 5) {
+            alert('Please select between 1 to 5 tickets');
+            return;
+        }
 
-                // Check if the price is 0
-                if (price === 0) {
-                    // Directly book the ticket without showing payment UI
-                    await processPayment(type, ticketCount, 0);
-                    return;
-                }
+        if (ticketCount > availableTickets) {
+            alert(`Sorry, only ${availableTickets} tickets available`);
+            return;
+        }
 
-                // Update payment UI
-                document.getElementById('paymentDetails').innerHTML = `
-                    <div class="payment-container">
-                        <div class="payment-header">
-                            <h3>Complete Your Payment</h3>
-                            <p class="secure-text"><i class="fas fa-lock"></i> Secure Payment</p>
-                            <div class="timer-container">
-                                <p>Time remaining: <span id="paymentTimer" class="timer">2:00</span></p>
-                            </div>
+        const price = window.currentPrice;
+        const totalPrice = price * ticketCount;
+
+        document.getElementById('ticketSelection').style.display = 'none';
+        document.getElementById('paymentDetails').style.display = 'block';
+
+        if (price === 0) {
+            await processPayment(type, ticketCount, 0);
+            return;
+        }
+
+        document.getElementById('paymentDetails').innerHTML = `
+            <div class="payment-container">
+                <div class="payment-header">
+                    <h3>Complete Your Payment</h3>
+                    <p class="secure-text"><i class="fas fa-lock"></i> Secure Payment</p>
+                    <div class="timer-container">
+                        <p>Time remaining: <span id="paymentTimer" class="timer">2:00</span></p>
+                    </div>
+                </div>
+
+                <div class="payment-summary">
+                    <h4>Order Summary</h4>
+                    <div class="summary-item">
+                        <span>Event</span>
+                        <span>${window.currentEvent.name}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Ticket Type</span>
+                        <span>${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Quantity</span>
+                        <span>${ticketCount} ticket${ticketCount > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Price per ticket</span>
+                        <span>₹${price}</span>
+                    </div>
+                    <div class="summary-item total">
+                        <span>Total Amount</span>
+                        <span>₹${totalPrice}</span>
+                    </div>
+                </div>
+
+                <div class="payment-form">
+                    <div class="card-icons">
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <div class="input-icon">
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
+                                   pattern="\\d*" inputmode="numeric" autocomplete="cc-number"
+                                   required minlength="19" maxlength="19">
+                            <i class="fas fa-credit-card"></i>
                         </div>
+                    </div>
 
-                        <div class="payment-summary">
-                            <h4>Order Summary</h4>
-                            <div class="summary-item">
-                                <span>Event</span>
-                                <span>${window.currentEvent.name}</span>
-                            </div>
-                            <div class="summary-item">
-                                <span>Ticket Type</span>
-                                <span>${type === 'venue' ? 'Venue Ticket' : 'Online Access'}</span>
-                            </div>
-                            <div class="summary-item">
-                                <span>Quantity</span>
-                                <span>${ticketCount} ticket${ticketCount > 1 ? 's' : ''}</span>
-                            </div>
-                            <div class="summary-item">
-                                <span>Price per ticket</span>
-                                <span>₹${price}</span>
-                            </div>
-                            <div class="summary-item total">
-                                <span>Total Amount</span>
-                                <span>₹${totalPrice}</span>
-                            </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" id="expiryDate" placeholder="MM/YY" 
+                                   pattern="\\d{2}/\\d{2}" inputmode="numeric" autocomplete="cc-exp"
+                                   required minlength="5" maxlength="5">
                         </div>
-
-                        <div class="payment-form">
-                            <div class="card-icons">
-                                <i class="fab fa-cc-visa"></i>
-                                <i class="fab fa-cc-mastercard"></i>
-                                <i class="fab fa-cc-amex"></i>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Card Number</label>
-                                <div class="input-icon">
-                                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
-                                           pattern="\d*" inputmode="numeric" autocomplete="cc-number"
-                                           required minlength="19" maxlength="19">
-                                    <i class="fas fa-credit-card"></i>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Expiry Date</label>
-                                    <input type="text" id="expiryDate" placeholder="MM/YY" 
-                                           pattern="\d{2}/\d{2}" inputmode="numeric" autocomplete="cc-exp"
-                                           required minlength="5" maxlength="5">
-                                </div>
-                                <div class="form-group">
-                                    <label>CVV</label>
-                                    <div class="input-icon">
-                                        <input type="password" id="cvv" placeholder="123" 
-                                               pattern="\d{3}" inputmode="numeric" autocomplete="cc-csc"
-                                               required minlength="3" maxlength="3">
-                                        <i class="fas fa-question-circle" title="3-digit security code"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Name on Card</label>
-                                <input type="text" id="cardName" placeholder="Enter name as on card"
-                                       required minlength="3">
-                            </div>
-
-                            <div class="payment-buttons">
-                                <button onclick="processPayment('${type}', ${ticketCount}, ${totalPrice})" class="pay-btn">
-                                    Pay ₹${totalPrice}
-                                </button>
-                                <button onclick="backToTicketSelection()" class="back-btn">Back</button>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <div class="input-icon">
+                                <input type="password" id="cvv" placeholder="123" 
+                                       pattern="\\d{3}" inputmode="numeric" autocomplete="cc-csc"
+                                       required minlength="3" maxlength="3">
+                                <i class="fas fa-question-circle" title="3-digit security code"></i>
                             </div>
                         </div>
                     </div>
-                `;
 
-                // Setup payment form validation
-                setupPaymentFormValidation();
+                    <div class="form-group">
+                        <label>Name on Card</label>
+                        <input type="text" id="cardName" placeholder="Enter name as on card"
+                               required minlength="3">
+                    </div>
 
-                // Start the timer
-                startPaymentTimer();
+                    <div class="payment-buttons">
+                        <button onclick="processPayment('${type}', ${ticketCount}, ${totalPrice})" class="pay-btn">
+                            Pay ₹${totalPrice}
+                        </button>
+                        <button onclick="backToTicketSelection()" class="back-btn">Back</button>
+                    </div>
+                </div>
+            </div>
+        `;
 
-            } catch (error) {
-                console.error('Error proceeding to payment:', error);
-                alert('Error processing payment. Please try again.');
-            }
-        }
+        // ✅ Fix: These functions are now defined above
+        setupPaymentFormValidation();
+        startPaymentTimer();
+
+    } catch (error) {
+        console.error('Error proceeding to payment:', error);
+        alert('Error processing payment. Please try again.');
+    }
+}
+
 
         // Function to go back to ticket selection
         function backToTicketSelection() {
@@ -1561,9 +1587,20 @@ function generateTicketId() {
             }
 
             if (!expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
-                alert('Please enter a valid expiry date (MM/YY)');
-                return;
-            }
+    alert('Please enter a valid expiry date (MM/YY)');
+    return;
+}
+
+// ✅ Check if card is expired
+const [expMonth, expYear] = expiryDate.split("/").map(Number);
+const now = new Date();
+const currentMonth = now.getMonth() + 1;
+const currentYear = now.getFullYear() % 100;
+
+if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+    alert('Card is expired. Please use a valid card.');
+    return;
+}
 
             if (!cvv.match(/^\d{3}$/)) {
                 alert('Please enter a valid 3-digit CVV');
@@ -1687,11 +1724,12 @@ function generateTicketId() {
     ticket_id: ticketIdentifier || "NA",
     purchase_date: new Date().toLocaleString() || "NA",
     qr_code: `https://api.qrserver.com/v1/create-qr-code/?data=${ticketIdentifier}&size=200x200`,
-    platform: platform || "NA",
-    meeting_link: meetingLink || "NA",
-    meeting_id: meetingId || "NA",
-    meeting_password: meetingPassword || "NA"
+    platform: type === "online" ? platform : "NA",
+    meeting_link: type === "online" ? meetingLink : "NA",
+    meeting_id: type === "online" ? meetingId : "NA",
+    meeting_password: type === "online" ? meetingPassword : "NA"
 });
+
 
 
     } catch (error) {
