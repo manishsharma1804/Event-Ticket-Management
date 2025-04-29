@@ -11,6 +11,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="EventTix" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
     <style>
         /* Base Styles */
         * {
@@ -1856,14 +1857,16 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>India's Premier Event Ticketing Platform</h1>
-            <p>From Bollywood concerts to cricket matches, cultural festivals to comedy shows - book your tickets instantly!</p>
+            <h1><span id="typed-heading"></span></h1>
+            <p><span id="typed-paragraph"></span></p>
+    
             <div class="hero-cta">
                 <button class="cta-btn primary" onclick="handleExploreEvents()">
                     <i class="fas fa-compass"></i> Explore Events
                 </button>
                 <a href="#trending" class="cta-btn secondary">Trending Now</a>
             </div>
+    
             <div class="hero-stats">
                 <div class="stat-item">
                     <span class="stat-number">1M+</span>
@@ -1880,6 +1883,7 @@
             </div>
         </div>
     </section>
+    
 
     <!-- About Us Section -->
     <section class="about" id="about">
@@ -2948,7 +2952,22 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
     
         // CSS to prevent text selection
         document.body.style.userSelect = 'none';
-    </script>
+
+        // First: type the heading
+        var typedHeading = new Typed("#typed-heading", {
+          strings: ["India's Premier Event Ticketing Platform"],
+          typeSpeed: 50,
+          showCursor: false,
+          onComplete: function () {
+            // Then: type the paragraph after heading is done
+            new Typed("#typed-paragraph", {
+              strings: ["From Bollywood concerts to cricket matches, cultural festivals to comedy shows - book your tickets instantly!"],
+              typeSpeed: 35,
+              showCursor: false
+            });
+          }
+        });
+      </script>
 </body>
 </html>
 
