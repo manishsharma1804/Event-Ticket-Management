@@ -31,6 +31,7 @@
             background-color: #EBF5FF;
         }
 
+        
         /* Custom Scrollbar Styles */
         ::-webkit-scrollbar {
             width: 3px;
@@ -834,13 +835,13 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #3B82F6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 15px 20px;
             border-radius: 5px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: none;
-            z-index: 1000;
+            z-index: 999999999;
             animation: slideIn 0.3s ease-out;
         }
 
@@ -1938,26 +1939,7 @@
                 <div class="team-grid">
                     <div class="team-member">
                         <div class="member-image">
-                            <img src="images/ms.jpeg" alt="Manish Sharma">
-                            <div class="social-overlay">
-                                <a href="https://www.linkedin.com/in/manishsharma18/" target="_blank"><i class="fab fa-linkedin"></i></a>
-                            </div>
-                        </div>
-                        <div class="member-info">
-                            <h4>Manish Kumar Sharma</h4>
-                            <p>Lead Developer</p>
-                            <div class="member-skills">
-                                <span>Full Stack Development</span>
-                                <span>UI/UX Design</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="team-member">
-                        <div class="member-image">
                             <img src="images/pkp.jpeg" alt="Pranit Pathak">
-                            <div class="social-overlay">
-                                <a href="https://www.linkedin.com/in/pranit-kumar-pathak-81ab8b152/" target="_blank"><i class="fab fa-linkedin"></i></a>
-                            </div>
                         </div>
                         <div class="member-info">
                             <h4>Pranit Kumar Pathak</h4>
@@ -1965,6 +1947,42 @@
                             <div class="member-skills">
                                 <span>Frontend Development</span>
                                 <span>UI/UX Design</span>
+                            </div>
+
+                            <div class="social-overlay" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 10px;">
+                                <a href="https://www.linkedin.com/in/pranit-kumar-pathak-81ab8b152/" target="_blank" style="font-size:20px; color: #0077b5;">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                                <a href="https://www.instagram.com/keyed_devotee/" target="_blank" style="font-size:20px; color: #E4405F;">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="https://github.com/your_github_username" target="_blank" style="font-size:20px; color: #000;">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-image">
+                            <img src="images/ms.jpeg" alt="Manish Sharma">
+                        </div>
+                        <div class="member-info">
+                            <h4>Manish Kumar Sharma</h4>
+                            <p>Backend Developer</p>
+                            <div class="member-skills">
+                                <span>Full Stack Development</span>
+                                <span>Lead Developer</span>
+                            </div>
+                            <div class="social-overlay" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 10px;">
+                                <a href="https://www.linkedin.com/in/manishsharma18/" target="_blank" style="font-size:20px; color: #0077b5;">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                                <a href="https://www.instagram.com/me.manish18/" target="_blank" style="font-size:20px; color: #E4405F;">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="https://github.com/manishsharma1804" target="_blank" style="font-size:20px; color: #000;">
+                                    <i class="fab fa-github"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -2041,44 +2059,95 @@
             <div class="contact-info">
                 <div class="info-card">
                     <i class="fas fa-map-marker-alt"></i>
-                    <h4>Our Location</h4>
-                    <p>KaramToli, Ranchi, 834001</p>
+                    <h4 >Our Location</h4>
+                    <p>
+                        <a href="https://www.google.com/maps?q=KaramToli,+Ranchi,+834001" target="_blank" style="text-decoration: none; color: inherit;">
+                            KaramToli, Ranchi, 834001
+                        </a>
+                    </p>
                 </div>
                 <div class="info-card">
                     <i class="fas fa-phone"></i>
                     <h4>Call Us</h4>
-                    <p>+91 9876543210</p>
+                    <p>
+                        <a href="tel:+919876543210" style="text-decoration: none; color: inherit;">
+                            +91 9876543210
+                        </a>
+                    </p>
                     <p>Mon-Sat: 9:00 AM - 8:00 PM</p>
                 </div>
                 <div class="info-card">
                     <i class="fas fa-envelope"></i>
                     <h4>Email Us</h4>
-                    <p>support@eventtix.com</p>
-                    <p>business@eventtix.com</p>
+                    <p>
+                        <a href="mailto:support@eventtix.com" style="text-decoration: none; color: inherit;">
+                            support@eventtix.com
+                        </a>
+                    </p>
+                    <p>
+                        <a href="mailto:business@eventtix.com" style="text-decoration: none; color: inherit;">
+                            business@eventtix.com
+                        </a>
+                    </p>
                 </div>
             </div>
             <div class="contact-form-container">
-                <form id="contact-form" class="contact-form">
+                <h1 style="text-align: center; font-size: 2em; margin-bottom: 0.2em;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;">
+    Contact Us
+</h1>
+<p style="text-align: center; font-size: 1em; color: #555; margin-bottom: 2em;">
+    We'd love to hear from you! Please fill out the form below and we'll get in touch as soon as possible.
+</p>
+                <form id="contact-form" class="contact-form" action="https://formsubmit.co/manishgrdh@gmail.com" method="POST" enctype="application/x-www-form-urlencoded">
                     <div class="form-group">
-                        <input type="text" name="name" placeholder="Your Name" required>
+                        <input type="text" name="name" placeholder="Your Name" autocomplete="off" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" name="email" placeholder="Your Email" required>
+                        <input type="email" name="email" placeholder="Your Email" autocomplete="off" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" name="subject" placeholder="Subject" required>
+                        <input type="text" name="subject" placeholder="Subject"  autocomplete="off" required>
                     </div>
                     <div class="form-group">
-                        <textarea name="message" placeholder="Your Message" required></textarea>
+                        <textarea name="message" placeholder="Your Message" required rows="6"></textarea>
                     </div>
-                    <button type="submit">
-                        <i class="fas fa-paper-plane"></i>
-                        Send Message
+                
+                    <!-- Hidden fields to control form behavior -->
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_template" value="box">
+                    <input type="hidden" name="_autoresponse" value="Thank you for contacting us! We’ll get back to you soon.">
+                
+                    <button type="submit" id="submit-btn" style="position: relative;">
+                        <i class="fas fa-paper-plane" id="submit-icon"></i>
+                        <span id="submit-text">Send Message</span>
                     </button>
                 </form>
+                
+                <!-- ✅ Toast popup for success/error messages -->
+                <div id="toast" style="
+                    position: fixed;
+                    bottom: 30px;
+                    right: 30px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.5s ease;
+                    z-index: 999999;
+                    font-family: sans-serif;
+                "></div>
+                
             </div>
         </div>
     </section>
+    
 
     <!-- Footer -->
     <footer class="footer">
@@ -2129,12 +2198,23 @@
                 <div class="footer-section">
                     <h4>Stay Updated</h4>
                     <p>Subscribe to our newsletter for exclusive offers and updates.</p>
-                    <form class="newsletter-form">
-                        <input type="email" placeholder="Enter your email" required>
+                    <form class="newsletter-form" action="https://formsubmit.co/manishgrdh@gmail.com" method="POST" target="hidden-iframe">
+                        <input type="email" name="email" placeholder="Enter your email"  autocomplete="off" required>
                         <button type="submit">Subscribe</button>
+                
+                        <!-- Hidden fields -->
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_subject" value="Hey! Someone Subscribed to EventTix Newsletter">
                     </form>
-                </div>
+                </div>                
             </div>
+            
+    <!-- Newsletter Submission Message -->
+<div class="newsletter-message" id="newsletter-message" style="display:none;">
+    Thank you for subscribing to our newsletter!
+</div>
+<!-- Hidden iframe to allow background form submission -->
+<iframe name="hidden-iframe" style="display:none;"></iframe>
 
             <div class="footer-bottom">
                 <div class="footer-links">
@@ -2149,16 +2229,12 @@
                     <i class="fab fa-cc-mastercard"></i>
                     <i class="fab fa-google-pay"></i>
                 </div>
-                <p class="copyright">© 2024-2025 EventTix. All rights reserved. Made with ❤️ in India</p>
-                <p class="publish-message">Want to publish an event with us? Drop a mail to publish@eventTix.in</p>
+                <p class="copyright">© 2024 - <span id="year"></span> EventTix. All rights reserved. Made with ❤️ in India</p>
+                <p class="publish-message">Want to publish an event with us? Drop a mail to <a href="mailto:publish@eventTix.in" style="text-decoration: none; color: inherit;">publish@eventTix.in</a></p>
+
             </div>
         </div>
     </footer>
-
-    <!-- Newsletter Submission Message -->
-    <div class="newsletter-message" id="newsletter-message">
-        Thank you for subscribing to our newsletter!
-    </div>
 
     <!-- Login Modal -->
     <div id="loginModal" class="login-modal">
@@ -2190,8 +2266,29 @@
             </div>
         </div>
     </div>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+      </script>
 
     <script>
+
+document.querySelector('.newsletter-form').addEventListener('submit', function () {
+        const form = this;
+        const message = document.getElementById('newsletter-message');
+
+        // Show thank-you message
+        message.style.display = 'block';
+
+        // Hide after 2 seconds
+        setTimeout(() => {
+            message.style.display = 'none';
+        }, 2000);
+
+        // Delay reset to ensure data is submitted before clearing the form
+        setTimeout(() => {
+            form.reset();
+        }, 500); // delay by half a second
+    });
 
          // Account link functionality
     document.addEventListener('DOMContentLoaded', function() {
@@ -2291,22 +2388,7 @@
             animateOnScroll();
         });
 
-        // Newsletter form submission
-        document.querySelector('.newsletter-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = this.querySelector('input').value;
-            
-            // Here you would typically send this to your server
-            console.log('Newsletter subscription:', email);
-            
-            const message = document.getElementById('newsletter-message');
-            message.style.display = 'block';
-            setTimeout(() => {
-                message.style.display = 'none';
-            }, 3000);
 
-            this.reset();
-        });
 
         // Smooth scroll for footer links
         document.querySelectorAll('.footer-links a').forEach(link => {
@@ -2323,21 +2405,56 @@
                 }
             });
         });
+        const submitBtn = document.getElementById('submit-btn');
+const submitIcon = document.getElementById('submit-icon');
+const submitText = document.getElementById('submit-text');
 
-        // Contact form submission
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            // Here you would typically send this to your server
-            console.log('Contact form submission:');
-            for (let [key, value] of formData.entries()) {
-                console.log(key + ': ' + value);
-            }
-            
-            alert('Thank you for your message. We will get back to you soon!');
-            this.reset();
-        });
+// Contact form submission with toast popup
+document.getElementById('contact-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // prevent default form submission
+    const form = this;
+    const formData = new FormData(form);
+
+    // Start animation
+    submitBtn.disabled = true;
+    submitIcon.classList.remove('fa-paper-plane');
+    submitIcon.classList.add('fa-spinner', 'fa-spin');
+    submitText.textContent = "Sending...";
+
+    fetch(form.action, {
+        method: form.method,
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    }).then(response => {
+        if (response.ok) {
+            form.reset();
+            showToast('Thank you for your message. We will get back to you soon!', false);
+        } else {
+            showToast('Oops! There was a problem submitting your form.', true);
+        }
+    }).catch(error => {
+        showToast('There was an error: ' + error.message, true);
+    }).finally(() => {
+        // Stop animation
+        submitBtn.disabled = false;
+        submitIcon.classList.remove('fa-spinner', 'fa-spin');
+        submitIcon.classList.add('fa-paper-plane');
+        submitText.textContent = "Send Message";
+    });
+
+    function showToast(message, isError) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        toast.style.opacity = '1';
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+        }, 3000);
+    }
+});
 
         // Add this to your existing script
         document.addEventListener('DOMContentLoaded', function() {
@@ -2822,6 +2939,15 @@
     .then(reg => console.log('Service Worker registered!'))
     .catch(err => console.error('Service Worker failed:', err));
 }
+    </script>
+    <script>
+        // Disable text selection
+        document.addEventListener('selectstart', function (e) {
+            e.preventDefault();
+        });
+    
+        // CSS to prevent text selection
+        document.body.style.userSelect = 'none';
     </script>
 </body>
 </html>

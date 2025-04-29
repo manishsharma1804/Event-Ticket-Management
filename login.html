@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventTix - Event Ticketing System</title>
+    <link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+    <link rel="shortcut icon" href="icons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="EventTix" />
     <style>
         * {
             margin: 0;
@@ -86,9 +91,6 @@
             text-decoration: none;
         }
 
-        .auth-toggle a:hover {
-            text-decoration: underline;
-        }
 
         #error-message {
             color: #e53e3e;
@@ -213,10 +215,12 @@
     </style>
 </head>
 <body>
+    
     <div class="container">
-        <div class="logo">
-            <a href="index.html" style="text-decoration: none; color: inherit;">
-                <h1>EventTix</h1>
+        <div class="" style="display: flex; align-items: center;">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+                <img src="icons/icon.png" alt="EventTix Logo" style="height: 40px; margin-left: 80px;">
+                <h1 style="margin: 0; font-size: 28px;">EventTix</h1>
             </a>
         </div>
 
@@ -239,10 +243,13 @@
             </div>
             <div class="loader" id="loginLoader"></div>
             <button onclick="login()">Login</button>
+            <div class="auth-toggle">
+                <a href="#" onclick="toggleForms()">Need an account? Register</a>
+            </div>
             <div class="help-section" onclick="toggleHelp(this)">
                 <div class="help-header">
                     <i class="fas fa-question-circle"></i>
-                    <span>Need Help?</span>
+                    <span style="color: #e53e3e;">Need Help?</span>
                 </div>
                 <div class="help-content">
                     <div class="help-text">
@@ -252,12 +259,9 @@
                         • Having trouble logging in? Our support team is here to assist.
                     </div>
                     <div class="help-text">
-                        Contact us at: <span class="contact-email">admin@eventTix.com</span>
+                        Contact us at: <a href="mailto:admin@eventTix.com" class="contact-email" style="text-decoration: none; color: inherit;">admin@eventTix.com</a>
                     </div>
                 </div>
-            </div>
-            <div class="auth-toggle">
-                <a href="#" onclick="toggleForms()">Need an account? Register</a>
             </div>
         </div>
 
@@ -280,22 +284,22 @@
             </div>
             <div class="loader" id="registerLoader"></div>
             <button onclick="register()">Register</button>
+            <div class="auth-toggle">
+                <a href="#" onclick="toggleForms()">Already have an account? Login</a>
+            </div>
             <div class="help-section" onclick="toggleHelp(this)">
                 <div class="help-header">
                     <i class="fas fa-question-circle"></i>
-                    <span>Need Help?</span>
+                    <span style="color: #e53e3e;">Need Help?</span>
                 </div>
                 <div class="help-content">
                     <div class="help-text">
                         • Having trouble registering? Our support team is here to assist.
                     </div>
                     <div class="help-text">
-                        Contact us at: <span class="contact-email">admin@eventTix.com</span>
+                        Contact us at: <a href="mailto:admin@eventTix.com" class="contact-email" style="text-decoration: none; color: inherit;">admin@eventTix.com</a>
                     </div>
                 </div>
-            </div>
-            <div class="auth-toggle">
-                <a href="#" onclick="toggleForms()">Already have an account? Login</a>
             </div>
         </div>
 
@@ -473,6 +477,15 @@
 
         // Make the function available globally
         window.toggleHelp = toggleHelp;
+    </script>
+    <script>
+        // Disable text selection
+        document.addEventListener('selectstart', function (e) {
+            e.preventDefault();
+        });
+    
+        // CSS to prevent text selection
+        document.body.style.userSelect = 'none';
     </script>
 </body>
 </html>

@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventTix - Dashboard</title>
+    <link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+    <link rel="shortcut icon" href="icons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="EventTix" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
@@ -3768,7 +3773,10 @@
     <!-- Add footer -->
     <footer class="footer">
         <div class="footer-bottom">
-            <p>&copy; 2024-2025-2025 EventTix. All rights reserved.</p>
+            <p>&copy; 2024 - <span id="year"></span> EventTix. All rights reserved.</p>
+        <script>
+            document.getElementById("year").textContent = new Date().getFullYear();
+        </script>
         </div>
     </footer>
 
@@ -4987,6 +4995,15 @@
 
         // Make functions available globally
         window.handleLogout = handleLogout;
+    </script>
+    <script>
+        // Disable text selection
+        document.addEventListener('selectstart', function (e) {
+            e.preventDefault();
+        });
+    
+        // CSS to prevent text selection
+        document.body.style.userSelect = 'none';
     </script>
 </body>
 </html>

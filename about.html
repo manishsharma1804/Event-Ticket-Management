@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - EventTix</title>
+    <link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+    <link rel="shortcut icon" href="icons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="EventTix" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Reset and base styles */
@@ -136,6 +141,9 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .team-member:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
 
         .team-member img {
             width: 120px;
@@ -154,6 +162,8 @@
             color: #718096;
             font-size: 0.9rem;
         }
+       
+
 
         /* Footer styles */
         .footer {
@@ -236,18 +246,30 @@
                 <h2>Our Leadership Team</h2>
                 <div class="team-grid">
                     <div class="team-member">
-                        <img src="https://via.placeholder.com/150" alt="Team Member">
-                        <h3>Sahil Singh</h3>
+                        <img src="images/sahil.png" alt="Team Member">
+                        <h3>Sahil Singh 
+                            <a href="https://www.instagram.com/sahilsinghrajput81" target="_blank" style="text-decoration: none; color: #E4405F;">
+                                <i class="fab fa-instagram" style="font-size: 20px; margin-left: 8px;"></i>
+                            </a>
+                        </h3>
                         <p>Sales Division</p>
                     </div>
                     <div class="team-member">
-                        <img src="https://via.placeholder.com/150" alt="Team Member">
-                        <h3>Shivam Kumar</h3>
+                        <img src="images/shivam.png" alt="Team Member">
+                        <h3>Shivam Kumar 
+                            <a href="https://www.instagram.com/mr.gaur98" target="_blank" style="text-decoration: none; color: #E4405F;">
+                                <i class="fab fa-instagram" style="font-size: 20px; margin-left: 8px;"></i>
+                            </a>
+                        </h3>
                         <p>Chief Technology Officer</p>
                     </div>
                     <div class="team-member">
-                        <img src="https://via.placeholder.com/150" alt="Team Member">
-                        <h3>Nehal Bid</h3>
+                        <img src="images/nehal.png" alt="Team Member">
+                        <h3>Nehal Bid 
+                            <a href="https://www.instagram.com/ig_drkni8" target="_blank" style="text-decoration: none; color: #E4405F;">
+                                <i class="fab fa-instagram" style="font-size: 20px; margin-left: 8px;"></i>
+                            </a>
+                        </h3>
                         <p>Head of Operations</p>
                     </div>
                 </div>
@@ -257,7 +279,20 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2024-2025 EventTix. All rights reserved.</p>
+        <p>&copy; 2024 - <span id="year"></span> EventTix. All rights reserved.</p>
+        <script>
+            document.getElementById("year").textContent = new Date().getFullYear();
+        </script>
     </footer>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        // Disable text selection
+        document.addEventListener('selectstart', function (e) {
+            e.preventDefault();
+        });
+    
+        // CSS to prevent text selection
+        document.body.style.userSelect = 'none';
+    </script>
 </body>
 </html> 

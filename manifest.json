@@ -2,7 +2,7 @@
     "name": "EventTix",
     "short_name": "EventTix",
     "description": "Book, manage, and verify event tickets easily with EventTix.",
-    "start_url": "index.html",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#007BFF",
