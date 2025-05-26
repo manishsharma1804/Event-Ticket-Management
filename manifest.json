@@ -2,7 +2,7 @@
     "name": "EventTix",
     "short_name": "EventTix",
     "description": "Book, manage, and verify event tickets easily with EventTix.",
-    "start_url": "/",
+    "start_url": "https://manishsharma1804.github.io/Event-Ticket-Management",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#007BFF",
