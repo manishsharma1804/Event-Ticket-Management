@@ -18,7 +18,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)), 
+                        url('');
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -486,6 +487,19 @@
     
         // CSS to prevent text selection
         document.body.style.userSelect = 'none';
+    </script>
+    <script>
+        // Array of background image URLs
+        const bgImages = [
+            'https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1920&q=80',
+
+        ];
+
+        // Function to get a random image
+        const randomImage = bgImages[Math.floor(Math.random() * bgImages.length)];
+
+        // Set the random image as background
+        document.body.style.backgroundImage = `linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)), url('${randomImage}')`;
     </script>
 </body>
 </html>

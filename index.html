@@ -162,12 +162,12 @@
             transition: all 0.3s ease;
         }
 
-        /* Hero Section Styles */
+        /* Hero Section Styles 
         .hero {
             padding-top: 80px;
             min-height: 100vh;
             background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)), 
-                        url('https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1920&q=80');
+                        url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -177,7 +177,20 @@
             color: white;
             margin: 0;
         }
-
+*/
+.hero {
+    padding-top: 80px;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin: 0;
+    background-repeat: no-repeat;
+}
         .hero-content {
             max-width: 900px;
             opacity: 0;
@@ -1834,7 +1847,7 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-content">
-            <a href="#" class="logo">EventTix</a>
+            <a href="" class="logo">EventTix</a>
             <div class="nav-links">
                 <a href="#features"><i class="fas fa-star"></i>Features</a>
                 <a href="#upcoming"><i class="fas fa-calendar"></i>Events</a>
@@ -2968,6 +2981,18 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
           }
         });
       </script>
+      <script>
+        const images = [
+  'https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1920&q=80',
+  'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&w=1920&q=80',
+  'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1920&q=80',
+  'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1920&q=80',
+];
+    
+        const randomImage = images[Math.floor(Math.random() * images.length)];
+        const heroSection = document.querySelector('.hero');
+        heroSection.style.backgroundImage = `linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)), url('${randomImage}')`;
+    </script>
 </body>
 </html>
 
